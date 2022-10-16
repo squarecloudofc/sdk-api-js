@@ -52,13 +52,13 @@ export class Application {
     } = await this.apiManager.application('status', this.id);
 
     return {
-      network: network,
+      status,
+      running,
+      network,
+      requests,
       cpuUsage: cpu,
       ramUsage: ram,
       storageUsage: storage,
-      requests: requests,
-      running: running,
-      status: status,
       uptimeTimestamp: uptime || 0,
       uptime: uptime ? new Date(uptime) : null,
       lastCheckTimestamp: time,
