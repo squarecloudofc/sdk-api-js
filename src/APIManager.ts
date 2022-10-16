@@ -34,6 +34,8 @@ export class APIManager {
           );
         }
 
+        console.log(e.data)
+
         return e.data;
       }
     );

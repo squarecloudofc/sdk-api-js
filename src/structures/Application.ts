@@ -145,9 +145,6 @@ export class Application {
       headers: { ...formData.getHeaders() },
     });
 
-    console.log(response);
-
-    return true;
-    // return code === 'SUCCESS';
+    return response.code === 'SUCCESS';
   }
 }
