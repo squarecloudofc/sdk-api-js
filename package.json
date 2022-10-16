@@ -6,7 +6,7 @@
 	"types": "lib/index.d.ts",
 	"scripts": {
 		"publish": "pnpm build && pnpm publish",
-		"build": "tsc && cls"
+		"build": "tsc && git add lib/* && git commit -m 'Build'"
 	},
 	"keywords": [
 		"wrapper",
