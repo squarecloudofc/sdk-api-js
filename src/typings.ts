@@ -39,7 +39,7 @@ export interface RawUserData {
         used: number;
       };
       duration: {
-        formated: string;
+        formatted: string;
         raw: number | null;
       };
     };
