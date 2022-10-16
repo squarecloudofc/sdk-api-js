@@ -1,6 +1,20 @@
 import { RawUserData } from './typings';
 
-export class SquareCloudAPIError extends Error {}
+const errorMessages = {
+  ACCESS_DENIED: 'You do not have authorization to perform this action.',
+  APP_NOT_FOUND: 'Cannot find any application with provided information.',
+  USER_NOT_FOUND: 'Cannot find any user with provided information.',
+  INVALID_BUFFER: 'Provided buffer is invalid.',
+};
+
+class SquareCloudAPIError extends Error {
+  constructor(code: keyof typeof errorMessages) {
+    super();
+
+    this.name = 'SquareCloudAPIError';
+    this.message = `[${code}] ${errorMessages[code]}`;
+  }
+}
 
 export class APIManager {
   constructor(private apiKey: string) {}
@@ -9,21 +23,15 @@ export class APIManager {
     return fetch('https://api.squarecloud.app/v1/public/' + path, {
       ...options,
       headers: { Authorization: this.apiKey },
-    }).then((e) => {
-      if (e.status === 401) {
-        throw new SquareCloudAPIError(
-          'You do not have authorization to perform this action.'
-        );
-      }
+    })
+      .then((e) => e.json())
+      .then((e) => {
+        if (e.status === 'error') {
+          throw new SquareCloudAPIError(e.code as keyof typeof errorMessages);
+        }
 
-      if (e.status === 404) {
-        throw new SquareCloudAPIError(
-          'The provided parameters are invalid. No data found.'
-        );
-      }
-
-      return e.json();
-    });
+        return e;
+      });
   }
 
   user(id?: string, options: RequestInit = {}): Promise<RawUserData> {
