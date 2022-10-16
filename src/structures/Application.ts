@@ -141,6 +141,6 @@ export class Application {
       body,
     });
 
-    return code === 'STATUS';
+    return code === 'SUCCESS';
   }
 }
