@@ -1,0 +1,33 @@
+{
+	"name": "@squarecloud/api",
+	"version": "1.0.4",
+	"description": "A JavaScript Wrapper for SquareCloud API",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
+	"scripts": {
+		"publish": "pnpm build && pnpm publish",
+		"build": "tsc && cls"
+	},
+	"keywords": [
+		"wrapper",
+		"square",
+		"squarecloud",
+		"api",
+		"typescript"
+	],
+	"author": "bluey#0012",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^18.8.4",
+		"ts-node-dev": "^2.0.0",
+		"typescript": "^4.8.4"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bluee-js/squarecloud-api.git"
+	},
+	"bugs": {
+		"url": "https://github.com/bluee-js/squarecloud-api/issues"
+	},
+	"homepage": "https://github.com/bluee-js/squarecloud-api#readme"
+}
