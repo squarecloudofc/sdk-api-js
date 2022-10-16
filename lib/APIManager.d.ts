@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from 'axios';
-import { RawUserData } from './typings';
+import { APIResponse, RawUserData } from './typings';
 declare const errorMessages: {
     ACCESS_DENIED: string;
     APP_NOT_FOUND: string;
@@ -14,6 +14,6 @@ export declare class APIManager {
     constructor(apiKey: string);
     private fetch;
     user(id?: string, options?: AxiosRequestConfig): Promise<RawUserData>;
-    application(path: string, id: string, options?: AxiosRequestConfig | boolean): Promise<any>;
+    application(path: string, id: string, options?: AxiosRequestConfig | boolean): Promise<APIResponse>;
 }
 export {};

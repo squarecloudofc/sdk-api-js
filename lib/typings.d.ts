@@ -14,41 +14,11 @@ export interface AccountPlan {
         timestamp: number | null;
     };
 }
-export interface RawUserData {
-    user: {
-        id: string;
-        tag: string;
-        email: string;
-        plan: {
-            name: AccountPlanName;
-            memory: {
-                limit: number;
-                available: number;
-                used: number;
-            };
-            duration: {
-                formatted: string;
-                raw: number | null;
-            };
-        };
-    };
-    applications: RawApplicationData[];
-}
 /**
  * APPLICATION
  */
 declare type ApplicationLang = 'javascript' | 'typescript' | 'java' | 'python';
 declare type ApplicationStatus = 'exited' | 'created' | 'starting' | 'restarting' | 'deleting' | 'running';
-export interface RawApplicationData {
-    id: string;
-    tag: string;
-    ram: number;
-    lang: ApplicationLang;
-    type: 'free' | 'paid';
-    cluster: string;
-    isWebsite: boolean;
-    avatar: string;
-}
 export interface ApplicationStatusData {
     /** The application's network status */
     network: {
@@ -84,5 +54,41 @@ export interface ApplicationStatusData {
     lastCheckTimestamp?: number;
     /** The last time this information has been checked */
     lastCheck?: Date;
+}
+/** API */
+export declare type APIResponse<T = any> = {
+    status: 'success';
+    code: string;
+    response: T;
+};
+export interface RawUserData {
+    user: {
+        id: string;
+        tag: string;
+        email: string;
+        plan: {
+            name: AccountPlanName;
+            memory: {
+                limit: number;
+                available: number;
+                used: number;
+            };
+            duration: {
+                formatted: string;
+                raw: number | null;
+            };
+        };
+    };
+    applications: RawApplicationData[];
+}
+export interface RawApplicationData {
+    id: string;
+    tag: string;
+    ram: number;
+    lang: ApplicationLang;
+    type: 'free' | 'paid';
+    cluster: string;
+    isWebsite: boolean;
+    avatar: string;
 }
 export {};
