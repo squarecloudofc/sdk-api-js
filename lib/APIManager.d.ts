@@ -1,3 +1,4 @@
+import { AxiosRequestConfig } from 'axios';
 import { RawUserData } from './typings';
 declare const errorMessages: {
     ACCESS_DENIED: string;
@@ -12,7 +13,7 @@ export declare class APIManager {
     private apiKey;
     constructor(apiKey: string);
     private fetch;
-    user(id?: string, options?: RequestInit): Promise<RawUserData>;
-    application(path: string, id: string, options?: RequestInit | boolean): Promise<any>;
+    user(id?: string, options?: AxiosRequestConfig): Promise<RawUserData>;
+    application(path: string, id: string, options?: AxiosRequestConfig | boolean): Promise<any>;
 }
 export {};
