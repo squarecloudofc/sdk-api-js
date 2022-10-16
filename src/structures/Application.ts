@@ -1,6 +1,13 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
 import { APIManager } from '../APIManager';
 
+/**
+ * Represents a SquareCloud application
+ *
+ * @constructor
+ * @param apiManager - The APIManager for this application
+ * @param data - The data from this application
+ */
 export class Application {
   /** The application id */
   id: string;
