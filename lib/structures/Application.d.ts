@@ -1,5 +1,12 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
 import { APIManager } from '../APIManager';
+/**
+ * Represents a SquareCloud application
+ *
+ * @constructor
+ * @param apiManager - The APIManager for this application
+ * @param data - The data from this application
+ */
 export declare class Application {
     private apiManager;
     /** The application id */
@@ -30,9 +37,9 @@ export declare class Application {
     getStatus(): Promise<ApplicationStatusData>;
     /** Gets the application logs
      *
-     * @param complete - Whether you want the complete logs (true) or the recent ones (false)
+     * @param full - Whether you want the complete logs (true) or the recent ones (false)
      */
-    getLogs(complete?: boolean): Promise<any>;
+    getLogs(full?: boolean): Promise<any>;
     /** Generates the backup download URL */
     backup(): Promise<string>;
     /** Starts up the application */
@@ -41,4 +48,19 @@ export declare class Application {
     stop(): Promise<boolean>;
     /** Restarts the application */
     restart(): Promise<boolean>;
+    /**
+     * Deletes your whole application
+     *
+     * - This action is irreversible.
+     */
+    delete(): Promise<boolean>;
+    /**
+     * Commit changes to a specific file inside your application folder
+     *
+     * - This action is irreversible.
+     * - Tip: use `require('path').join(__dirname, 'fileName')` to get an absolute path.
+     *
+     * @param filePath - The absolute file path
+     */
+    commit(filePath: string): Promise<boolean>;
 }
