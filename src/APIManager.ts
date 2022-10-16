@@ -26,6 +26,8 @@ export class APIManager {
       Authorization: this.apiKey,
     };
 
+    options.method = options.method || 'GET';
+
     return axios('https://api.squarecloud.app/v1/public/' + path, options).then(
       (e) => {
         if (e.data.status === 'error') {
@@ -34,7 +36,7 @@ export class APIManager {
           );
         }
 
-        console.log(e.data)
+        console.log(e.data);
 
         return e.data;
       }
@@ -47,7 +49,11 @@ export class APIManager {
     );
   }
 
-  application(path: string, id: string, options: AxiosRequestConfig | boolean = {}) {
+  application(
+    path: string,
+    id: string,
+    options: AxiosRequestConfig | boolean = {}
+  ) {
     return this.fetch(
       `${path}/${id}`,
       typeof options === 'boolean'
