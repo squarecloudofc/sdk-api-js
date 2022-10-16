@@ -7,7 +7,7 @@ const errorMessages = {
   INVALID_BUFFER: 'Provided buffer is invalid.',
 };
 
-class SquareCloudAPIError extends Error {
+export class SquareCloudAPIError extends Error {
   constructor(code: keyof typeof errorMessages) {
     super();
 

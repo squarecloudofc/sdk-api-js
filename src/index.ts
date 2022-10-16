@@ -53,9 +53,7 @@ export class SquareCloudAPI {
     const appData = applications.find((app) => app.id === appId);
 
     if (!appData) {
-      throw new SquareCloudAPIError(
-        'No application with provided id that you own was found.'
-      );
+      throw new SquareCloudAPIError('APP_NOT_FOUND');
     }
 
     return new Application(this.apiManager, appData);
