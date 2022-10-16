@@ -140,11 +140,14 @@ export class Application {
       .split('/')
       .pop();
 
-    const { code } = await this.apiManager.application('commit', this.id, {
+    const response = await this.apiManager.application('commit', this.id, {
       method: 'POST',
       body: JSON.stringify({ data: readFileSync(filePath), filename }),
     });
 
-    return code === 'SUCCESS';
+    console.log(response)
+
+    return true
+    // return code === 'SUCCESS';
   }
 }
