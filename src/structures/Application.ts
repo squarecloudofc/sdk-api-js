@@ -58,7 +58,7 @@ export class Application {
       status,
       uptime,
       time,
-    } = await this.apiManager.application('status', this.id);
+    } = (await this.apiManager.application('status', this.id)).response;
 
     return {
       status,
@@ -82,12 +82,13 @@ export class Application {
   async getLogs(full: boolean = false) {
     return (
       await this.apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
-    ).logs;
+    ).response.logs;
   }
 
   /** Generates the backup download URL */
   async backup(): Promise<string> {
-    return (await this.apiManager.application('backup', this.id)).downloadURL;
+    return (await this.apiManager.application('backup', this.id)).response
+      .downloadURL;
   }
 
   /** Starts up the application */
@@ -139,12 +140,12 @@ export class Application {
 
     formData.append('file', createReadStream(filePath));
 
-    const response = await this.apiManager.application('commit', this.id, {
+    const { code } = await this.apiManager.application('commit', this.id, {
       method: 'POST',
       data: formData,
       headers: { ...formData.getHeaders() },
     });
 
-    return response.code === 'SUCCESS';
+    return code === 'SUCCESS';
   }
 }

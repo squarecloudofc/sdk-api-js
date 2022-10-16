@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { RawUserData } from './typings';
+import { APIResponse, RawUserData } from './typings';
 
 const errorMessages = {
   ACCESS_DENIED: 'You do not have authorization to perform this action.',
@@ -40,17 +40,18 @@ export class APIManager {
     return data;
   }
 
-  user(id?: string, options: AxiosRequestConfig = {}): Promise<RawUserData> {
-    return this.fetch('user' + (id ? `/${id}` : ''), options).then(
-      (data) => data.response
-    );
+  user(
+    id?: string,
+    options: AxiosRequestConfig = {}
+  ): Promise<APIResponse<RawUserData>> {
+    return this.fetch('user' + (id ? `/${id}` : ''), options);
   }
 
   application(
     path: string,
     id: string,
     options: AxiosRequestConfig | boolean = {}
-  ) {
+  ): Promise<APIResponse> {
     return this.fetch(
       `${path}/${id}`,
       typeof options === 'boolean'
@@ -58,6 +59,6 @@ export class APIManager {
           ? { method: 'POST' }
           : {}
         : options
-    ).then((data) => data.response);
+    );
   }
 }

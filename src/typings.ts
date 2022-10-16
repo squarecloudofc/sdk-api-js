@@ -26,27 +26,6 @@ export interface AccountPlan {
   };
 }
 
-export interface RawUserData {
-  user: {
-    id: string;
-    tag: string;
-    email: string;
-    plan: {
-      name: AccountPlanName;
-      memory: {
-        limit: number;
-        available: number;
-        used: number;
-      };
-      duration: {
-        formatted: string;
-        raw: number | null;
-      };
-    };
-  };
-  applications: RawApplicationData[];
-}
-
 /**
  * APPLICATION
  */
@@ -60,17 +39,6 @@ type ApplicationStatus =
   | 'restarting'
   | 'deleting'
   | 'running';
-
-export interface RawApplicationData {
-  id: string;
-  tag: string;
-  ram: number;
-  lang: ApplicationLang;
-  type: 'free' | 'paid';
-  cluster: string;
-  isWebsite: boolean;
-  avatar: string;
-}
 
 export interface ApplicationStatusData {
   /** The application's network status */
@@ -107,4 +75,44 @@ export interface ApplicationStatusData {
   lastCheckTimestamp?: number;
   /** The last time this information has been checked */
   lastCheck?: Date;
+}
+
+/** API */
+
+export type APIResponse<T = any> = {
+  status: 'success';
+  code: string;
+  response: T;
+};
+
+export interface RawUserData {
+  user: {
+    id: string;
+    tag: string;
+    email: string;
+    plan: {
+      name: AccountPlanName;
+      memory: {
+        limit: number;
+        available: number;
+        used: number;
+      };
+      duration: {
+        formatted: string;
+        raw: number | null;
+      };
+    };
+  };
+  applications: RawApplicationData[];
+}
+
+export interface RawApplicationData {
+  id: string;
+  tag: string;
+  ram: number;
+  lang: ApplicationLang;
+  type: 'free' | 'paid';
+  cluster: string;
+  isWebsite: boolean;
+  avatar: string;
 }
