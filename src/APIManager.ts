@@ -40,11 +40,10 @@ export class APIManager {
     return data;
   }
 
-  user(
-    id?: string,
-    options: AxiosRequestConfig = {}
-  ): Promise<APIResponse<RawUserData>> {
-    return this.fetch('user' + (id ? `/${id}` : ''), options);
+  user(id?: string, options: AxiosRequestConfig = {}): Promise<RawUserData> {
+    return this.fetch('user' + (id ? `/${id}` : ''), options).then(
+      (e) => e.response
+    );
   }
 
   application(

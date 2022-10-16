@@ -33,7 +33,7 @@ export class SquareCloudAPI {
       throw new TypeError('userId must be a string. Got ' + typeof userId);
     }
 
-    const userData = await this.apiManager.user(userId);
+    const userData = (await this.apiManager.user(userId));
     const hasAccess = userData.user.email !== 'Access denied';
 
     return new (hasAccess ? FullUser : User)(this.apiManager, userData);
@@ -49,7 +49,7 @@ export class SquareCloudAPI {
       throw new TypeError('appId must be a string. Got ' + typeof appId);
     }
 
-    const { applications } = await this.apiManager.user();
+    const { applications } = (await this.apiManager.user());
     const appData = applications.find((app) => app.id === appId);
 
     if (!appData) {

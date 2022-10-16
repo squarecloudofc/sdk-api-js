@@ -38,10 +38,7 @@ export class User {
       .user(this.id)
       .then(
         (data) =>
-          new (this.hasAccess() ? FullUser : User)(
-            this.apiManager,
-            data.response
-          )
+          new (this.hasAccess() ? FullUser : User)(this.apiManager, data)
       );
   }
 }
