@@ -20,7 +20,7 @@ export class SquareCloudAPIError extends Error {
 export class APIManager {
   constructor(private apiKey: string) {}
 
-  private fetch(path: string, options: AxiosRequestConfig = {}) {
+  private async fetch(path: string, options: AxiosRequestConfig = {}) {
     options.headers = {
       ...(options.headers || {}),
       Authorization: this.apiKey,
@@ -28,19 +28,16 @@ export class APIManager {
 
     options.method = options.method || 'GET';
 
-    return axios('https://api.squarecloud.app/v1/public/' + path, options).then(
-      (e) => {
-        if (e.data.status === 'error') {
-          throw new SquareCloudAPIError(
-            e.data.code as keyof typeof errorMessages
-          );
-        }
-
-        console.log(e.data);
-
-        return e.data;
-      }
+    const { data } = await axios(
+      'https://api.squarecloud.app/v1/public/' + path,
+      options
     );
+
+    if (data.status === 'error') {
+      throw new SquareCloudAPIError(data.code as keyof typeof errorMessages);
+    }
+
+    return data;
   }
 
   user(id?: string, options: AxiosRequestConfig = {}): Promise<RawUserData> {
