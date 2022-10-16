@@ -75,14 +75,11 @@ export class Application {
 
   /** Gets the application logs
    *
-   * @param complete - Whether you want the complete logs (true) or the recent ones (false)
+   * @param full - Whether you want the complete logs (true) or the recent ones (false)
    */
-  async getLogs(complete: boolean = false) {
+  async getLogs(full: boolean = false) {
     return (
-      await this.apiManager.application(
-        `logs${complete ? '-complete' : ''}`,
-        this.id
-      )
+      await this.apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
     ).logs;
   }
 
