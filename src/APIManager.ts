@@ -1,3 +1,4 @@
+import axios, { AxiosRequestConfig } from 'axios';
 import { RawUserData } from './typings';
 
 const errorMessages = {
@@ -19,28 +20,32 @@ export class SquareCloudAPIError extends Error {
 export class APIManager {
   constructor(private apiKey: string) {}
 
-  private fetch(path: string, options: RequestInit = {}) {
-    return fetch('https://api.squarecloud.app/v1/public/' + path, {
-      ...options,
-      headers: { Authorization: this.apiKey },
-    })
-      .then((e) => e.json())
-      .then((e) => {
-        if (e.status === 'error') {
-          throw new SquareCloudAPIError(e.code as keyof typeof errorMessages);
+  private fetch(path: string, options: AxiosRequestConfig = {}) {
+    options.headers = {
+      ...(options.headers || {}),
+      Authorization: this.apiKey,
+    };
+
+    return axios('https://api.squarecloud.app/v1/public/' + path, options).then(
+      (e) => {
+        if (e.data.status === 'error') {
+          throw new SquareCloudAPIError(
+            e.data.code as keyof typeof errorMessages
+          );
         }
 
-        return e;
-      });
+        return e.data;
+      }
+    );
   }
 
-  user(id?: string, options: RequestInit = {}): Promise<RawUserData> {
+  user(id?: string, options: AxiosRequestConfig = {}): Promise<RawUserData> {
     return this.fetch('user' + (id ? `/${id}` : ''), options).then(
       (data) => data.response
     );
   }
 
-  application(path: string, id: string, options: RequestInit | boolean = {}) {
+  application(path: string, id: string, options: AxiosRequestConfig | boolean = {}) {
     return this.fetch(
       `${path}/${id}`,
       typeof options === 'boolean'

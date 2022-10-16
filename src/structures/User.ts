@@ -4,7 +4,7 @@ import { APIManager } from '../APIManager';
 
 /**
  * Represents a SquareCloud user
- * 
+ *
  * @constructor
  * @param apiManager - The APIManager for this user
  * @param data - The data from this user
@@ -35,7 +35,7 @@ export class User {
   /** Fetches the user data again and returns a new User */
   fetch(): Promise<User> {
     return this.apiManager
-      .user(this.id, { cache: 'no-cache' })
+      .user(this.id)
       .then(
         (data) =>
           new (this.hasAccess() ? FullUser : User)(this.apiManager, data)

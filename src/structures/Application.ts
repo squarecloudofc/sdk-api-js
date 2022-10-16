@@ -135,19 +135,19 @@ export class Application {
    * @param filePath - The absolute file path
    */
   async commit(filePath: string): Promise<boolean> {
-    const filename = filePath
-      .replace(/(\/|\\)+/g, '/')
-      .split('/')
-      .pop();
+    const formData = new FormData();
+
+    formData.append('file', createReadStream(filePath));
 
     const response = await this.apiManager.application('commit', this.id, {
       method: 'POST',
-      body: JSON.stringify({ data: readFileSync(filePath), filename }),
+      data: formData,
+      headers: { ...formData.getHeaders() },
     });
 
-    console.log(response)
+    console.log(response);
 
-    return true
+    return true;
     // return code === 'SUCCESS';
   }
 }
