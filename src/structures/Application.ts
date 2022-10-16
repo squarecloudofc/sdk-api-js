@@ -1,6 +1,7 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
+import { createReadStream, readFileSync, statSync } from 'fs';
 import { APIManager } from '../APIManager';
-import { readFileSync } from 'fs';
+import FormData from 'form-data';
 
 /**
  * Represents a SquareCloud application
@@ -133,12 +134,15 @@ export class Application {
    *
    * @param filePath - The absolute file path
    */
-  async commit(filePath: string) {
-    const body = readFileSync(filePath);
+  async commit(filePath: string): Promise<boolean> {
+    const filename = filePath
+      .replace(/(\/|\\)+/g, '/')
+      .split('/')
+      .pop();
 
     const { code } = await this.apiManager.application('commit', this.id, {
       method: 'POST',
-      body,
+      body: JSON.stringify({ data: readFileSync(filePath), filename }),
     });
 
     return code === 'SUCCESS';

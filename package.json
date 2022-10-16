@@ -29,5 +29,8 @@
 	"bugs": {
 		"url": "https://github.com/squarecloudofc/wrapper-api-js/issues"
 	},
-	"homepage": "https://github.com/squarecloudofc/wrapper-api-js#readme"
+	"homepage": "https://github.com/squarecloudofc/wrapper-api-js#readme",
+	"dependencies": {
+		"form-data": "^4.0.0"
+	}
 }
