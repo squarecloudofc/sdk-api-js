@@ -1,6 +1,6 @@
 {
 	"name": "@squarecloud/api",
-	"version": "1.0.4",
+	"version": "1.0.0",
 	"description": "A JavaScript Wrapper for SquareCloud API",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
@@ -24,10 +24,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/bluee-js/squarecloud-api.git"
+		"url": "git+https://github.com/squarecloudofc/wrapper-api-js.git"
 	},
 	"bugs": {
-		"url": "https://github.com/bluee-js/squarecloud-api/issues"
+		"url": "https://github.com/squarecloudofc/wrapper-api-js/issues"
 	},
-	"homepage": "https://github.com/bluee-js/squarecloud-api#readme"
+	"homepage": "https://github.com/squarecloudofc/wrapper-api-js#readme"
 }
