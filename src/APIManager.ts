@@ -32,9 +32,14 @@ export class APIManager {
     );
   }
 
-  application(path: string, id: string, post?: boolean) {
-    return this.fetch(`${path}/${id}`, post ? { method: 'POST' } : {}).then(
-      (data) => data.response
-    );
+  application(path: string, id: string, options: RequestInit | boolean = {}) {
+    return this.fetch(
+      `${path}/${id}`,
+      typeof options === 'boolean'
+        ? options
+          ? { method: 'POST' }
+          : {}
+        : options
+    ).then((data) => data.response);
   }
 }
