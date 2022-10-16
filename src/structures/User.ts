@@ -2,6 +2,13 @@ import { AccountPlan, RawUserData } from '../typings';
 import { Application } from './Application';
 import { APIManager } from '../APIManager';
 
+/**
+ * Represents a SquareCloud user
+ * 
+ * @constructor
+ * @param apiManager - The APIManager for this user
+ * @param data - The data from this user
+ */
 export class User {
   /** The user's id */
   id: string;
@@ -18,7 +25,7 @@ export class User {
     this.plan = {
       ...data.user.plan,
       duration: {
-        formatted: data.user.plan.duration.formated,
+        formatted: data.user.plan.duration.formatted,
         timestamp: data.user.plan.duration.raw,
       },
     };
