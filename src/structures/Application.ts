@@ -1,5 +1,6 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
 import { APIManager } from '../APIManager';
+import { readFileSync } from 'fs';
 
 /**
  * Represents a SquareCloud application
@@ -111,5 +112,35 @@ export class Application {
     );
 
     return code === 'ACTION_SENT';
+  }
+
+  /**
+   * Deletes your whole application
+   *
+   * - This action is irreversible.
+   */
+  async delete(): Promise<boolean> {
+    const { code } = await this.apiManager.application('delete', this.id, true);
+
+    return code === 'APP_DELETED';
+  }
+
+  /**
+   * Commit changes to a specific file inside your application folder
+   *
+   * - This action is irreversible.
+   * - Tip: use `require('path').join(__dirname, 'fileName')` to get an absolute path.
+   *
+   * @param filePath - The absolute file path
+   */
+  async commit(filePath: string) {
+    const body = readFileSync(filePath);
+
+    const { code } = await this.apiManager.application('commit', this.id, {
+      method: 'POST',
+      body,
+    });
+
+    return code === 'STATUS';
   }
 }
