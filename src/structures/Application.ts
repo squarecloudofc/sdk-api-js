@@ -1,6 +1,7 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
-import { createReadStream, readFileSync, statSync } from 'fs';
+import { validateBoolean, validatePathLike } from '../Assertions';
 import { APIManager } from '../APIManager';
+import { createReadStream } from 'fs';
 import FormData from 'form-data';
 
 /**
@@ -80,6 +81,8 @@ export class Application {
    * @param full - Whether you want the complete logs (true) or the recent ones (false)
    */
   async getLogs(full: boolean = false) {
+    validateBoolean(full);
+
     return (
       await this.apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
     ).response.logs;
@@ -133,12 +136,14 @@ export class Application {
    * - This action is irreversible.
    * - Tip: use `require('path').join(__dirname, 'fileName')` to get an absolute path.
    *
-   * @param filePath - The absolute file path
+   * @param file - The absolute file path or a Buffer
    */
-  async commit(filePath: string): Promise<boolean> {
+  async commit(file: string | Buffer): Promise<boolean> {
+    validatePathLike(file);
+
     const formData = new FormData();
 
-    formData.append('file', createReadStream(filePath));
+    formData.append('file', createReadStream(file));
 
     const { code } = await this.apiManager.application('commit', this.id, {
       method: 'POST',
