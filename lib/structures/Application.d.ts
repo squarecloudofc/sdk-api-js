@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { RawApplicationData, ApplicationStatusData } from '../typings';
+import { ReadStream } from 'fs';
 import { APIManager } from '../APIManager';
 /**
  * Represents a SquareCloud application
@@ -60,8 +61,9 @@ export declare class Application {
      *
      * - This action is irreversible.
      * - Tip: use `require('path').join(__dirname, 'fileName')` to get an absolute path.
+     * - Tip2: use zip file to commit more than one file
      *
-     * @param file - The absolute file path or a Buffer
+     * @param file - The absolute file path or a ReadStream
      */
-    commit(file: string | Buffer): Promise<boolean>;
+    commit(file: string | ReadStream): Promise<boolean>;
 }
