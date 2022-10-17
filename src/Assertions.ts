@@ -1,3 +1,4 @@
+import { ReadStream } from 'fs';
 import z from 'zod';
 
 export function validateString(value: any): asserts value is string {
@@ -8,8 +9,10 @@ export function validateBoolean(value: any): asserts value is boolean {
   z.boolean().parse(value);
 }
 
-export function validatePathLike(value: any): asserts value is string | Buffer {
+export function validateCommitLike(
+  value: any
+): asserts value is string | ReadStream {
   z.string()
-    .or(z.custom((value) => value instanceof Buffer))
+    .or(z.custom((value) => value instanceof ReadStream))
     .parse(value);
 }
