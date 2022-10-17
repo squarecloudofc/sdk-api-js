@@ -1,7 +1,7 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
-import { validateBoolean, validatePathLike } from '../Assertions';
+import { validateBoolean, validateCommitLike } from '../Assertions';
+import { createReadStream, ReadStream } from 'fs';
 import { APIManager } from '../APIManager';
-import { createReadStream, readFileSync } from 'fs';
 import FormData from 'form-data';
 
 /**
@@ -135,15 +135,19 @@ export class Application {
    *
    * - This action is irreversible.
    * - Tip: use `require('path').join(__dirname, 'fileName')` to get an absolute path.
+   * - Tip2: use zip file to commit more than one file
    *
-   * @param file - The absolute file path or a Buffer
+   * @param file - The absolute file path or a ReadStream
    */
-  async commit(file: string | Buffer): Promise<boolean> {
-    validatePathLike(file);
+  async commit(file: string | ReadStream): Promise<boolean> {
+    validateCommitLike(file);
 
     const formData = new FormData();
 
-    formData.append('file', file instanceof Buffer ? file : readFileSync(file));
+    formData.append(
+      'file',
+      file instanceof ReadStream ? file : createReadStream(file)
+    );
 
     const { code } = await this.apiManager.application('commit', this.id, {
       method: 'POST',
