@@ -1,19 +1,16 @@
-import axios, { AxiosRequestConfig } from 'axios';
 import { APIResponse, RawUserData } from './typings';
-
-const errorMessages = {
-  ACCESS_DENIED: 'You do not have authorization to perform this action.',
-  APP_NOT_FOUND: 'Cannot find any application with provided information.',
-  USER_NOT_FOUND: 'Cannot find any user with provided information.',
-  INVALID_BUFFER: 'Provided buffer is invalid.',
-};
+import axios, { AxiosRequestConfig } from 'axios';
 
 export class SquareCloudAPIError extends Error {
-  constructor(code: keyof typeof errorMessages) {
+  constructor(code: string) {
     super();
 
     this.name = 'SquareCloudAPIError';
-    this.message = `[${code}] ${errorMessages[code]}`;
+
+    this.message = code
+      .replaceAll('_', ' ')
+      .toLowerCase()
+      .replace(/(^|\s)\S/g, (L) => L.toUpperCase());
   }
 }
 
@@ -31,10 +28,10 @@ export class APIManager {
     const { data } = await axios(
       'https://api.squarecloud.app/v1/public/' + path,
       options
-    );
+    ).catch((r) => r.response);
 
     if (data.status === 'error') {
-      throw new SquareCloudAPIError(data.code as keyof typeof errorMessages);
+      throw new SquareCloudAPIError(data.code);
     }
 
     return data;
