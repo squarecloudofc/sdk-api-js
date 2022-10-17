@@ -1,13 +1,7 @@
-import { AxiosRequestConfig } from 'axios';
 import { APIResponse, RawUserData } from './typings';
-declare const errorMessages: {
-    ACCESS_DENIED: string;
-    APP_NOT_FOUND: string;
-    USER_NOT_FOUND: string;
-    INVALID_BUFFER: string;
-};
+import { AxiosRequestConfig } from 'axios';
 export declare class SquareCloudAPIError extends Error {
-    constructor(code: keyof typeof errorMessages);
+    constructor(code: string);
 }
 export declare class APIManager {
     private apiKey;
@@ -16,4 +10,3 @@ export declare class APIManager {
     user(id?: string, options?: AxiosRequestConfig): Promise<RawUserData>;
     application(path: string, id: string, options?: AxiosRequestConfig | boolean): Promise<APIResponse>;
 }
-export {};
