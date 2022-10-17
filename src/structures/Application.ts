@@ -1,7 +1,7 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
 import { validateBoolean, validatePathLike } from '../Assertions';
 import { APIManager } from '../APIManager';
-import { createReadStream } from 'fs';
+import { createReadStream, readFileSync } from 'fs';
 import FormData from 'form-data';
 
 /**
@@ -143,7 +143,7 @@ export class Application {
 
     const formData = new FormData();
 
-    formData.append('file', createReadStream(file));
+    formData.append('file', file instanceof Buffer ? file : readFileSync(file));
 
     const { code } = await this.apiManager.application('commit', this.id, {
       method: 'POST',
