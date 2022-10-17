@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "publish": "pnpm build && pnpm publish",
+    "latest": "pnpm build && pnpm publish",
     "build": "tsc"
   },
   "keywords": [
