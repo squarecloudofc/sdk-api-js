@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { RawApplicationData, ApplicationStatusData } from '../typings';
 import { APIManager } from '../APIManager';
 /**
@@ -60,7 +61,7 @@ export declare class Application {
      * - This action is irreversible.
      * - Tip: use `require('path').join(__dirname, 'fileName')` to get an absolute path.
      *
-     * @param filePath - The absolute file path
+     * @param file - The absolute file path or a Buffer
      */
-    commit(filePath: string): Promise<boolean>;
+    commit(file: string | Buffer): Promise<boolean>;
 }
