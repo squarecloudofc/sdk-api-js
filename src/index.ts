@@ -28,7 +28,7 @@ export class SquareCloudAPI {
    * @param userId - The user id, if not provided it will get your own information
    */
   async getUser(userId?: string): Promise<User> {
-    validateString(userId);
+    if (userId) validateString(userId);
 
     const userData = await this.apiManager.user(userId);
     const hasAccess = userData.user.email !== 'Access denied';
