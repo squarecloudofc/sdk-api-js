@@ -27,6 +27,8 @@ export class SquareCloudAPI {
    *
    * @param userId - The user id, if not provided it will get your own information
    */
+  async getUser(): Promise<FullUser>;
+  async getUser(userId: string): Promise<User>;
   async getUser(userId?: string): Promise<User> {
     if (userId) validateString(userId);
 
