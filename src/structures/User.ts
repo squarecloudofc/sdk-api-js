@@ -46,15 +46,16 @@ export class User {
 export class FullUser extends User {
   /** The user's registered email */
   email: string;
-  /** The user's registered applications */
-  applications: Application[];
+  /** The user's registered applications Map */
+  applications = new Map<string, Application>();
 
   constructor(apiManager: APIManager, data: RawUserData) {
     super(apiManager, data);
 
     this.email = data.user.email;
-    this.applications = data.applications.map(
-      (data) => new Application(apiManager, data)
+
+    data.applications.map((app) =>
+      this.applications.set(app.id, new Application(apiManager, app))
     );
   }
 }
