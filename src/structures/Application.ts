@@ -1,5 +1,9 @@
 import { RawApplicationData, ApplicationStatusData } from '../typings';
-import { validateBoolean, validateCommitLike } from '../Assertions';
+import {
+  validateBoolean,
+  validateCommitLike,
+  validateString,
+} from '../Assertions';
 import { createReadStream, ReadStream } from 'fs';
 import { APIManager } from '../APIManager';
 import FormData from 'form-data';
@@ -139,17 +143,32 @@ export class Application {
    *
    * @param file - The absolute file path or a ReadStream
    */
-  // async commit(file: string | ReadStream): Promise<boolean>
-  // async commit(file: Buffer, fileName: string, fileExtension: string): Promise<boolean>
-  async commit(file: string | ReadStream | Buffer, fileName?: string, fileExtension?: string): Promise<boolean> {
+  async commit(file: string | ReadStream): Promise<boolean>;
+  async commit(
+    file: Buffer,
+    fileName: string,
+    fileExtension: string
+  ): Promise<boolean>;
+  async commit(
+    file: string | ReadStream | Buffer,
+    fileName?: string,
+    fileExtension?: string
+  ): Promise<boolean> {
     validateCommitLike(file);
 
     const formData = new FormData();
 
-    formData.append(
-      'file',
-      file instanceof ReadStream ? file : createReadStream(file)
-    );
+    if (file instanceof Buffer) {
+      validateString(fileName);
+      validateString(fileExtension);
+
+      formData.append('file', file, { filename: fileName + fileExtension });
+    } else {
+      formData.append(
+        'file',
+        file instanceof ReadStream ? file : createReadStream(file)
+      );
+    }
 
     const { code } = await this.apiManager.application('commit', this.id, {
       method: 'POST',
