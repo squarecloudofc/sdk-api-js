@@ -139,7 +139,9 @@ export class Application {
    *
    * @param file - The absolute file path or a ReadStream
    */
-  async commit(file: string | ReadStream): Promise<boolean> {
+  // async commit(file: string | ReadStream): Promise<boolean>
+  // async commit(file: Buffer, fileName: string, fileExtension: string): Promise<boolean>
+  async commit(file: string | ReadStream | Buffer, fileName?: string, fileExtension?: string): Promise<boolean> {
     validateCommitLike(file);
 
     const formData = new FormData();

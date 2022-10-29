@@ -1,5 +1,4 @@
 import { AccountPlan, RawUserData } from '../typings';
-import { Collection } from '@discordjs/collection';
 import { Application } from './Application';
 import { APIManager } from '../APIManager';
 
@@ -48,7 +47,7 @@ export class FullUser extends User {
   /** The user's registered email */
   email: string;
   /** The user's registered applications Map */
-  applications = new Collection<string, Application>();
+  applications = new Map<string, Application>();
 
   constructor(apiManager: APIManager, data: RawUserData) {
     super(apiManager, data);
