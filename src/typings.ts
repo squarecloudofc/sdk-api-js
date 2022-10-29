@@ -1,5 +1,3 @@
-import { Application } from './structures/Application';
-
 /**
  * USER
  */

@@ -13,6 +13,10 @@ export function validateCommitLike(
   value: any
 ): asserts value is string | ReadStream {
   z.string()
-    .or(z.custom((value) => value instanceof ReadStream))
+    .or(
+      z
+        .custom((value) => value instanceof ReadStream)
+        .or(z.custom((value) => value instanceof Buffer))
+    )
     .parse(value);
 }
