@@ -1,9 +1,10 @@
-import { RawApplicationData, ApplicationStatusData } from '../typings';
 import {
+  validateString,
   validateBoolean,
   validateCommitLike,
-  validateString,
 } from '../Assertions';
+
+import { RawApplicationData, ApplicationStatusData } from '../typings';
 import { createReadStream, ReadStream } from 'fs';
 import { APIManager } from '../APIManager';
 import FormData from 'form-data';
