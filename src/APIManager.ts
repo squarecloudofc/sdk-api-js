@@ -2,15 +2,17 @@ import { APIResponse, RawUserData } from './typings';
 import axios, { AxiosRequestConfig } from 'axios';
 
 export class SquareCloudAPIError extends Error {
-  constructor(code: string) {
+  constructor(code: string, message?: string) {
     super();
 
     this.name = 'SquareCloudAPIError';
 
-    this.message = code
-      .replaceAll('_', ' ')
-      .toLowerCase()
-      .replace(/(^|\s)\S/g, (L) => L.toUpperCase());
+    this.message =
+      code
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .replace(/(^|\s)\S/g, (L) => L.toUpperCase()) +
+      (message ? `: ${message}` : '');
   }
 }
 

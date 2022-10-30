@@ -85,7 +85,7 @@ export class Application {
    * @param full - Whether you want the complete logs (true) or the recent ones (false)
    */
   async getLogs(full: boolean = false) {
-    validateBoolean(full);
+    validateBoolean(full, '[LOGS_FULL]');
 
     return (
       await this.apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
@@ -138,7 +138,7 @@ export class Application {
    * Commit changes to a specific file inside your application folder
    *
    * - This action is irreversible.
-   * - Tip: use this to get an absolute path. 
+   * - Tip: use this to get an absolute path.
    * ```ts
    * require('path').join(__dirname, 'fileName')
    * ```
@@ -150,20 +150,20 @@ export class Application {
   async commit(
     file: Buffer,
     fileName: string,
-    fileExtension: string
+    fileExtension: `.${string}`
   ): Promise<boolean>;
   async commit(
     file: string | ReadStream | Buffer,
     fileName?: string,
-    fileExtension?: string
+    fileExtension?: `.${string}`
   ): Promise<boolean> {
-    validateCommitLike(file);
+    validateCommitLike(file, 'COMMIT_DATA');
 
     const formData = new FormData();
 
     if (file instanceof Buffer) {
-      validateString(fileName);
-      validateString(fileExtension);
+      validateString(fileName, 'FILE_NAME');
+      validateString(fileExtension, 'FILE_EXTENSION');
 
       formData.append('file', file, { filename: fileName + fileExtension });
     } else {
