@@ -138,7 +138,10 @@ export class Application {
    * Commit changes to a specific file inside your application folder
    *
    * - This action is irreversible.
-   * - Tip: use `require('path').join(__dirname, 'fileName')` to get an absolute path.
+   * - Tip: use this to get an absolute path. 
+   * ```ts
+   * require('path').join(__dirname, 'fileName')
+   * ```
    * - Tip2: use zip file to commit more than one file
    *
    * @param file - The absolute file path or a ReadStream
