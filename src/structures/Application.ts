@@ -41,7 +41,9 @@ export class Application {
   /** Whether the application is a website or not */
   isWebsite: boolean;
 
-  constructor(private apiManager: APIManager, data: RawApplicationData) {
+  #apiManager: APIManager;
+
+  constructor(apiManager: APIManager, data: RawApplicationData) {
     this.id = data.id;
     this.tag = data.tag;
     this.ram = data.ram;
@@ -50,6 +52,8 @@ export class Application {
     this.avatar = data.avatar;
     this.cluster = data.cluster;
     this.isWebsite = data.isWebsite;
+
+    this.#apiManager = apiManager;
   }
 
   /** Gets the application's current information */
@@ -64,7 +68,7 @@ export class Application {
       status,
       uptime,
       time,
-    } = (await this.apiManager.application('status', this.id)).response;
+    } = (await this.#apiManager.application('status', this.id)).response;
 
     return {
       status,
@@ -89,33 +93,33 @@ export class Application {
     validateBoolean(full, '[LOGS_FULL]');
 
     return (
-      await this.apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
+      await this.#apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
     ).response.logs;
   }
 
   /** Generates the backup download URL */
   async backup(): Promise<string> {
-    return (await this.apiManager.application('backup', this.id)).response
+    return (await this.#apiManager.application('backup', this.id)).response
       .downloadURL;
   }
 
   /** Starts up the application */
   async start(): Promise<boolean> {
-    const { code } = await this.apiManager.application('start', this.id, true);
+    const { code } = await this.#apiManager.application('start', this.id, true);
 
     return code === 'ACTION_SENT';
   }
 
   /** Stops the application */
   async stop(): Promise<boolean> {
-    const { code } = await this.apiManager.application('stop', this.id, true);
+    const { code } = await this.#apiManager.application('stop', this.id, true);
 
     return code === 'ACTION_SENT';
   }
 
   /** Restarts the application */
   async restart(): Promise<boolean> {
-    const { code } = await this.apiManager.application(
+    const { code } = await this.#apiManager.application(
       'restart',
       this.id,
       true
@@ -130,7 +134,7 @@ export class Application {
    * - This action is irreversible.
    */
   async delete(): Promise<boolean> {
-    const { code } = await this.apiManager.application('delete', this.id, true);
+    const { code } = await this.#apiManager.application('delete', this.id, true);
 
     return code === 'APP_DELETED';
   }
@@ -174,7 +178,7 @@ export class Application {
       );
     }
 
-    const { code } = await this.apiManager.application('commit', this.id, {
+    const { code } = await this.#apiManager.application('commit', this.id, {
       method: 'POST',
       data: formData,
       headers: { ...formData.getHeaders() },

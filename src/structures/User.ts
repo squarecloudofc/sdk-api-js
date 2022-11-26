@@ -20,7 +20,9 @@ export class User {
   /** Whether you have access to private information or not */
   hasAccess: () => this is FullUser;
 
-  constructor(private apiManager: APIManager, data: RawUserData) {
+  #apiManager: APIManager;
+
+  constructor(apiManager: APIManager, data: RawUserData) {
     this.id = data.user.id;
     this.tag = data.user.tag;
     this.plan = {
@@ -31,15 +33,17 @@ export class User {
       },
     };
     this.hasAccess = () => data.user.email !== 'Access denied';
+
+    this.#apiManager = apiManager;
   }
 
   /** Fetches the user data again and returns a new User */
   fetch(): Promise<User> {
-    return this.apiManager
+    return this.#apiManager
       .user(this.id)
       .then(
         (data) =>
-          new (this.hasAccess() ? FullUser : User)(this.apiManager, data)
+          new (this.hasAccess() ? FullUser : User)(this.#apiManager, data)
       );
   }
 }
