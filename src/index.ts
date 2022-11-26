@@ -46,7 +46,9 @@ export class SquareCloudAPI {
   async getApplication(appId: string): Promise<Application> {
     validateString(appId, 'APP_ID');
 
-    const { applications } = await this.apiManager.user();
+    const userData = await this.apiManager.user();
+    const applications = userData.applications || [];
+
     const appData = applications.find((app) => app.id === appId);
 
     if (!appData) {
