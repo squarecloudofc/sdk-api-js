@@ -134,7 +134,11 @@ export class Application {
    * - This action is irreversible.
    */
   async delete(): Promise<boolean> {
-    const { code } = await this.#apiManager.application('delete', this.id, true);
+    const { code } = await this.#apiManager.application(
+      'delete',
+      this.id,
+      true
+    );
 
     return code === 'APP_DELETED';
   }
@@ -149,18 +153,14 @@ export class Application {
    * ```
    * - Tip2: use zip file to commit more than one file
    *
-   * @param file - The absolute file path or a ReadStream
+   * @param file - The absolute file path, a Buffer or a ReadStream
+   * @param fileName - If a Buffer is provided you must provide the file name and extension too
    */
   async commit(file: string | ReadStream): Promise<boolean>;
-  async commit(
-    file: Buffer,
-    fileName: string,
-    fileExtension: `.${string}`
-  ): Promise<boolean>;
+  async commit(file: Buffer, fileName: string): Promise<boolean>;
   async commit(
     file: string | ReadStream | Buffer,
-    fileName?: string,
-    fileExtension?: `.${string}`
+    fileName?: string
   ): Promise<boolean> {
     validateCommitLike(file, 'COMMIT_DATA');
 
@@ -168,9 +168,8 @@ export class Application {
 
     if (file instanceof Buffer) {
       validateString(fileName, 'FILE_NAME');
-      validateString(fileExtension, 'FILE_EXTENSION');
 
-      formData.append('file', file, { filename: fileName + fileExtension });
+      formData.append('file', file, { filename: fileName });
     } else {
       formData.append(
         'file',
@@ -180,8 +179,8 @@ export class Application {
 
     const { code } = await this.#apiManager.application('commit', this.id, {
       method: 'POST',
-      data: formData,
-      headers: { ...formData.getHeaders() },
+      body: formData.getBuffer(),
+      headers: formData.getHeaders(),
     });
 
     return code === 'SUCCESS';

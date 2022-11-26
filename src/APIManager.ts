@@ -1,5 +1,4 @@
 import { APIResponse, RawUserData } from './typings';
-import axios, { AxiosRequestConfig } from 'axios';
 
 export class SquareCloudAPIError extends Error {
   constructor(code: string, message?: string) {
@@ -25,11 +24,11 @@ export class APIManager {
     try {
       await this.fetch('user');
     } catch {
-      throw new SquareCloudAPIError('INVALID_API_KEY')
+      throw new SquareCloudAPIError('INVALID_API_KEY');
     }
   }
 
-  private async fetch(path: string, options: AxiosRequestConfig = {}) {
+  private async fetch(path: string, options: RequestInit = {}) {
     options.headers = {
       ...(options.headers || {}),
       Authorization: this.apiKey,
@@ -37,10 +36,11 @@ export class APIManager {
 
     options.method = options.method || 'GET';
 
-    const { data } = await axios(
+    const data = await fetch(
       'https://api.squarecloud.app/v1/public/' + path,
       options
-    ).catch((r) => r.response);
+    )
+      .then((r) => r.json());
 
     if (data.status === 'error') {
       throw new SquareCloudAPIError(data.code);
@@ -49,7 +49,7 @@ export class APIManager {
     return data;
   }
 
-  user(id?: string, options: AxiosRequestConfig = {}): Promise<RawUserData> {
+  user(id?: string, options: RequestInit = {}): Promise<RawUserData> {
     return this.fetch('user' + (id ? `/${id}` : ''), options).then(
       (e) => e.response
     );
@@ -58,7 +58,7 @@ export class APIManager {
   application(
     path: string,
     id: string,
-    options: AxiosRequestConfig | boolean = {}
+    options: RequestInit | boolean = {}
   ): Promise<APIResponse> {
     return this.fetch(
       `${path}/${id}`,
