@@ -16,17 +16,7 @@ export class SquareCloudAPIError extends Error {
 }
 
 export class APIManager {
-  constructor(private apiKey: string) {
-    this.testApiKey();
-  }
-
-  private async testApiKey() {
-    try {
-      await this.fetch('user');
-    } catch {
-      throw new SquareCloudAPIError('INVALID_API_KEY');
-    }
-  }
+  constructor(private apiKey: string) {}
 
   private async fetch(path: string, options: RequestInit = {}) {
     options.headers = {
@@ -39,8 +29,7 @@ export class APIManager {
     const data = await fetch(
       'https://api.squarecloud.app/v1/public/' + path,
       options
-    )
-      .then((r) => r.json());
+    ).then((r) => r.json());
 
     if (data.status === 'error') {
       throw new SquareCloudAPIError(data.code);
