@@ -3,7 +3,7 @@ import { Application } from './structures/Application';
 import { FullUser, User } from './structures/User';
 import { validateString } from './Assertions';
 
-export class SquareCloudAPI {
+export default class SquareCloudAPI {
   static apiInfo = {
     version: 'v1',
     baseUrl: 'https://api.squarecloud.app/v1/public/',
@@ -58,3 +58,7 @@ export class SquareCloudAPI {
     return new Application(this.apiManager, appData);
   }
 }
+
+export type { Application, User };
+
+module.exports = SquareCloudAPI;
