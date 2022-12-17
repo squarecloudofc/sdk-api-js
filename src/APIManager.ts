@@ -1,3 +1,4 @@
+import axios, { AxiosRequestConfig } from 'axios';
 import { APIResponse, RawUserData } from './typings';
 
 export class SquareCloudAPIError extends Error {
@@ -18,7 +19,7 @@ export class SquareCloudAPIError extends Error {
 export class APIManager {
   constructor(private apiKey: string) {}
 
-  private async fetch(path: string, options: RequestInit = {}) {
+  private async fetch(path: string, options: AxiosRequestConfig = {}) {
     options.headers = {
       ...(options.headers || {}),
       Authorization: this.apiKey,
@@ -26,10 +27,10 @@ export class APIManager {
 
     options.method = options.method || 'GET';
 
-    const data = await fetch(
+    const data = await axios(
       'https://api.squarecloud.app/v1/public/' + path,
       options
-    ).then((r) => r.json());
+    ).then((r) => r.data);
 
     if (data.status === 'error') {
       throw new SquareCloudAPIError(data.code);
@@ -38,7 +39,7 @@ export class APIManager {
     return data;
   }
 
-  user(id?: string, options: RequestInit = {}): Promise<RawUserData> {
+  user(id?: string, options: AxiosRequestConfig = {}): Promise<RawUserData> {
     return this.fetch('user' + (id ? `/${id}` : ''), options).then(
       (e) => e.response
     );
@@ -47,7 +48,7 @@ export class APIManager {
   application(
     path: string,
     id: string,
-    options: RequestInit | boolean = {}
+    options: AxiosRequestConfig | boolean = {}
   ): Promise<APIResponse> {
     return this.fetch(
       `${path}/${id}`,

@@ -179,7 +179,7 @@ export class Application {
 
     const { code } = await this.#apiManager.application('commit', this.id, {
       method: 'POST',
-      body: formData.getBuffer(),
+      data: formData.getBuffer(),
       headers: formData.getHeaders(),
     });
 
