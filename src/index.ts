@@ -62,4 +62,4 @@ class SquareCloudAPI {
 module.exports = Object.assign(SquareCloudAPI, { default: SquareCloudAPI });
 
 export default SquareCloudAPI;
-export type { Application, User };
+export type { Application, FullUser, User };

@@ -1,5 +1,6 @@
-import axios, { AxiosRequestConfig } from 'axios';
 import { APIResponse, RawUserData } from './typings';
+import { AxiosRequestConfig } from 'axios';
+import { api } from './services/api';
 
 export class SquareCloudAPIError extends Error {
   constructor(code: string, message?: string) {
@@ -27,10 +28,7 @@ export class APIManager {
 
     options.method = options.method || 'GET';
 
-    const data = await axios(
-      'https://api.squarecloud.app/v1/public/' + path,
-      options
-    ).then((r) => r.data);
+    const { data } = await api.get(`/v1/public/${path}`, options);
 
     if (data.status === 'error') {
       throw new SquareCloudAPIError(data.code);
