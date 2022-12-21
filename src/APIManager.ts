@@ -28,7 +28,7 @@ export class APIManager {
 
     options.method = options.method || 'GET';
 
-    const { data } = await api.get(`/v1/public/${path}`, options);
+    const { data } = await api(`/v1/public/${path}`, options);
 
     if (data.status === 'error') {
       throw new SquareCloudAPIError(data.code);
