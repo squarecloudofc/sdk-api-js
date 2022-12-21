@@ -89,7 +89,7 @@ export class Application {
    *
    * @param full - Whether you want the complete logs (true) or the recent ones (false)
    */
-  async getLogs(full: boolean = false) {
+  async getLogs(full: boolean = false): Promise<string> {
     validateBoolean(full, '[LOGS_FULL]');
 
     return (
