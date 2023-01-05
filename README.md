@@ -18,7 +18,7 @@ The **first** thing you have to do is to get your API key.
 Creating an API instance:
 
 ```js
-import { SquareCloudAPI } from '@squarecloud/api'; // JavaScript: const { SquareCloudAPI } = require('@squarecloud/api')
+import SquareCloudAPI from '@squarecloud/api'; // JavaScript: const SquareCloudAPI = require('@squarecloud/api')
 
 const api = new SquareCloudAPI('Your API Key');
 ```
