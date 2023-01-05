@@ -1,7 +1,7 @@
 {
   "name": "@squarecloud/api",
   "version": "1.1.15",
-  "description": "A JavaScript Wrapper for SquareCloud API",
+  "description": "A JavaScript Wrapper for the SquareCloud API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
