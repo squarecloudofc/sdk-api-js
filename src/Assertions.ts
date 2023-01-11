@@ -1,5 +1,4 @@
 import { SquareCloudAPIError } from './APIManager';
-import { ReadStream } from 'fs';
 import z from 'zod';
 
 export function validateString(
@@ -27,21 +26,17 @@ export function validateBoolean(
   );
 }
 
-export function validateCommitLike(
+export function validatePathLike(
   value: any,
   code?: string
-): asserts value is string | ReadStream | Buffer {
+): asserts value is string | Buffer {
   handleParser(
     () =>
       z
         .string()
-        .or(
-          z
-            .custom((value) => value instanceof ReadStream)
-            .or(z.custom((value) => value instanceof Buffer))
-        )
+        .or(z.custom((value) => value instanceof Buffer))
         .parse(value),
-    'Expect string, ReadStream or Buffer, got ' + typeof value,
+    'Expect string or Buffer, got ' + typeof value,
     code
   );
 }
