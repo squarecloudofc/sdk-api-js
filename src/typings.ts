@@ -18,10 +18,9 @@ export interface AccountPlan {
     available: number;
     used: number;
   };
-  duration: {
-    formatted: string;
-    timestamp: number | null;
-  };
+  duration: string;
+  purchasedTimestamp: number | null;
+  purchased?: Date;
 }
 
 /**
@@ -68,7 +67,7 @@ export interface ApplicationStatusData {
   /** For how long the app is running in millisseconds */
   uptimeTimestamp: number;
   /** For how long the app is running */
-  uptime: Date | null;
+  uptime?: Date;
   /** The last time this information has been checked in millisseconds */
   lastCheckTimestamp?: number;
   /** The last time this information has been checked */
