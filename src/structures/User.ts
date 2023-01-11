@@ -27,10 +27,11 @@ export class User {
     this.tag = data.user.tag;
     this.plan = {
       ...data.user.plan,
-      duration: {
-        formatted: data.user.plan.duration.formatted,
-        timestamp: data.user.plan.duration.raw,
-      },
+      duration: data.user.plan.duration.formatted,
+      purchasedTimestamp: data.user.plan.duration.raw,
+      purchased: data.user.plan.duration.raw
+        ? new Date(data.user.plan.duration.raw)
+        : undefined,
     };
     this.hasAccess = () => data.user.email !== 'Access denied';
 
