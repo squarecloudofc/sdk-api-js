@@ -1,7 +1,9 @@
+import FormData from 'form-data';
+import { readFile } from 'fs/promises';
 import { APIManager, SquareCloudAPIError } from './APIManager';
+import { validatePathLike, validateString } from './Assertions';
 import { Application } from './structures/Application';
 import { FullUser, User } from './structures/User';
-import { validateString } from './Assertions';
 
 class SquareCloudAPI {
   static apiInfo = {
@@ -25,7 +27,7 @@ class SquareCloudAPI {
   /**
    * Gets a user's informations
    *
-   * @param userId - The user id, if not provided it will get your own information
+   * @param userId - The user ID, if not provided it will get your own information
    */
   async getUser(): Promise<FullUser>;
   async getUser(userId: string): Promise<User>;
@@ -41,7 +43,7 @@ class SquareCloudAPI {
   /**
    * Returns an application that you can manage or get information
    *
-   * @param appId - The application id, you must own the application
+   * @param appId - The application ID, you must own the application
    */
   async getApplication(appId: string): Promise<Application> {
     validateString(appId, 'APP_ID');
@@ -56,6 +58,40 @@ class SquareCloudAPI {
     }
 
     return new Application(this.apiManager, appData);
+  }
+
+  /**
+   * Upload a new application to Square Cloud
+   *
+   * - Don't forget the [configuration file](https://config.squarecloud.app/).
+   * - This only accepts .zip files.
+   *
+   * - Tip: use this to get an absolute path.
+   * ```ts
+   * require('path').join(__dirname, 'fileName')
+   * ```
+   *
+   * @param file - Buffer or absolute path to the file
+   *
+   * @returns The uploaded application ID
+   */
+  async uploadApplication(file: string | Buffer) {
+    validatePathLike(file, 'UPLOAD_DATA');
+
+    if (!(file instanceof Buffer)) {
+      file = await readFile(file);
+    }
+
+    const formData = new FormData();
+    formData.append('file', file, { filename: 'app.zip' });
+
+    const { app } = await this.apiManager.fetch('upload', {
+      method: 'POST',
+      data: formData.getBuffer(),
+      headers: formData.getHeaders(),
+    });
+
+    return <string>app?.id;
   }
 }
 
