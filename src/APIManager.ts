@@ -20,7 +20,7 @@ export class SquareCloudAPIError extends Error {
 export class APIManager {
   constructor(private apiKey: string) {}
 
-  private async fetch(path: string, options: AxiosRequestConfig = {}) {
+  async fetch(path: string, options: AxiosRequestConfig = {}) {
     options.headers = {
       ...(options.headers || {}),
       Authorization: this.apiKey,
