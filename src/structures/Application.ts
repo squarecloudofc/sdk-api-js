@@ -1,13 +1,14 @@
 import {
-  validateString,
   validateBoolean,
-  validateCommitLike,
+  validatePathLike,
+  validateString,
 } from '../Assertions';
 
-import { RawApplicationData, ApplicationStatusData } from '../typings';
-import { createReadStream, ReadStream } from 'fs';
-import { APIManager } from '../APIManager';
+import { ApplicationStatusData, RawApplicationData } from '../typings';
+
 import FormData from 'form-data';
+import { readFile } from 'fs/promises';
+import { APIManager } from '../APIManager';
 
 /**
  * Represents a SquareCloud application
@@ -17,7 +18,7 @@ import FormData from 'form-data';
  * @param data - The data from this application
  */
 export class Application {
-  /** The application id */
+  /** The application ID */
   id: string;
   /** The application Discord tag */
   tag: string;
@@ -79,8 +80,8 @@ export class Application {
       ramUsage: ram,
       storageUsage: storage,
       uptimeTimestamp: uptime || 0,
-      uptime: uptime ? new Date(uptime) : null,
-      lastCheckTimestamp: time,
+      uptime: uptime ? new Date(uptime) : undefined,
+      lastCheckTimestamp: time || 0,
       lastCheck: time ? new Date(time) : undefined,
     };
   }
@@ -147,35 +148,29 @@ export class Application {
    * Commit changes to a specific file inside your application folder
    *
    * - This action is irreversible.
+   *
    * - Tip: use this to get an absolute path.
    * ```ts
    * require('path').join(__dirname, 'fileName')
    * ```
    * - Tip2: use zip file to commit more than one file
    *
-   * @param file - The absolute file path, a Buffer or a ReadStream
-   * @param fileName - If a Buffer is provided you must provide the file name and extension too
+   * @param file - Buffer or absolute path to the file
+   * @param fileName - The file name (e.g.: "index.js")
    */
-  async commit(file: string | ReadStream): Promise<boolean>;
-  async commit(file: Buffer, fileName: string): Promise<boolean>;
-  async commit(
-    file: string | ReadStream | Buffer,
-    fileName?: string
-  ): Promise<boolean> {
-    validateCommitLike(file, 'COMMIT_DATA');
+  async commit(file: string | Buffer, fileName?: string): Promise<boolean> {
+    validatePathLike(file, 'COMMIT_DATA');
+
+    if (fileName) {
+      validateString(fileName, 'FILE_NAME');
+    }
+
+    if (!(file instanceof Buffer)) {
+      file = await readFile(file);
+    }
 
     const formData = new FormData();
-
-    if (file instanceof Buffer) {
-      validateString(fileName, 'FILE_NAME');
-
-      formData.append('file', file, { filename: fileName });
-    } else {
-      formData.append(
-        'file',
-        file instanceof ReadStream ? file : createReadStream(file)
-      );
-    }
+    formData.append('file', file, { filename: fileName });
 
     const { code } = await this.#apiManager.application('commit', this.id, {
       method: 'POST',
