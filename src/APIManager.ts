@@ -42,8 +42,8 @@ export class APIManager {
     return data;
   }
 
-  user(id?: string, options: RequestInit = {}): Promise<RawUserData> {
-    return this.fetch('user' + (id ? `/${id}` : ''), options).then(
+  user(id?: string): Promise<RawUserData> {
+    return this.fetch('user' + (id ? `/${id}` : '')).then(
       (e) => e?.response
     );
   }
