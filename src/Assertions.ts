@@ -1,5 +1,5 @@
-import { SquareCloudAPIError } from './APIManager';
 import z from 'zod';
+import { SquareCloudAPIError } from './APIManager';
 
 export function validateString(
   value: any,

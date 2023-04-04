@@ -1,6 +1,6 @@
+import { APIManager } from '../APIManager';
 import { AccountPlan, RawUserData } from '../typings';
 import { Application } from './Application';
-import { APIManager } from '../APIManager';
 import { Collection } from './Collection';
 
 /**

@@ -1,6 +1,4 @@
 import { APIResponse, RawUserData } from './typings';
-import { AxiosRequestConfig } from 'axios';
-import { api } from './services/api';
 
 export class SquareCloudAPIError extends Error {
   constructor(code: string, message?: string) {
@@ -20,7 +18,7 @@ export class SquareCloudAPIError extends Error {
 export class APIManager {
   constructor(private apiKey: string) {}
 
-  async fetch(path: string, options: AxiosRequestConfig = {}) {
+  async fetch(path: string, options: RequestInit = {}) {
     options.headers = {
       ...(options.headers || {}),
       Authorization: this.apiKey,
@@ -28,16 +26,23 @@ export class APIManager {
 
     options.method = options.method || 'GET';
 
-    const { data } = await api(`/v1/public/${path}`, options);
+    const res = await fetch(
+      `https://api.squarecloud.app/v1/public/${path}`,
+      options
+    ).catch((err) => {
+      throw new SquareCloudAPIError(err.code);
+    });
 
-    if (data.status === 'error') {
-      throw new SquareCloudAPIError(data.code);
+    const data = await res.json();
+
+    if (data.status === 'error' || !res.ok) {
+      throw new SquareCloudAPIError(data.code || 'SQUARE_CLOUD_API_ERROR');
     }
 
     return data;
   }
 
-  user(id?: string, options: AxiosRequestConfig = {}): Promise<RawUserData> {
+  user(id?: string, options: RequestInit = {}): Promise<RawUserData> {
     return this.fetch('user' + (id ? `/${id}` : ''), options).then(
       (e) => e.response
     );
@@ -46,15 +51,12 @@ export class APIManager {
   application(
     path: string,
     id: string,
-    options: AxiosRequestConfig | boolean = {}
+    options: RequestInit | boolean = {}
   ): Promise<APIResponse> {
-    return this.fetch(
-      `${path}/${id}`,
-      typeof options === 'boolean'
-        ? options
-          ? { method: 'POST' }
-          : {}
-        : options
-    );
+    if (typeof options === 'boolean') {
+      options = options ? { method: 'POST' } : {};
+    }
+
+    return this.fetch(`${path}/${id}`, options);
   }
 }

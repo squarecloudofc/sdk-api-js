@@ -4,11 +4,10 @@ import {
   validateString,
 } from '../Assertions';
 
-import { ApplicationStatusData, RawApplicationData } from '../typings';
-
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
 import { APIManager } from '../APIManager';
+import { ApplicationStatusData, RawApplicationData } from '../typings';
 
 /**
  * Represents a SquareCloud application
@@ -22,6 +21,8 @@ export class Application {
   id: string;
   /** The application Discord tag */
   tag: string;
+  /** The dashboard url to manage the application */
+  url: string;
   /** The application total ram */
   ram: number;
   /**
@@ -55,10 +56,13 @@ export class Application {
     this.isWebsite = data.isWebsite;
 
     this.#apiManager = apiManager;
+    this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
   }
 
   /** Gets the application's current information */
   async getStatus(): Promise<ApplicationStatusData> {
+    const data = await this.#apiManager.application('status', this.id);
+
     const {
       network,
       cpu,
@@ -69,7 +73,7 @@ export class Application {
       status,
       uptime,
       time,
-    } = (await this.#apiManager.application('status', this.id)).response;
+    } = data.response;
 
     return {
       status,
@@ -91,42 +95,42 @@ export class Application {
    * @param full - Whether you want the complete logs (true) or the recent ones (false)
    */
   async getLogs(full: boolean = false): Promise<string> {
-    validateBoolean(full, '[LOGS_FULL]');
+    validateBoolean(full, 'LOGS_FULL');
 
-    return (
-      await this.#apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
-    ).response.logs;
+    const data = await this.#apiManager.application(
+      `${full ? 'full-' : ''}logs`,
+      this.id
+    );
+
+    return data?.response.logs;
   }
 
   /** Generates the backup download URL */
   async backup(): Promise<string> {
-    return (await this.#apiManager.application('backup', this.id)).response
-      .downloadURL;
+    const data = await this.#apiManager.application('backup', this.id);
+
+    return data?.response.downloadURL;
   }
 
   /** Starts up the application */
   async start(): Promise<boolean> {
-    const { code } = await this.#apiManager.application('start', this.id, true);
+    const data = await this.#apiManager.application('start', this.id, true);
 
-    return code === 'ACTION_SENT';
+    return data?.code === 'ACTION_SENT';
   }
 
   /** Stops the application */
   async stop(): Promise<boolean> {
-    const { code } = await this.#apiManager.application('stop', this.id, true);
+    const data = await this.#apiManager.application('stop', this.id, true);
 
-    return code === 'ACTION_SENT';
+    return data?.code === 'ACTION_SENT';
   }
 
   /** Restarts the application */
   async restart(): Promise<boolean> {
-    const { code } = await this.#apiManager.application(
-      'restart',
-      this.id,
-      true
-    );
+    const data = await this.#apiManager.application('restart', this.id, true);
 
-    return code === 'ACTION_SENT';
+    return data?.code === 'ACTION_SENT';
   }
 
   /**
@@ -135,13 +139,9 @@ export class Application {
    * - This action is irreversible.
    */
   async delete(): Promise<boolean> {
-    const { code } = await this.#apiManager.application(
-      'delete',
-      this.id,
-      true
-    );
+    const data = await this.#apiManager.application('delete', this.id, true);
 
-    return code === 'APP_DELETED';
+    return data?.code === 'APP_DELETED';
   }
 
   /**
@@ -153,31 +153,40 @@ export class Application {
    * ```ts
    * require('path').join(__dirname, 'fileName')
    * ```
-   * - Tip2: use zip file to commit more than one file
+   * - Tip2: use a zip file to commit more than one archive
    *
    * @param file - Buffer or absolute path to the file
    * @param fileName - The file name (e.g.: "index.js")
+   * @param restart - Whether the application should be restarted after the commit
    */
-  async commit(file: string | Buffer, fileName?: string): Promise<boolean> {
+  async commit(
+    file: string | Buffer,
+    fileName?: string,
+    restart?: boolean
+  ): Promise<boolean> {
     validatePathLike(file, 'COMMIT_DATA');
 
     if (fileName) {
       validateString(fileName, 'FILE_NAME');
     }
 
-    if (!(file instanceof Buffer)) {
+    if (typeof file === 'string') {
       file = await readFile(file);
     }
 
     const formData = new FormData();
     formData.append('file', file, { filename: fileName });
 
-    const { code } = await this.#apiManager.application('commit', this.id, {
-      method: 'POST',
-      data: formData.getBuffer(),
-      headers: formData.getHeaders(),
-    });
+    const data = await this.#apiManager.application(
+      'commit',
+      `${this.id}?restart=${Boolean(restart)}`,
+      {
+        method: 'POST',
+        body: formData.getBuffer(),
+        headers: formData.getHeaders(),
+      }
+    );
 
-    return code === 'SUCCESS';
+    return data?.code === 'SUCCESS';
   }
 }

@@ -87,7 +87,7 @@ class SquareCloudAPI {
 
     const { app } = await this.apiManager.fetch('upload', {
       method: 'POST',
-      data: formData.getBuffer(),
+      body: formData.getBuffer(),
       headers: formData.getHeaders(),
     });
 
@@ -99,3 +99,4 @@ module.exports = Object.assign(SquareCloudAPI, { default: SquareCloudAPI });
 
 export default SquareCloudAPI;
 export type { Application, FullUser, User };
+export type * from './typings';
