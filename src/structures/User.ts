@@ -17,9 +17,7 @@ export class User {
   tag: string;
   /** The user's current plan */
   plan: AccountPlan;
-  /** Whether you have access to private information or not */
-  hasAccess: () => this is FullUser;
-
+  /** @private API Manager */
   #apiManager: APIManager;
 
   constructor(apiManager: APIManager, data: RawUserData) {
@@ -33,9 +31,13 @@ export class User {
         ? new Date(data.user.plan.duration.raw)
         : undefined,
     };
-    this.hasAccess = () => data.user.email !== 'Access denied';
-
     this.#apiManager = apiManager;
+  }
+
+  /** Whether you have access to private information or not */
+  hasAccess(): this is FullUser {
+    const email = Reflect.get(this, 'email');
+    return email && email !== 'Access denied';
   }
 
   /** Fetches the user data again and returns a new User */
@@ -53,15 +55,14 @@ export class FullUser extends User {
   /** The user's registered email */
   email: string;
   /** The user's registered applications Collection */
-  applications = new Collection<string, Application>();
+  applications: Collection<string, Application>;
 
   constructor(apiManager: APIManager, data: RawUserData) {
     super(apiManager, data);
 
     this.email = data.user.email;
-
-    data.applications.map((app) =>
-      this.applications.set(app.id, new Application(apiManager, app))
+    this.applications = new Collection(
+      data.applications.map((app) => [app.id, new Application(apiManager, app)])
     );
   }
 }

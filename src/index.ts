@@ -16,7 +16,7 @@ class SquareCloudAPI {
   /**
    * Creates an API instance
    *
-   * @param apiKey - Your API Token (you can get it at [SquareCloud Dashboard](https://squarecloud.app/dashboard))
+   * @param apiKey - Your API Token (generate at [Square Cloud Dashboard](https://squarecloud.app/dashboard))
    */
   constructor(apiKey: string) {
     validateString(apiKey, 'API_KEY');
@@ -32,12 +32,14 @@ class SquareCloudAPI {
   async getUser(): Promise<FullUser>;
   async getUser(userId: string): Promise<User>;
   async getUser(userId?: string): Promise<User> {
-    if (userId) validateString(userId, 'USER_ID');
+    if (userId) {
+      validateString(userId, 'USER_ID');
+    }
 
-    const userData = await this.apiManager.user(userId);
-    const hasAccess = userData.user.email !== 'Access denied';
+    const data = await this.apiManager.user(userId);
+    const hasAccess = data.user.email && data.user.email !== 'Access denied';
 
-    return new (hasAccess ? FullUser : User)(this.apiManager, userData);
+    return new (hasAccess ? FullUser : User)(this.apiManager, data);
   }
 
   /**
@@ -48,16 +50,15 @@ class SquareCloudAPI {
   async getApplication(appId: string): Promise<Application> {
     validateString(appId, 'APP_ID');
 
-    const userData = await this.apiManager.user();
-    const applications = userData.applications || [];
+    const data = await this.apiManager.user();
+    const applications = data.applications || [];
+    const applicaton = applications.find((app) => app.id === appId);
 
-    const appData = applications.find((app) => app.id === appId);
-
-    if (!appData) {
+    if (!applicaton) {
       throw new SquareCloudAPIError('APP_NOT_FOUND');
     }
 
-    return new Application(this.apiManager, appData);
+    return new Application(this.apiManager, applicaton);
   }
 
   /**
@@ -78,7 +79,7 @@ class SquareCloudAPI {
   async uploadApplication(file: string | Buffer) {
     validatePathLike(file, 'UPLOAD_DATA');
 
-    if (!(file instanceof Buffer)) {
+    if (typeof file === 'string') {
       file = await readFile(file);
     }
 
@@ -99,4 +100,4 @@ module.exports = Object.assign(SquareCloudAPI, { default: SquareCloudAPI });
 
 export default SquareCloudAPI;
 export type { Application, FullUser, User };
-export type * from './typings';
+export * from './typings';
