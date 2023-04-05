@@ -15,14 +15,20 @@ export class User {
   id: string;
   /** The user's Discord tag */
   tag: string;
+  /** The user's locale */
+  locale: string;
   /** The user's current plan */
   plan: AccountPlan;
+  /** Whether the user is blocked for Square Cloud services or not */
+  blocklist: boolean;
   /** @private API Manager */
   #apiManager: ApiManager;
 
   constructor(apiManager: ApiManager, data: RawUserData) {
     this.id = data.user.id;
     this.tag = data.user.tag;
+    this.locale = data.user.locale;
+    this.blocklist = data.user.blocklist;
     this.plan = {
       ...data.user.plan,
       duration: data.user.plan.duration.formatted,

@@ -89,6 +89,8 @@ export interface RawUserData {
     id: string;
     tag: string;
     email: string;
+    locale: string;
+    blocklist: boolean;
     plan: {
       name: AccountPlanName;
       memory: {
