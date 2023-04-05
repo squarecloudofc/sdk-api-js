@@ -1,6 +1,6 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import { ApiManager, SquareCloudAPIError } from './ApiManager';
+import { ApiManager, BaseApiManager, SquareCloudAPIError } from './ApiManager';
 import { validatePathLike, validateString } from './Assertions';
 import { Application } from './structures/Application';
 import { FullUser, User } from './structures/User';
@@ -11,7 +11,7 @@ class SquareCloudAPI {
     baseUrl: 'https://api.squarecloud.app/v1/public/',
   };
 
-  public readonly apiManager: ApiManager;
+  public readonly apiManager: BaseApiManager;
 
   /**
    * Creates an API instance
@@ -21,11 +21,11 @@ class SquareCloudAPI {
    */
   constructor(
     apiKey: string,
-    customApiManager?: new (apiKey: string) => ApiManager
+    customApiManager?: new (apiKey: string) => BaseApiManager
   ) {
     validateString(apiKey, 'API_KEY');
 
-    if (customApiManager && customApiManager instanceof ApiManager) {
+    if (customApiManager && customApiManager instanceof BaseApiManager) {
       this.apiManager = new customApiManager(apiKey);
     } else {
       this.apiManager = new ApiManager(apiKey);
@@ -107,5 +107,6 @@ class SquareCloudAPI {
 module.exports = Object.assign(SquareCloudAPI, { default: SquareCloudAPI });
 
 export default SquareCloudAPI;
-export { Application, FullUser, User, ApiManager as APIManager };
 export * from './typings';
+export { ApiManager, Application, BaseApiManager, FullUser, User };
+

@@ -76,7 +76,7 @@ export interface ApplicationStatusData {
 
 /** API */
 
-export type APIResponse<T = any> = {
+export type ApiResponse<T = any> = {
   status: 'success';
   code: string;
   response: T;

@@ -1,4 +1,4 @@
-import { APIResponse, RawUserData } from './typings';
+import { ApiResponse, RawUserData } from './typings';
 
 export class SquareCloudAPIError extends Error {
   constructor(code: string, message?: string) {
@@ -15,8 +15,28 @@ export class SquareCloudAPIError extends Error {
   }
 }
 
-export class ApiManager {
-  constructor(private apiKey: string) {}
+export class BaseApiManager {
+  constructor(protected apiKey: string) {}
+
+  async fetch(path: string, options: any = {}): Promise<any> {}
+
+  user(id?: string): Promise<RawUserData> {
+    return {} as any;
+  }
+
+  application(
+    path: string,
+    id: string,
+    options: any = {}
+  ): Promise<ApiResponse> {
+    return {} as any;
+  }
+}
+
+export class ApiManager extends BaseApiManager {
+  constructor(protected apiKey: string) {
+    super(apiKey);
+  }
 
   async fetch(path: string, options: RequestInit = {}) {
     options.headers = {
@@ -50,7 +70,7 @@ export class ApiManager {
     path: string,
     id: string,
     options: RequestInit | boolean = {}
-  ): Promise<APIResponse> {
+  ): Promise<ApiResponse> {
     if (typeof options === 'boolean') {
       options = options ? { method: 'POST' } : {};
     }

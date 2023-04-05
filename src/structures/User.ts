@@ -1,4 +1,4 @@
-import { ApiManager } from '../ApiManager';
+import { BaseApiManager } from '../ApiManager';
 import { AccountPlan, RawUserData } from '../typings';
 import { Application } from './Application';
 import { Collection } from './Collection';
@@ -18,9 +18,9 @@ export class User {
   /** The user's current plan */
   plan: AccountPlan;
   /** @private API Manager */
-  #apiManager: ApiManager;
+  #apiManager: BaseApiManager;
 
-  constructor(apiManager: ApiManager, data: RawUserData) {
+  constructor(apiManager: BaseApiManager, data: RawUserData) {
     this.id = data.user.id;
     this.tag = data.user.tag;
     this.plan = {
@@ -57,7 +57,7 @@ export class FullUser extends User {
   /** The user's registered applications Collection */
   applications: Collection<string, Application>;
 
-  constructor(apiManager: ApiManager, data: RawUserData) {
+  constructor(apiManager: BaseApiManager, data: RawUserData) {
     super(apiManager, data);
 
     this.email = data.user.email;
