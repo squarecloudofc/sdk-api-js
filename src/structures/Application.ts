@@ -175,7 +175,7 @@ export class Application {
     }
 
     const formData = new FormData();
-    formData.append('file', file, { filename: fileName });
+    formData.append('file', file, { filename: fileName || 'app.zip' });
 
     const data = await this.#apiManager.application(
       'commit',
