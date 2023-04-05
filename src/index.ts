@@ -1,9 +1,10 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import { ApiManager, BaseApiManager, SquareCloudAPIError } from './ApiManager';
+import { ApiManager, SquareCloudAPIError } from './ApiManager';
 import { validatePathLike, validateString } from './Assertions';
 import { Application } from './structures/Application';
 import { FullUser, User } from './structures/User';
+import { Options } from './typings';
 
 class SquareCloudAPI {
   static apiInfo = {
@@ -11,25 +12,21 @@ class SquareCloudAPI {
     baseUrl: 'https://api.squarecloud.app/v1/public/',
   };
 
-  public readonly apiManager: BaseApiManager;
+  private apiManager: ApiManager;
+  private experimental?: boolean;
 
   /**
    * Creates an API instance
    *
    * @param apiKey - Your API Token (generate at [Square Cloud Dashboard](https://squarecloud.app/dashboard))
-   * @param customApiManager - Custom API manager. Just use if you know what you are doing!
+   * @param options.customApiManager - Custom API manager. Just use if you know what you are doing!
+   * @param options.experimental - Whether to enable experimental features
    */
-  constructor(
-    apiKey: string,
-    customApiManager?: new (apiKey: string) => BaseApiManager
-  ) {
+  constructor(apiKey: string, options?: Options) {
     validateString(apiKey, 'API_KEY');
 
-    if (customApiManager && customApiManager instanceof BaseApiManager) {
-      this.apiManager = new customApiManager(apiKey);
-    } else {
-      this.apiManager = new ApiManager(apiKey);
-    }
+    this.apiManager = new ApiManager(apiKey);
+    this.experimental = Boolean(options?.experimental);
   }
 
   /**
@@ -94,13 +91,38 @@ class SquareCloudAPI {
     const formData = new FormData();
     formData.append('file', file, { filename: 'app.zip' });
 
-    const { app } = await this.apiManager.fetch('upload', {
+    const data = await this.apiManager.fetch('upload', {
       method: 'POST',
       body: formData.getBuffer(),
       headers: formData.getHeaders(),
     });
 
-    return <string>app?.id;
+    return <string>data?.app?.id;
+  }
+
+  /**
+   * @experimental
+   * Use the new Square Cloud experimental AI feature.
+   * **May have bugs.**
+   *
+   * @param question - The question you want to be answered :)
+   * @param prompt - Optional context or previous messages
+   */
+  async askAi(question: string, prompt?: string): Promise<string | undefined> {
+    if (!this.experimental) {
+      return;
+    }
+
+    const data = await this.apiManager.fetch(
+      'ai',
+      {
+        method: 'POST',
+        body: JSON.stringify({ question, prompt }),
+      },
+      'experimental'
+    );
+
+    return data?.response;
   }
 }
 
@@ -108,5 +130,4 @@ module.exports = Object.assign(SquareCloudAPI, { default: SquareCloudAPI });
 
 export default SquareCloudAPI;
 export * from './typings';
-export { ApiManager, Application, BaseApiManager, FullUser, User };
-
+export { ApiManager, Application, FullUser, User };

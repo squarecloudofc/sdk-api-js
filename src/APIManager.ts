@@ -15,30 +15,14 @@ export class SquareCloudAPIError extends Error {
   }
 }
 
-export class BaseApiManager {
-  constructor(protected apiKey: string) {}
+export class ApiManager {
+  constructor(private apiKey: string) {}
 
-  async fetch(path: string, options: any = {}): Promise<any> {}
-
-  user(id?: string): Promise<RawUserData> {
-    return {} as any;
-  }
-
-  application(
+  async fetch(
     path: string,
-    id: string,
-    options: any = {}
-  ): Promise<ApiResponse> {
-    return {} as any;
-  }
-}
-
-export class ApiManager extends BaseApiManager {
-  constructor(protected apiKey: string) {
-    super(apiKey);
-  }
-
-  async fetch(path: string, options: RequestInit = {}) {
+    options: RequestInit = {},
+    rootPath: 'public' | 'experimental' = 'public'
+  ) {
     options.headers = {
       ...(options.headers || {}),
       Authorization: this.apiKey,
@@ -47,7 +31,7 @@ export class ApiManager extends BaseApiManager {
     options.method = options.method || 'GET';
 
     const res = await fetch(
-      `https://api.squarecloud.app/v1/public/${path}`,
+      `https://api.squarecloud.app/v1/${rootPath}/${path}`,
       options
     ).catch((err) => {
       throw new SquareCloudAPIError(err.code);

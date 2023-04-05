@@ -6,7 +6,7 @@ import {
 
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import { BaseApiManager } from '../ApiManager';
+import { ApiManager } from '../ApiManager';
 import { ApplicationStatusData, RawApplicationData } from '../typings';
 
 /**
@@ -43,9 +43,9 @@ export class Application {
   /** Whether the application is a website or not */
   isWebsite: boolean;
 
-  #apiManager: BaseApiManager;
+  #apiManager: ApiManager;
 
-  constructor(apiManager: BaseApiManager, data: RawApplicationData) {
+  constructor(apiManager: ApiManager, data: RawApplicationData) {
     this.id = data.id;
     this.tag = data.tag;
     this.ram = data.ram;

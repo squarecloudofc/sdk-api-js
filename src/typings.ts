@@ -1,6 +1,10 @@
-/**
- * USER
- */
+/** WRAPPER */
+
+export interface Options {
+  experimental?: boolean | null;
+}
+
+/** USER */
 
 type AccountPlanName =
   | 'free'
@@ -23,9 +27,7 @@ export interface AccountPlan {
   purchased?: Date;
 }
 
-/**
- * APPLICATION
- */
+/** APPLICATION */
 
 type ApplicationLang = 'javascript' | 'typescript' | 'java' | 'python';
 
