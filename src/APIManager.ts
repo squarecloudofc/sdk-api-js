@@ -15,7 +15,7 @@ export class SquareCloudAPIError extends Error {
   }
 }
 
-export class APIManager {
+export class ApiManager {
   constructor(private apiKey: string) {}
 
   async fetch(path: string, options: RequestInit = {}) {
@@ -43,9 +43,7 @@ export class APIManager {
   }
 
   user(id?: string): Promise<RawUserData> {
-    return this.fetch('user' + (id ? `/${id}` : '')).then(
-      (e) => e?.response
-    );
+    return this.fetch('user' + (id ? `/${id}` : '')).then((e) => e?.response);
   }
 
   application(
