@@ -1,6 +1,6 @@
 {
   "name": "@squarecloud/api",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A NodeJS Wrapper for the SquareCloud API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
