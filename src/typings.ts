@@ -79,9 +79,9 @@ export interface ApplicationStatusData {
 /** API */
 
 export type ApiResponse<T = any> = {
-  status: 'success';
-  code: string;
-  response: T;
+  status: 'success' | 'error';
+  code?: string;
+  response?: T;
 };
 
 export interface RawUserData {

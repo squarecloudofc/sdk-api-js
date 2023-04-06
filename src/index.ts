@@ -9,7 +9,7 @@ import { Options } from './typings';
 class SquareCloudAPI {
   static apiInfo = {
     version: 'v1',
-    baseUrl: 'https://api.squarecloud.app/v1/public/',
+    baseUrl: 'https://api.squarecloud.app/',
   };
 
   private apiManager: ApiManager;
@@ -126,8 +126,15 @@ class SquareCloudAPI {
   }
 }
 
-module.exports = Object.assign(SquareCloudAPI, { default: SquareCloudAPI });
+module.exports = Object.assign(SquareCloudAPI, {
+  default: SquareCloudAPI,
+  ApiManager,
+  Application,
+  FullUser,
+  User,
+});
 
 export default SquareCloudAPI;
 export * from './typings';
 export { ApiManager, Application, FullUser, User };
+

@@ -6,7 +6,9 @@ export function validateString(
   code?: string,
   starts: string = ''
 ): asserts value is string {
-  if (starts) validateString(starts);
+  if (starts) {
+    validateString(starts);
+  }
 
   handleParser(
     () => z.string().parse(value),
@@ -31,11 +33,11 @@ export function validatePathLike(
   code?: string
 ): asserts value is string | Buffer {
   handleParser(
-    () =>
-      z
-        .string()
+    () => {
+      z.string()
         .or(z.custom((value) => value instanceof Buffer))
-        .parse(value),
+        .parse(value);
+    },
     'Expect string or Buffer, got ' + typeof value,
     code
   );

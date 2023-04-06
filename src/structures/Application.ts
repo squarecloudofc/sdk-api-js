@@ -54,9 +54,8 @@ export class Application {
     this.avatar = data.avatar;
     this.cluster = data.cluster;
     this.isWebsite = data.isWebsite;
-
-    this.#apiManager = apiManager;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
+    this.#apiManager = apiManager;
   }
 
   /** Gets the application's current information */
@@ -94,7 +93,7 @@ export class Application {
    *
    * @param full - Whether you want the complete logs (true) or the recent ones (false)
    */
-  async getLogs(full: boolean = false): Promise<string> {
+  async getLogs(full?: boolean): Promise<string> {
     validateBoolean(full, 'LOGS_FULL');
 
     const data = await this.#apiManager.application(
@@ -105,7 +104,7 @@ export class Application {
     return data?.response.logs;
   }
 
-  /** Generates the backup download URL */
+  /** Generates a backup download URL */
   async backup(): Promise<string> {
     const data = await this.#apiManager.application('backup', this.id);
 

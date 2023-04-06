@@ -19,7 +19,7 @@ export interface Collection<K, V> extends Map<K, V> {
 }
 
 /**
- * A Map with additional utility methods. This is used throughout discord.js rather than Arrays for anything that has
+ * A Map with additional utility methods. This is used throughout @squarecloud/api rather than Arrays for anything that has
  * an ID, for significantly improved performance and ease-of-use.
  *
  * @typeParam K - The key type this collection holds
@@ -35,11 +35,16 @@ export class Collection<K, V> extends Map<K, V> {
   public first(): V | undefined;
   public first(amount: number): V[];
   public first(amount?: number): V | V[] | undefined {
-    if (typeof amount === 'undefined') return this.values().next().value;
-    if (amount < 0) return this.last(amount * -1);
+    if (typeof amount === 'undefined') {
+      return this.values().next().value;
+    }
+
+    if (amount < 0) {
+      return this.last(amount * -1);
+    }
+
     amount = Math.min(this.size, amount);
-    const iter = this.values();
-    return Array.from({ length: amount }, (): V => iter.next().value);
+    return Array.from({ length: amount }, (): V => this.values().next().value);
   }
 
   /**
@@ -66,7 +71,11 @@ export class Collection<K, V> extends Map<K, V> {
   public reverse() {
     const entries = [...this.entries()].reverse();
     this.clear();
-    for (const [key, value] of entries) this.set(key, value);
+
+    for (const [key, value] of entries) {
+      this.set(key, value);
+    }
+
     return this;
   }
 
@@ -99,9 +108,14 @@ export class Collection<K, V> extends Map<K, V> {
     fn: (value: V, key: K, collection: this) => unknown,
     thisArg?: unknown
   ): V | undefined {
-    if (typeof fn !== 'function')
+    if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
-    if (typeof thisArg !== 'undefined') fn = fn.bind(thisArg);
+    }
+
+    if (typeof thisArg !== 'undefined') {
+      fn = fn.bind(thisArg);
+    }
+
     for (const [key, val] of this) {
       if (fn(val, key, this)) return val;
     }
@@ -146,9 +160,14 @@ export class Collection<K, V> extends Map<K, V> {
     fn: (value: V, key: K, collection: this) => unknown,
     thisArg?: unknown
   ): Collection<K, V> {
-    if (typeof fn !== 'function')
+    if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
-    if (typeof thisArg !== 'undefined') fn = fn.bind(thisArg);
+    }
+
+    if (typeof thisArg !== 'undefined') {
+      fn = fn.bind(thisArg);
+    }
+
     const results = new this.constructor[Symbol.species]<K, V>();
     for (const [key, val] of this) {
       if (fn(val, key, this)) results.set(key, val);
@@ -177,12 +196,16 @@ export class Collection<K, V> extends Map<K, V> {
     fn: (value: V, key: K, collection: this) => T,
     thisArg?: unknown
   ): T[] {
-    if (typeof fn !== 'function')
+    if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
-    if (typeof thisArg !== 'undefined') fn = fn.bind(thisArg);
-    const iter = this.entries();
+    }
+
+    if (typeof thisArg !== 'undefined') {
+      fn = fn.bind(thisArg);
+    }
+
     return Array.from({ length: this.size }, (): T => {
-      const [key, value] = iter.next().value;
+      const [key, value] = this.entries().next().value;
       return fn(value, key, this);
     });
   }
@@ -207,9 +230,14 @@ export class Collection<K, V> extends Map<K, V> {
     fn: (value: V, key: K, collection: this) => unknown,
     thisArg?: unknown
   ): boolean {
-    if (typeof fn !== 'function')
+    if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
-    if (typeof thisArg !== 'undefined') fn = fn.bind(thisArg);
+    }
+
+    if (typeof thisArg !== 'undefined') {
+      fn = fn.bind(thisArg);
+    }
+
     for (const [key, val] of this) {
       if (fn(val, key, this)) return true;
     }
@@ -251,9 +279,14 @@ export class Collection<K, V> extends Map<K, V> {
     fn: (value: V, key: K, collection: this) => unknown,
     thisArg?: unknown
   ): boolean {
-    if (typeof fn !== 'function')
+    if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
-    if (typeof thisArg !== 'undefined') fn = fn.bind(thisArg);
+    }
+
+    if (typeof thisArg !== 'undefined') {
+      fn = fn.bind(thisArg);
+    }
+
     for (const [key, val] of this) {
       if (!fn(val, key, this)) return false;
     }
@@ -277,14 +310,16 @@ export class Collection<K, V> extends Map<K, V> {
     fn: (accumulator: T, value: V, key: K, collection: this) => T,
     initialValue?: T
   ): T {
-    if (typeof fn !== 'function')
+    if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
+    }
     let accumulator!: T;
 
     if (typeof initialValue !== 'undefined') {
       accumulator = initialValue;
-      for (const [key, val] of this)
+      for (const [key, val] of this) {
         accumulator = fn(accumulator, val, key, this);
+      }
       return accumulator;
     }
 
@@ -299,7 +334,6 @@ export class Collection<K, V> extends Map<K, V> {
       accumulator = fn(accumulator, val, key, this);
     }
 
-    // No items iterated.
     if (first) {
       throw new TypeError('Reduce of empty collection with no initial value');
     }
@@ -331,9 +365,10 @@ export class Collection<K, V> extends Map<K, V> {
     fn: (value: V, key: K, collection: this) => void,
     thisArg?: unknown
   ): this {
-    if (typeof fn !== 'function')
+    if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
-    // eslint-disable-next-line unicorn/no-array-method-this-argument
+    }
+
     this.forEach(fn as (value: V, key: K, map: Map<K, V>) => void, thisArg);
     return this;
   }
@@ -351,7 +386,6 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   public toJSON() {
-    // toJSON is called recursively by JSON.stringify.
     return [...this.values()];
   }
 }

@@ -45,16 +45,6 @@ export class User {
     const email = Reflect.get(this, 'email');
     return email && email !== 'Access denied';
   }
-
-  /** Fetches the user data again and returns a new User */
-  fetch(): Promise<User> {
-    return this.#apiManager
-      .user(this.id)
-      .then(
-        (data) =>
-          new (this.hasAccess() ? FullUser : User)(this.#apiManager, data)
-      );
-  }
 }
 
 export class FullUser extends User {

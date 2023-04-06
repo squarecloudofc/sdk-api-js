@@ -1,8 +1,8 @@
 import { ApiResponse, RawUserData } from './typings';
 
-export class SquareCloudAPIError extends Error {
+export class SquareCloudAPIError extends TypeError {
   constructor(code: string, message?: string) {
-    super();
+    super(code);
 
     this.name = 'SquareCloudAPIError';
 
@@ -21,17 +21,20 @@ export class ApiManager {
   async fetch(
     path: string,
     options: RequestInit = {},
-    rootPath: 'public' | 'experimental' = 'public'
+    rootPath: 'public' | 'experimental' = 'public',
+    version: string = 'v1'
   ) {
-    options.headers = {
-      ...(options.headers || {}),
-      Authorization: this.apiKey,
+    options = {
+      ...options,
+      method: options.method || 'GET',
+      headers: {
+        ...(options.headers || {}),
+        Authorization: this.apiKey,
+      },
     };
 
-    options.method = options.method || 'GET';
-
     const res = await fetch(
-      `https://api.squarecloud.app/v1/${rootPath}/${path}`,
+      `https://api.squarecloud.app/${version}/${rootPath}/${path}`,
       options
     ).catch((err) => {
       throw new SquareCloudAPIError(err.code);
@@ -40,7 +43,7 @@ export class ApiManager {
     const data = await res.json();
 
     if (data.status === 'error' || !res.ok) {
-      throw new SquareCloudAPIError(data.code || 'SQUARE_CLOUD_API_ERROR');
+      throw new SquareCloudAPIError(data.code || 'COMMON_ERROR');
     }
 
     return data;
