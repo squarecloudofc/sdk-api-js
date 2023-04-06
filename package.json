@@ -1,7 +1,7 @@
 {
   "name": "@squarecloud/api",
-  "version": "2.2.0",
-  "description": "A JavaScript Wrapper for the SquareCloud API",
+  "version": "2.2.1",
+  "description": "A NodeJS Wrapper for the SquareCloud API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -15,7 +15,10 @@
     "api",
     "typescript"
   ],
-  "author": "bluey#0012",
+  "author": {
+    "name": "bluey#0012",
+    "url": "https://discord.com/users/702529018410303640"
+  },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^18.15.11",
