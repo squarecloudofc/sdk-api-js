@@ -1,55 +1,50 @@
 import z from 'zod';
-import { SquareCloudAPIError } from './ApiManager';
+import SquareCloudAPIError from './structures/error';
+
+const stringSchema = z.coerce.string();
+const booleanSchema = z.coerce.boolean();
+const commitLikeSchema = z
+  .string()
+  .or(z.custom((value) => value instanceof Buffer));
 
 export function validateString(
   value: any,
   code?: string,
-  starts: string = ''
+  starts?: string
 ): asserts value is string {
   if (starts) {
     validateString(starts);
   }
 
-  handleParser(
-    () => z.string().parse(value),
-    'Expect string, got ' + typeof value,
-    code
-  );
+  handleParser(stringSchema, value, 'string', code);
 }
 
 export function validateBoolean(
   value: any,
   code?: string
 ): asserts value is boolean {
-  handleParser(
-    () => z.boolean().parse(value),
-    'Expect boolean, got ' + typeof value,
-    code
-  );
+  handleParser(booleanSchema, value, 'boolean', code);
 }
 
-export function validatePathLike(
+export function validateCommitLike(
   value: any,
   code?: string
 ): asserts value is string | Buffer {
-  handleParser(
-    () => {
-      z.string()
-        .or(z.custom((value) => value instanceof Buffer))
-        .parse(value);
-    },
-    'Expect string or Buffer, got ' + typeof value,
-    code
-  );
+  handleParser(commitLikeSchema, value, 'string or Buffer', code);
 }
 
-function handleParser(func: any, message: string, code?: string) {
+function handleParser(
+  schema: z.Schema,
+  value: any,
+  expect: string,
+  code?: string
+) {
   try {
-    func();
+    schema.parse(value);
   } catch {
     throw new SquareCloudAPIError(
       code ? `INVALID_${code}` : 'VALIDATION_ERROR',
-      message
+      `Expect ${expect}, got ${typeof value}`
     );
   }
 }

@@ -1,13 +1,17 @@
-import {
-  validateBoolean,
-  validatePathLike,
-  validateString,
-} from '../Assertions';
-
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import { ApiManager } from '../ApiManager';
-import { ApplicationStatusData, RawApplicationData } from '../typings';
+import {
+  validateBoolean,
+  validateCommitLike,
+  validateString,
+} from '../assertions';
+import APIManager from '../managers/api';
+import {
+  ApplicationLanguage,
+  ApplicationTier,
+  Application as ApplicationType,
+} from '../types';
+import { ApplicationStatusData } from '../types/application';
 
 /**
  * Represents a SquareCloud application
@@ -33,9 +37,9 @@ export class Application {
    * - 'python'
    * - 'java'
    */
-  lang: 'javascript' | 'typescript' | 'python' | 'java';
+  lang: ApplicationLanguage;
   /** The application plan type (free' or 'paid') */
-  type: 'free' | 'paid';
+  tier: ApplicationTier;
   /** The application avatar URL */
   avatar: string;
   /** The application current cluster */
@@ -43,24 +47,21 @@ export class Application {
   /** Whether the application is a website or not */
   isWebsite: boolean;
 
-  #apiManager: ApiManager;
-
-  constructor(apiManager: ApiManager, data: RawApplicationData) {
+  constructor(private readonly apiManager: APIManager, data: ApplicationType) {
     this.id = data.id;
     this.tag = data.tag;
     this.ram = data.ram;
     this.lang = data.lang;
-    this.type = data.type;
+    this.tier = data.type;
     this.avatar = data.avatar;
     this.cluster = data.cluster;
     this.isWebsite = data.isWebsite;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
-    this.#apiManager = apiManager;
   }
 
   /** Gets the application's current information */
   async getStatus(): Promise<ApplicationStatusData> {
-    const data = await this.#apiManager.application('status', this.id);
+    const data = await this.apiManager.application('status', this.id);
 
     const {
       network,
@@ -96,7 +97,7 @@ export class Application {
   async getLogs(full?: boolean): Promise<string> {
     validateBoolean(full, 'LOGS_FULL');
 
-    const data = await this.#apiManager.application(
+    const data = await this.apiManager.application(
       `${full ? 'full-' : ''}logs`,
       this.id
     );
@@ -106,28 +107,28 @@ export class Application {
 
   /** Generates a backup download URL */
   async backup(): Promise<string> {
-    const data = await this.#apiManager.application('backup', this.id);
+    const data = await this.apiManager.application('backup', this.id);
 
     return data?.response.downloadURL;
   }
 
   /** Starts up the application */
   async start(): Promise<boolean> {
-    const data = await this.#apiManager.application('start', this.id, true);
+    const data = await this.apiManager.application('start', this.id, 'POST');
 
     return data?.code === 'ACTION_SENT';
   }
 
   /** Stops the application */
   async stop(): Promise<boolean> {
-    const data = await this.#apiManager.application('stop', this.id, true);
+    const data = await this.apiManager.application('stop', this.id, 'POST');
 
     return data?.code === 'ACTION_SENT';
   }
 
   /** Restarts the application */
   async restart(): Promise<boolean> {
-    const data = await this.#apiManager.application('restart', this.id, true);
+    const data = await this.apiManager.application('restart', this.id, 'POST');
 
     return data?.code === 'ACTION_SENT';
   }
@@ -138,7 +139,7 @@ export class Application {
    * - This action is irreversible.
    */
   async delete(): Promise<boolean> {
-    const data = await this.#apiManager.application('delete', this.id, true);
+    const data = await this.apiManager.application('delete', this.id, 'POST');
 
     return data?.code === 'APP_DELETED';
   }
@@ -163,7 +164,7 @@ export class Application {
     fileName?: string,
     restart?: boolean
   ): Promise<boolean> {
-    validatePathLike(file, 'COMMIT_DATA');
+    validateCommitLike(file, 'COMMIT_DATA');
 
     if (fileName) {
       validateString(fileName, 'FILE_NAME');
@@ -176,7 +177,7 @@ export class Application {
     const formData = new FormData();
     formData.append('file', file, { filename: fileName || 'app.zip' });
 
-    const data = await this.#apiManager.application(
+    const data = await this.apiManager.application(
       'commit',
       `${this.id}?restart=${Boolean(restart)}`,
       {

@@ -1,7 +1,7 @@
 {
   "name": "@squarecloud/api",
-  "version": "2.2.2",
-  "description": "A NodeJS Wrapper for the SquareCloud API",
+  "version": "3.0.0",
+  "description": "A NodeJS wrapper for Square Cloud API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -13,11 +13,15 @@
     "square",
     "squarecloud",
     "api",
-    "typescript"
+    "typescript",
+    "app",
+    "bot",
+    "website",
+    "host"
   ],
   "author": {
     "name": "bluey#0012",
-    "url": "https://discord.com/users/702529018410303640"
+    "url": "https://github.com/bluee-js"
   },
   "license": "MIT",
   "devDependencies": {
