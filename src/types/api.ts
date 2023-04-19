@@ -35,21 +35,26 @@ export interface ServiceStatisticsResponse {
 export interface User {
   id: string;
   tag: string;
-  locale?: string;
+  locale: string;
   email?: string | null;
   plan: UserPlan;
   blocklist: boolean;
 }
 
 export interface UserPlan {
+  /** The user plan name */
   name: UserPlanName;
+  /** How much RAM memory the plan provides */
   memory: UserPlanMemory;
   duration: UserPlanDuration;
 }
 
 export interface UserPlanMemory {
+  /** The limit of RAM */
   limit: number;
+  /** How much RAM is available (calc: `limit - used`) */
   available: number;
+  /** How much RAM the user is currently using */
   used: number;
 }
 
@@ -111,6 +116,7 @@ export interface ApplicationStatusResponse {
   network: ApplicationStatusNetwork;
   requests: number;
   uptime?: number | null;
+  time?: number | null;
 }
 
 /** /apps/:appId/logs */

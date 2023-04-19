@@ -3,9 +3,7 @@ import SquareCloudAPIError from './structures/error';
 
 const stringSchema = z.coerce.string();
 const booleanSchema = z.coerce.boolean();
-const commitLikeSchema = z
-  .string()
-  .or(z.custom((value) => value instanceof Buffer));
+const pathLikeSchema = z.string().or(z.instanceof(Buffer));
 
 export function validateString(
   value: any,
@@ -26,11 +24,11 @@ export function validateBoolean(
   handleParser(booleanSchema, value, 'boolean', code);
 }
 
-export function validateCommitLike(
+export function validatePathLike(
   value: any,
   code?: string
 ): asserts value is string | Buffer {
-  handleParser(commitLikeSchema, value, 'string or Buffer', code);
+  handleParser(pathLikeSchema, value, 'string or Buffer', code);
 }
 
 function handleParser(

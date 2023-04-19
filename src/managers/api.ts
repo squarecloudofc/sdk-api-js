@@ -45,8 +45,8 @@ export default class APIManager {
     });
     const data = await res.json();
 
-    if (data.status === 'error' || !res.ok) {
-      throw new SquareCloudAPIError(data.code || 'COMMON_ERROR');
+    if (!data || data.status === 'error' || !res.ok) {
+      throw new SquareCloudAPIError(data?.code || 'COMMON_ERROR');
     }
 
     return data;

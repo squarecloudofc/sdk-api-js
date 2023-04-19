@@ -1,11 +1,9 @@
+import { ApplicationStatusNetwork } from './api';
 import { ApplicationStatus } from './enums';
 
 export interface ApplicationStatusData {
   /** The application's network status */
-  network: {
-    total: string;
-    now: string;
-  };
+  network: ApplicationStatusNetwork;
   /** How much storage the application is currently using */
   storageUsage: string;
   /** How much cpu the application is currently using */
@@ -26,7 +24,7 @@ export interface ApplicationStatusData {
   /** Whether the application is running or not */
   running: boolean;
   /** How many requests have been made since the last start up */
-  requests: 0;
+  requests: number;
   /** For how long the app is running in millisseconds */
   uptimeTimestamp: number;
   /** For how long the app is running */

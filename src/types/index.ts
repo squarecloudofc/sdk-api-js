@@ -6,4 +6,5 @@ export interface APIOptions {
 }
 
 export type APIRootPath = 'public' | 'experimental';
+
 export type APIVersion<TVersion extends number> = `v${TVersion}`;
