@@ -4,7 +4,7 @@ export interface UserPlanData extends Omit<UserPlan, 'duration'> {
   /** The formatted plan duration */
   duration: string;
   /** When the plan was purchased in millisseconds */
-  purchasedTimestamp?: number;
+  expiresTimestamp?: number;
   /** When the plan was purchased */
-  purchased?: Date;
+  expires?: Date;
 }
