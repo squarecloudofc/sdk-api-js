@@ -31,8 +31,8 @@ export default class User {
     this.plan = {
       ...data.user.plan,
       duration: data.user.plan.duration.formatted,
-      purchasedTimestamp: data.user.plan.duration.raw,
-      purchased: data.user.plan.duration.raw
+      expiresTimestamp: data.user.plan.duration.raw,
+      expires: data.user.plan.duration.raw
         ? new Date(data.user.plan.duration.raw)
         : undefined,
     };
