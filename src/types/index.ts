@@ -2,6 +2,7 @@ export * from './api';
 export * from './enums';
 
 export interface APIOptions {
+  /** Whether experimental features should be enabled or not */
   experimental: boolean;
 }
 
