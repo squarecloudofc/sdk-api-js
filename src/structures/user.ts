@@ -1,16 +1,17 @@
-import { ApiManager } from '../ApiManager';
-import { AccountPlan, RawUserData } from '../typings';
-import { Application } from './Application';
-import { Collection } from './Collection';
+import APIManager from '../managers/api';
+import { UserResponse } from '../types';
+import { UserPlanData } from '../types/user';
+import Application from './application';
+import Collection from './collection';
 
 /**
- * Represents a SquareCloud user
+ * Represents a Square Cloud user
  *
  * @constructor
  * @param apiManager - The APIManager for this user
  * @param data - The data from this user
  */
-export class User {
+export default class User {
   /** The user's id */
   id: string;
   /** The user's Discord tag */
@@ -18,13 +19,11 @@ export class User {
   /** The user's locale */
   locale: string;
   /** The user's current plan */
-  plan: AccountPlan;
+  plan: UserPlanData;
   /** Whether the user is blocked for Square Cloud services or not */
   blocklist: boolean;
-  /** @private API Manager */
-  #apiManager: ApiManager;
 
-  constructor(apiManager: ApiManager, data: RawUserData) {
+  constructor(protected readonly apiManager: APIManager, data: UserResponse) {
     this.id = data.user.id;
     this.tag = data.user.tag;
     this.locale = data.user.locale;
@@ -32,12 +31,11 @@ export class User {
     this.plan = {
       ...data.user.plan,
       duration: data.user.plan.duration.formatted,
-      purchasedTimestamp: data.user.plan.duration.raw,
-      purchased: data.user.plan.duration.raw
+      expiresTimestamp: data.user.plan.duration.raw,
+      expires: data.user.plan.duration.raw
         ? new Date(data.user.plan.duration.raw)
         : undefined,
     };
-    this.#apiManager = apiManager;
   }
 
   /** Whether you have access to private information or not */
@@ -47,18 +45,40 @@ export class User {
   }
 }
 
+/**
+ * Represents a Square Cloud user
+ *
+ * @constructor
+ * @param apiManager - The APIManager for this user
+ * @param data - The data from this user
+ */
 export class FullUser extends User {
   /** The user's registered email */
   email: string;
   /** The user's registered applications Collection */
   applications: Collection<string, Application>;
 
-  constructor(apiManager: ApiManager, data: RawUserData) {
+  constructor(protected readonly apiManager: APIManager, data: UserResponse) {
     super(apiManager, data);
 
-    this.email = data.user.email;
+    this.email = data.user.email!;
     this.applications = new Collection(
       data.applications.map((app) => [app.id, new Application(apiManager, app)])
     );
   }
+}
+
+export default interface User {
+  /** The user's id */
+  id: string;
+  /** The user's Discord tag */
+  tag: string;
+  /** The user's locale */
+  locale: string;
+  /** The user's current plan */
+  plan: UserPlanData;
+  /** Whether the user is blocked for Square Cloud services or not */
+  blocklist: boolean;
+  /** Whether you have access to private information or not */
+  hasAccess(): this is FullUser;
 }

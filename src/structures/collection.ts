@@ -14,7 +14,7 @@ export interface CollectionConstructor {
  *
  * @internal
  */
-export interface Collection<K, V> extends Map<K, V> {
+export default interface Collection<K, V> extends Map<K, V> {
   constructor: CollectionConstructor;
 }
 
@@ -25,7 +25,7 @@ export interface Collection<K, V> extends Map<K, V> {
  * @typeParam K - The key type this collection holds
  * @typeParam V - The value type this collection holds
  */
-export class Collection<K, V> extends Map<K, V> {
+export default class Collection<K, V> extends Map<K, V> {
   /**
    * Obtains the first value(s) in this collection.
    *
