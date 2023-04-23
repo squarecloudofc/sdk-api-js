@@ -1,11 +1,8 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import {
-  validateBoolean,
-  validatePathLike,
-  validateString,
-} from '../assertions';
+import { validatePathLike, validateString } from '../assertions';
 import APIManager from '../managers/api';
+import FilesManager from '../managers/files';
 import {
   APIResponse,
   ApplicationBackupResponse,
@@ -16,7 +13,6 @@ import {
   Application as ApplicationType,
 } from '../types';
 import { ApplicationStatusData } from '../types/application';
-import FilesManager from '../managers/files';
 
 /**
  * Represents a Square Cloud application
@@ -102,22 +98,17 @@ export default class Application {
     };
   }
 
-  /**
-   * @param full - Whether you want the complete logs (true) or the recent ones (false)
-   * @returns The application logs
-   */
-  async getLogs(full?: boolean): Promise<string> {
-    validateBoolean(full, 'LOGS_FULL');
-
+  /** @returns The application logs */
+  async getLogs(): Promise<string> {
     const data = <APIResponse<ApplicationLogsResponse>>(
-      await this.apiManager.application(`${full ? 'full-' : ''}logs`, this.id)
+      await this.apiManager.application('logs', this.id)
     );
 
     return data.response?.logs!;
   }
 
   /** @returns A backup download URL */
-  async backup(): Promise<string> {
+  async backupURL(): Promise<string> {
     const data = <APIResponse<ApplicationBackupResponse>>(
       await this.apiManager.application('backup', this.id)
     );
