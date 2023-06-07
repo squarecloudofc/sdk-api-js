@@ -59,6 +59,6 @@ export default class ApplicationManager {
       })
     );
 
-    return data?.response?.app;
+    return data?.response;
   }
 }

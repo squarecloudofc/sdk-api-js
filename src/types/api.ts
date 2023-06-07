@@ -81,7 +81,12 @@ export interface UserResponse {
 
 /** /apps/upload */
 
-export interface UploadedApplication {
+export interface UploadedApplicationLanguage {
+  name: string;
+  version: ApplicationLanguageVersion;
+}
+
+export interface UploadedApplicationResponse {
   id: string;
   tag: string;
   avatar: string;
@@ -89,15 +94,6 @@ export interface UploadedApplication {
   ram: number;
   cpu: number;
   language: UploadedApplicationLanguage;
-}
-
-export interface UploadedApplicationLanguage {
-  name: string;
-  version: ApplicationLanguageVersion;
-}
-
-export interface UploadedApplicationResponse {
-  app: UploadedApplication;
 }
 
 /** /apps/:appId/status */
