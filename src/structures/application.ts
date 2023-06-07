@@ -51,8 +51,10 @@ export default class Application {
   isWebsite: boolean;
   /** Files manager for this application */
   files: FilesManager;
+  /** @private API manager for this application */
+  readonly #apiManager: APIManager;
 
-  constructor(private readonly apiManager: APIManager, data: ApplicationType) {
+  constructor(apiManager: APIManager, data: ApplicationType) {
     this.id = data.id;
     this.tag = data.tag;
     this.ram = data.ram;
@@ -63,12 +65,13 @@ export default class Application {
     this.isWebsite = data.isWebsite;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
     this.files = new FilesManager(apiManager, data.id);
+    this.#apiManager = apiManager;
   }
 
   /** @returns The application current status information */
   async getStatus(): Promise<ApplicationStatusData> {
     const data = <APIResponse<ApplicationStatusResponse>>(
-      await this.apiManager.application('status', this.id)
+      await this.#apiManager.application('status', this.id)
     );
 
     const {
@@ -101,7 +104,7 @@ export default class Application {
   /** @returns The application logs */
   async getLogs(): Promise<string> {
     const data = <APIResponse<ApplicationLogsResponse>>(
-      await this.apiManager.application('logs', this.id)
+      await this.#apiManager.application('logs', this.id)
     );
 
     return data.response?.logs!;
@@ -110,7 +113,7 @@ export default class Application {
   /** @returns A backup download URL */
   async backupURL(): Promise<string> {
     const data = <APIResponse<ApplicationBackupResponse>>(
-      await this.apiManager.application('backup', this.id)
+      await this.#apiManager.application('backup', this.id)
     );
 
     return data.response?.downloadURL!;
@@ -121,7 +124,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async start(): Promise<boolean> {
-    const data = await this.apiManager.application('start', this.id, 'POST');
+    const data = await this.#apiManager.application('start', this.id, 'POST');
 
     return data?.code === 'ACTION_SENT';
   }
@@ -131,7 +134,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async stop(): Promise<boolean> {
-    const data = await this.apiManager.application('stop', this.id, 'POST');
+    const data = await this.#apiManager.application('stop', this.id, 'POST');
 
     return data?.code === 'ACTION_SENT';
   }
@@ -141,7 +144,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async restart(): Promise<boolean> {
-    const data = await this.apiManager.application('restart', this.id, 'POST');
+    const data = await this.#apiManager.application('restart', this.id, 'POST');
 
     return data?.code === 'ACTION_SENT';
   }
@@ -153,7 +156,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async delete(): Promise<boolean> {
-    const data = await this.apiManager.application('delete', this.id, 'DELETE');
+    const data = await this.#apiManager.application('delete', this.id, 'DELETE');
 
     return data?.code === 'APP_DELETED';
   }
@@ -192,7 +195,7 @@ export default class Application {
     const formData = new FormData();
     formData.append('file', file, { filename: fileName || 'app.zip' });
 
-    const data = await this.apiManager.application(
+    const data = await this.#apiManager.application(
       `commit?restart=${Boolean(restart)}`,
       this.id,
       {
