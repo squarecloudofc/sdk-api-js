@@ -10,17 +10,14 @@ export default class UserManager {
    *
    * @param userId - The user ID, if not provided it will get your own information
    */
-  async get(): Promise<FullUser | undefined>;
-  async get(userId: string): Promise<User | undefined>;
-  async get(userId?: string): Promise<User | undefined> {
+  async get(): Promise<FullUser>;
+  async get(userId: string): Promise<User>;
+  async get(userId?: string): Promise<User> {
     if (userId) {
       validateString(userId, 'USER_ID');
     }
 
     const { response } = await this.apiManager.user(userId);
-    if (!response) {
-      return;
-    }
 
     const { email } = response.user;
     const hasAccess = email && email !== 'Access denied';

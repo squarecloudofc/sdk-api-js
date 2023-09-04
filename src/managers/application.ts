@@ -16,21 +16,18 @@ export default class ApplicationManager {
    *
    * @param appId - The application ID, you must own the application
    */
-  async get(): Promise<Collection<string, Application> | undefined>;
-  async get(appId: string): Promise<Application | undefined>;
+  async get(): Promise<Collection<string, Application>>;
+  async get(appId: string): Promise<Application>;
   async get(
-    appId?: string
-  ): Promise<Application | Collection<string, Application> | undefined> {
+    appId?: string,
+  ): Promise<Application | Collection<string, Application>> {
     const { response } = await this.apiManager.user();
-    if (!response) {
-      return;
-    }
 
     const { applications } = new FullUser(this.apiManager, response);
 
     if (appId) {
       validateString(appId, 'APP_ID');
-      return applications.get(appId);
+      return applications.get(appId)!;
     }
     return applications;
   }
@@ -41,7 +38,7 @@ export default class ApplicationManager {
    * @param file - The zip file path or Buffer
    * @returns The uploaded application data
    */
-  async create(file: string | Buffer) {
+  async create(file: string | Buffer): Promise<UploadedApplicationResponse> {
     validatePathLike(file, 'COMMIT_DATA');
 
     if (typeof file === 'string') {

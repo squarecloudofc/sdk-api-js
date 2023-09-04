@@ -1,3 +1,7 @@
+/* eslint-disable no-redeclare */
+/* eslint-disable import/export */
+/* eslint-disable no-use-before-define */
+
 /**
  * @internal
  */
@@ -91,22 +95,26 @@ export default class Collection<K, V> extends Map<K, V> {
    * ```
    */
   public find<V2 extends V>(
-    fn: (value: V, key: K, collection: this) => value is V2
+    fn: (value: V, key: K, collection: this) => value is V2,
   ): V2 | undefined;
-  public find(
-    fn: (value: V, key: K, collection: this) => unknown
-  ): V | undefined;
-  public find<This, V2 extends V>(
-    fn: (this: This, value: V, key: K, collection: this) => value is V2,
-    thisArg: This
-  ): V2 | undefined;
-  public find<This>(
-    fn: (this: This, value: V, key: K, collection: this) => unknown,
-    thisArg: This
-  ): V | undefined;
+
   public find(
     fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown
+  ): V | undefined;
+
+  public find<This, V2 extends V>(
+    fn: (this: This, value: V, key: K, collection: this) => value is V2,
+    thisArg: This,
+  ): V2 | undefined;
+
+  public find<This>(
+    fn: (this: This, value: V, key: K, collection: this) => unknown,
+    thisArg: This,
+  ): V | undefined;
+
+  public find(
+    fn: (value: V, key: K, collection: this) => unknown,
+    thisArg?: unknown,
   ): V | undefined {
     if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
@@ -119,8 +127,6 @@ export default class Collection<K, V> extends Map<K, V> {
     for (const [key, val] of this) {
       if (fn(val, key, this)) return val;
     }
-
-    return;
   }
 
   /**
@@ -136,29 +142,35 @@ export default class Collection<K, V> extends Map<K, V> {
    * ```
    */
   public filter<K2 extends K>(
-    fn: (value: V, key: K, collection: this) => key is K2
+    fn: (value: V, key: K, collection: this) => key is K2,
   ): Collection<K2, V>;
+
   public filter<V2 extends V>(
-    fn: (value: V, key: K, collection: this) => value is V2
+    fn: (value: V, key: K, collection: this) => value is V2,
   ): Collection<K, V2>;
-  public filter(
-    fn: (value: V, key: K, collection: this) => unknown
-  ): Collection<K, V>;
-  public filter<This, K2 extends K>(
-    fn: (this: This, value: V, key: K, collection: this) => key is K2,
-    thisArg: This
-  ): Collection<K2, V>;
-  public filter<This, V2 extends V>(
-    fn: (this: This, value: V, key: K, collection: this) => value is V2,
-    thisArg: This
-  ): Collection<K, V2>;
-  public filter<This>(
-    fn: (this: This, value: V, key: K, collection: this) => unknown,
-    thisArg: This
-  ): Collection<K, V>;
+
   public filter(
     fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown
+  ): Collection<K, V>;
+
+  public filter<This, K2 extends K>(
+    fn: (this: This, value: V, key: K, collection: this) => key is K2,
+    thisArg: This,
+  ): Collection<K2, V>;
+
+  public filter<This, V2 extends V>(
+    fn: (this: This, value: V, key: K, collection: this) => value is V2,
+    thisArg: This,
+  ): Collection<K, V2>;
+
+  public filter<This>(
+    fn: (this: This, value: V, key: K, collection: this) => unknown,
+    thisArg: This,
+  ): Collection<K, V>;
+
+  public filter(
+    fn: (value: V, key: K, collection: this) => unknown,
+    thisArg?: unknown,
   ): Collection<K, V> {
     if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
@@ -190,11 +202,12 @@ export default class Collection<K, V> extends Map<K, V> {
   public map<T>(fn: (value: V, key: K, collection: this) => T): T[];
   public map<This, T>(
     fn: (this: This, value: V, key: K, collection: this) => T,
-    thisArg: This
+    thisArg: This,
   ): T[];
+
   public map<T>(
     fn: (value: V, key: K, collection: this) => T,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): T[] {
     if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
@@ -224,11 +237,12 @@ export default class Collection<K, V> extends Map<K, V> {
   public some(fn: (value: V, key: K, collection: this) => unknown): boolean;
   public some<T>(
     fn: (this: T, value: V, key: K, collection: this) => unknown,
-    thisArg: T
+    thisArg: T,
   ): boolean;
+
   public some(
     fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): boolean {
     if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
@@ -257,27 +271,32 @@ export default class Collection<K, V> extends Map<K, V> {
    * ```
    */
   public every<K2 extends K>(
-    fn: (value: V, key: K, collection: this) => key is K2
+    fn: (value: V, key: K, collection: this) => key is K2,
   ): this is Collection<K2, V>;
+
   public every<V2 extends V>(
-    fn: (value: V, key: K, collection: this) => value is V2
+    fn: (value: V, key: K, collection: this) => value is V2,
   ): this is Collection<K, V2>;
+
   public every(fn: (value: V, key: K, collection: this) => unknown): boolean;
   public every<This, K2 extends K>(
     fn: (this: This, value: V, key: K, collection: this) => key is K2,
-    thisArg: This
+    thisArg: This,
   ): this is Collection<K2, V>;
+
   public every<This, V2 extends V>(
     fn: (this: This, value: V, key: K, collection: this) => value is V2,
-    thisArg: This
+    thisArg: This,
   ): this is Collection<K, V2>;
+
   public every<This>(
     fn: (this: This, value: V, key: K, collection: this) => unknown,
-    thisArg: This
+    thisArg: This,
   ): boolean;
+
   public every(
     fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): boolean {
     if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
@@ -308,7 +327,7 @@ export default class Collection<K, V> extends Map<K, V> {
    */
   public reduce<T>(
     fn: (accumulator: T, value: V, key: K, collection: this) => T,
-    initialValue?: T
+    initialValue?: T,
   ): T {
     if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);
@@ -359,11 +378,12 @@ export default class Collection<K, V> extends Map<K, V> {
   public each(fn: (value: V, key: K, collection: this) => void): this;
   public each<T>(
     fn: (this: T, value: V, key: K, collection: this) => void,
-    thisArg: T
+    thisArg: T,
   ): this;
+
   public each(
     fn: (value: V, key: K, collection: this) => void,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): this {
     if (typeof fn !== 'function') {
       throw new TypeError(`${fn} is not a function`);

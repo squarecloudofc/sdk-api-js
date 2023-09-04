@@ -14,7 +14,7 @@ export default class ExperimentalManager {
    * @param prompt.question - Short question for the AI to answer :)
    * @param prompt.context - Subject, humor or previous conversations
    */
-  async askAi(prompt: Prompt) {
+  async askAi(prompt: Prompt): Promise<string> {
     if (prompt.context) {
       validateString(prompt.context);
     }
@@ -30,7 +30,7 @@ export default class ExperimentalManager {
         }),
       },
       'v1',
-      'experimental'
+      'experimental',
     );
 
     return response;

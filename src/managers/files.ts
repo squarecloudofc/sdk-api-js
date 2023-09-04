@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import { join } from 'path';
 import { validatePathLike, validateString } from '../assertions';
 import {
   APIResponse,
@@ -6,12 +7,11 @@ import {
   ApplicationFilesReadResponse,
 } from '../types';
 import APIManager from './api';
-import { join } from 'path';
 
 export default class FilesManager {
   constructor(
     private readonly apiManager: APIManager,
-    private readonly appId: string
+    private readonly appId: string,
   ) {}
 
   /**  */
@@ -54,7 +54,7 @@ export default class FilesManager {
           buffer: file.toJSON(),
           path: join(path, fileName),
         }),
-      }
+      },
     );
 
     return status === 'success';
@@ -66,7 +66,7 @@ export default class FilesManager {
     const { status } = await this.apiManager.application(
       `files/delete?path=${path}`,
       this.appId,
-      'DELETE'
+      'DELETE',
     );
 
     return status === 'success';

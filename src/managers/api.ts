@@ -1,6 +1,5 @@
 import SquareCloudAPIError from '../structures/error';
-import { APIRootPath, APIVersion, UserResponse } from '../types';
-import { APIResponse } from '../types';
+import { APIRootPath, APIVersion, UserResponse, APIResponse } from '../types';
 
 export default class APIManager {
   public readonly baseUrl = 'https://api.squarecloud.app';
@@ -14,7 +13,7 @@ export default class APIManager {
   application(
     path: string,
     appId: string,
-    options?: RequestInit | 'GET' | 'POST' | 'DELETE'
+    options?: RequestInit | 'GET' | 'POST' | 'DELETE',
   ): Promise<APIResponse> {
     if (typeof options === 'string') {
       options = {
@@ -29,7 +28,7 @@ export default class APIManager {
     path: string,
     options: RequestInit = {},
     version: APIVersion<1 | 2> = 'v2',
-    rootPath?: APIRootPath
+    rootPath?: APIRootPath,
   ): Promise<APIResponse> {
     options = {
       ...options,
@@ -39,7 +38,7 @@ export default class APIManager {
 
     const res = await fetch(
       `${this.baseUrl}/${version}${rootPath ? `/${rootPath}` : ''}/${path}`,
-      options
+      options,
     ).catch((err) => {
       throw new SquareCloudAPIError(err.code);
     });

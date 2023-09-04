@@ -1,3 +1,10 @@
 {
-  "extends": "@synclab/eslint-config/node"
+  "extends": "@synclab/eslint-config/node",
+  "globals": {
+    "RequestInit": true
+  },
+  "rules": {
+    "no-dupe-class-members": "off",
+    "no-useless-constructor": "off"
+  }
 }

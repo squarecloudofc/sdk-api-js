@@ -156,7 +156,11 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async delete(): Promise<boolean> {
-    const data = await this.#apiManager.application('delete', this.id, 'DELETE');
+    const data = await this.#apiManager.application(
+      'delete',
+      this.id,
+      'DELETE',
+    );
 
     return data?.code === 'APP_DELETED';
   }
@@ -180,7 +184,7 @@ export default class Application {
   async commit(
     file: string | Buffer,
     fileName?: string,
-    restart?: boolean
+    restart?: boolean,
   ): Promise<boolean> {
     validatePathLike(file, 'COMMIT_DATA');
 
@@ -202,7 +206,7 @@ export default class Application {
         method: 'POST',
         body: formData.getBuffer(),
         headers: formData.getHeaders(),
-      }
+      },
     );
 
     return data?.code === 'SUCCESS';

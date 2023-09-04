@@ -1,3 +1,6 @@
+/* eslint-disable no-redeclare */
+/* eslint-disable import/export */
+
 import APIManager from '../managers/api';
 import { UserResponse } from '../types';
 import { UserPlanData } from '../types/user';
@@ -63,7 +66,10 @@ export class FullUser extends User {
 
     this.email = data.user.email!;
     this.applications = new Collection(
-      data.applications.map((app) => [app.id, new Application(apiManager, app)])
+      data.applications.map((app) => [
+        app.id,
+        new Application(apiManager, app),
+      ]),
     );
   }
 }

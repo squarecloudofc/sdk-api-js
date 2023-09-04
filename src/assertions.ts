@@ -8,7 +8,7 @@ const pathLikeSchema = z.string().or(z.instanceof(Buffer));
 export function validateString(
   value: any,
   code?: string,
-  starts?: string
+  starts?: string,
 ): asserts value is string {
   if (starts) {
     validateString(starts);
@@ -19,14 +19,14 @@ export function validateString(
 
 export function validateBoolean(
   value: any,
-  code?: string
+  code?: string,
 ): asserts value is boolean {
   handleParser(booleanSchema, value, 'boolean', code);
 }
 
 export function validatePathLike(
   value: any,
-  code?: string
+  code?: string,
 ): asserts value is string | Buffer {
   handleParser(pathLikeSchema, value, 'string or Buffer', code);
 }
@@ -35,14 +35,14 @@ function handleParser(
   schema: z.Schema,
   value: any,
   expect: string,
-  code?: string
+  code?: string,
 ) {
   try {
     schema.parse(value);
   } catch {
     throw new SquareCloudAPIError(
       code ? `INVALID_${code}` : 'VALIDATION_ERROR',
-      `Expect ${expect}, got ${typeof value}`
+      `Expect ${expect}, got ${typeof value}`,
     );
   }
 }

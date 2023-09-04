@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+
 import {
   ApplicationFileType,
   ApplicationLanguage,
@@ -10,7 +12,7 @@ import {
 export type APIResponseStatus = 'error' | 'success';
 
 export interface APIResponse<TResponse = any> {
-  response?: TResponse;
+  response: TResponse;
   status: APIResponseStatus;
   code?: string | null;
   message?: string;
