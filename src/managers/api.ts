@@ -40,7 +40,7 @@ export default class APIManager {
       `${this.baseUrl}/${version}${rootPath ? `/${rootPath}` : ''}/${path}`,
       options,
     ).catch((err) => {
-      throw new SquareCloudAPIError(err.code);
+      throw new SquareCloudAPIError(err.code, err.message);
     });
     const data = await res.json();
 

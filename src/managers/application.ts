@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { validatePathLike, validateString } from '../assertions';
 import Application from '../structures/application';
 import Collection from '../structures/collection';
+import SquareCloudAPIError from '../structures/error';
 import { FullUser } from '../structures/user';
 import { APIResponse, UploadedApplicationResponse } from '../types';
 import APIManager from './api';
@@ -22,13 +23,19 @@ export default class ApplicationManager {
     appId?: string,
   ): Promise<Application | Collection<string, Application>> {
     const { response } = await this.apiManager.user();
-
     const { applications } = new FullUser(this.apiManager, response);
 
     if (appId) {
       validateString(appId, 'APP_ID');
-      return applications.get(appId)!;
+      const application = applications.get(appId);
+
+      if (!application) {
+        throw new SquareCloudAPIError('APP_NOT_FOUND');
+      }
+
+      return application;
     }
+
     return applications;
   }
 
