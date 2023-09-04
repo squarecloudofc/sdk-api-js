@@ -1,0 +1,3 @@
+{
+  "extends": "@synclab/eslint-config/node"
+}
