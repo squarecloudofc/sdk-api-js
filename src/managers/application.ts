@@ -9,7 +9,11 @@ import { APIResponse, UploadedApplicationResponse } from '../types';
 import APIManager from './api';
 
 export default class ApplicationManager {
-  constructor(private readonly apiManager: APIManager) {}
+  readonly #apiManager: APIManager;
+
+  constructor(apiManager: APIManager) {
+    this.#apiManager = apiManager;
+  }
 
   /**
    * If the ID is provided, it will return an application that you can manage or get information
@@ -22,8 +26,8 @@ export default class ApplicationManager {
   async get(
     appId?: string,
   ): Promise<Application | Collection<string, Application>> {
-    const { response } = await this.apiManager.user();
-    const { applications } = new FullUser(this.apiManager, response);
+    const { response } = await this.#apiManager.user();
+    const { applications } = new FullUser(this.#apiManager, response);
 
     if (appId) {
       validateString(appId, 'APP_ID');
@@ -56,7 +60,7 @@ export default class ApplicationManager {
     formData.append('file', file, { filename: 'app.zip' });
 
     const data = <APIResponse<UploadedApplicationResponse>>(
-      await this.apiManager.fetch('apps/upload', {
+      await this.#apiManager.fetch('apps/upload', {
         method: 'POST',
         body: formData.getBuffer(),
         headers: formData.getHeaders(),

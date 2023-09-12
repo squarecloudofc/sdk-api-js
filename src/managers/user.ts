@@ -3,7 +3,11 @@ import User, { FullUser } from '../structures/user';
 import APIManager from './api';
 
 export default class UserManager {
-  constructor(private readonly apiManager: APIManager) {}
+  readonly #apiManager: APIManager;
+
+  constructor(apiManager: APIManager) {
+    this.#apiManager = apiManager;
+  }
 
   /**
    * Gets a user's informations
@@ -17,14 +21,14 @@ export default class UserManager {
       validateString(userId, 'USER_ID');
     }
 
-    const { response } = await this.apiManager.user(userId);
+    const { response } = await this.#apiManager.user(userId);
 
     const { email } = response.user;
     const hasAccess = email && email !== 'Access denied';
 
     if (hasAccess) {
-      return new FullUser(this.apiManager, response);
+      return new FullUser(this.#apiManager, response);
     }
-    return new User(this.apiManager, response);
+    return new User(response);
   }
 }

@@ -9,17 +9,20 @@ import {
 import APIManager from './api';
 
 export default class FilesManager {
-  constructor(
-    private readonly apiManager: APIManager,
-    private readonly appId: string,
-  ) {}
+  readonly #apiManager: APIManager;
+  private readonly appId: string;
+
+  constructor(apiManager: APIManager, appId: string) {
+    this.#apiManager = apiManager;
+    this.appId = appId;
+  }
 
   /**  */
   async list(path: string = '/') {
     validateString(path, 'LIST_FILES_PATH');
 
     const { response } = <APIResponse<ApplicationFilesListResponse>>(
-      await this.apiManager.application(`files/list?path=${path}`, this.appId)
+      await this.#apiManager.application(`files/list?path=${path}`, this.appId)
     );
 
     return response;
@@ -29,7 +32,7 @@ export default class FilesManager {
     validateString(path, 'READ_FILE_PATH');
 
     const { response } = <APIResponse<ApplicationFilesReadResponse>>(
-      await this.apiManager.application(`files/read?path=${path}`, this.appId)
+      await this.#apiManager.application(`files/read?path=${path}`, this.appId)
     );
 
     if (!response) {
@@ -45,7 +48,7 @@ export default class FilesManager {
       file = await readFile(file);
     }
 
-    const { status } = await this.apiManager.application(
+    const { status } = await this.#apiManager.application(
       `files/create`,
       this.appId,
       {
@@ -63,7 +66,7 @@ export default class FilesManager {
   async delete(path: string) {
     validateString(path, 'DELETE_FILE_PATH');
 
-    const { status } = await this.apiManager.application(
+    const { status } = await this.#apiManager.application(
       `files/delete?path=${path}`,
       this.appId,
       'DELETE',

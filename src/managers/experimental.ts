@@ -4,7 +4,11 @@ import { Prompt } from '../types/experimental';
 import APIManager from './api';
 
 export default class ExperimentalManager {
-  constructor(private readonly apiManager: APIManager) {}
+  readonly #apiManager: APIManager;
+
+  constructor(apiManager: APIManager) {
+    this.#apiManager = apiManager;
+  }
 
   /**
    * @experimental
@@ -20,7 +24,7 @@ export default class ExperimentalManager {
     }
     validateString(prompt.question);
 
-    const { response } = <APIResponse<string>>await this.apiManager.fetch(
+    const { response } = <APIResponse<string>>await this.#apiManager.fetch(
       'ai',
       {
         method: 'POST',

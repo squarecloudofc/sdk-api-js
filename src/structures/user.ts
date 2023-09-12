@@ -26,7 +26,7 @@ export default class User {
   /** Whether the user is blocked for Square Cloud services or not */
   blocklist: boolean;
 
-  constructor(_apiManager: APIManager, data: UserResponse) {
+  constructor(data: UserResponse) {
     this.id = data.user.id;
     this.tag = data.user.tag;
     this.locale = data.user.locale;
@@ -62,7 +62,7 @@ export class FullUser extends User {
   applications: Collection<string, Application>;
 
   constructor(apiManager: APIManager, data: UserResponse) {
-    super(apiManager, data);
+    super(data);
 
     this.email = data.user.email!;
     this.applications = new Collection(
