@@ -5,10 +5,7 @@ import APIManager from '../managers/api';
 import BackupManager from '../managers/backup';
 import FilesManager from '../managers/files';
 import {
-  APIResponse,
   ApplicationLanguage,
-  ApplicationLogsResponse,
-  ApplicationStatusResponse,
   ApplicationTier,
   Application as ApplicationType,
 } from '../types';
@@ -73,9 +70,7 @@ export default class Application {
 
   /** @returns The application current status information */
   async getStatus(): Promise<ApplicationStatusData> {
-    const data = <APIResponse<ApplicationStatusResponse>>(
-      await this.#apiManager.application('status', this.id)
-    );
+    const data = await this.#apiManager.application('status', this.id);
 
     const {
       network,
@@ -106,9 +101,7 @@ export default class Application {
 
   /** @returns The application logs */
   async getLogs(): Promise<string> {
-    const data = <APIResponse<ApplicationLogsResponse>>(
-      await this.#apiManager.application('logs', this.id)
-    );
+    const data = await this.#apiManager.application('logs', this.id);
 
     return data.response.logs;
   }
@@ -118,7 +111,12 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async start(): Promise<boolean> {
-    const data = await this.#apiManager.application('start', this.id, 'POST');
+    const data = await this.#apiManager.application(
+      'start',
+      this.id,
+      undefined,
+      'POST',
+    );
 
     return data?.code === 'ACTION_SENT';
   }
@@ -128,7 +126,12 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async stop(): Promise<boolean> {
-    const data = await this.#apiManager.application('stop', this.id, 'POST');
+    const data = await this.#apiManager.application(
+      'stop',
+      this.id,
+      undefined,
+      'POST',
+    );
 
     return data?.code === 'ACTION_SENT';
   }
@@ -138,7 +141,12 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async restart(): Promise<boolean> {
-    const data = await this.#apiManager.application('restart', this.id, 'POST');
+    const data = await this.#apiManager.application(
+      'restart',
+      this.id,
+      undefined,
+      'POST',
+    );
 
     return data?.code === 'ACTION_SENT';
   }
@@ -153,6 +161,7 @@ export default class Application {
     const data = await this.#apiManager.application(
       'delete',
       this.id,
+      undefined,
       'DELETE',
     );
 
@@ -194,8 +203,11 @@ export default class Application {
     formData.append('file', file, { filename: fileName || 'app.zip' });
 
     const data = await this.#apiManager.application(
-      `commit?restart=${Boolean(restart)}`,
+      `commit`,
       this.id,
+      {
+        restart: `${Boolean(restart)}`,
+      },
       {
         method: 'POST',
         body: formData.getBuffer(),

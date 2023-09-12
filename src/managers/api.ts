@@ -1,5 +1,11 @@
 import SquareCloudAPIError from '../structures/error';
-import { APIRootPath, APIVersion, UserResponse, APIResponse } from '../types';
+import {
+  APIApplicationEndpoints,
+  APIResponse,
+  APIRootPath,
+  APIVersion,
+  UserResponse,
+} from '../types';
 
 export default class APIManager {
   public readonly baseUrl = 'https://api.squarecloud.app';
@@ -10,26 +16,37 @@ export default class APIManager {
     return this.fetch('user' + (userId ? `/${userId}` : ''));
   }
 
-  application(
-    path: string,
-    appId: string,
+  application<T extends keyof APIApplicationEndpoints | (string & {})>(
+    path: T,
+    appId?: string,
+    params?: Record<string, string>,
     options?: RequestInit | 'GET' | 'POST' | 'DELETE',
-  ): Promise<APIResponse> {
+  ): Promise<
+    APIResponse<
+      T extends keyof APIApplicationEndpoints ? APIApplicationEndpoints[T] : any
+    >
+  > {
     if (typeof options === 'string') {
       options = {
         method: options,
       };
     }
 
-    return this.fetch(`apps/${appId}/${path}`, options);
+    const url =
+      'apps' +
+      (appId ? `/${appId}` : '') +
+      `/${path}` +
+      (params ? `?${new URLSearchParams(params)}` : '');
+
+    return this.fetch(url, options);
   }
 
-  async fetch(
+  async fetch<T extends any = any>(
     path: string,
     options: RequestInit = {},
     version: APIVersion<1 | 2> = 'v2',
     rootPath?: APIRootPath,
-  ): Promise<APIResponse> {
+  ): Promise<APIResponse<T>> {
     options = {
       ...options,
       method: options.method || 'GET',

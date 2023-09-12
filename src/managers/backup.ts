@@ -1,5 +1,4 @@
 import SquareCloudAPIError from '../structures/error';
-import { APIResponse, ApplicationBackupResponse } from '../types';
 import APIManager from './api';
 
 export default class BackupManager {
@@ -13,9 +12,7 @@ export default class BackupManager {
 
   /** @returns The generated backup URL */
   async url(): Promise<string> {
-    const data = <APIResponse<ApplicationBackupResponse>>(
-      await this.#apiManager.application('backup', this.appId)
-    );
+    const data = await this.#apiManager.application('backup', this.appId);
 
     return data.response.downloadURL;
   }

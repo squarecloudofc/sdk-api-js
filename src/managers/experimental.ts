@@ -1,5 +1,4 @@
 import { validateString } from '../assertions';
-import { APIResponse } from '../types';
 import { Prompt } from '../types/experimental';
 import APIManager from './api';
 
@@ -24,7 +23,7 @@ export default class ExperimentalManager {
     }
     validateString(prompt.question);
 
-    const { response } = <APIResponse<string>>await this.#apiManager.fetch(
+    const { response } = await this.#apiManager.fetch<string>(
       'ai',
       {
         method: 'POST',

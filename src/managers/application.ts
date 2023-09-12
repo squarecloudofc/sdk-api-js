@@ -5,7 +5,7 @@ import Application from '../structures/application';
 import Collection from '../structures/collection';
 import SquareCloudAPIError from '../structures/error';
 import { FullUser } from '../structures/user';
-import { APIResponse, UploadedApplicationResponse } from '../types';
+import { UploadedApplicationResponse } from '../types';
 import APIManager from './api';
 
 export default class ApplicationManager {
@@ -59,14 +59,17 @@ export default class ApplicationManager {
     const formData = new FormData();
     formData.append('file', file, { filename: 'app.zip' });
 
-    const data = <APIResponse<UploadedApplicationResponse>>(
-      await this.#apiManager.fetch('apps/upload', {
+    const data = await this.#apiManager.application(
+      'upload',
+      undefined,
+      undefined,
+      {
         method: 'POST',
         body: formData.getBuffer(),
         headers: formData.getHeaders(),
-      })
+      },
     );
 
-    return data?.response;
+    return data.response;
   }
 }

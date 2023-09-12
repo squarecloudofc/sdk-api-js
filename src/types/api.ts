@@ -81,6 +81,17 @@ export interface UserResponse {
   applications: Application[];
 }
 
+/** /apps - utils */
+
+export interface APIApplicationEndpoints {
+  upload: UploadedApplicationResponse;
+  status: ApplicationStatusResponse;
+  logs: ApplicationLogsResponse;
+  backup: ApplicationBackupResponse;
+  'files/list': ApplicationFilesListResponse;
+  'files/read': ApplicationFilesReadResponse;
+}
+
 /** /apps/upload */
 
 export interface UploadedApplicationLanguage {
