@@ -1,3 +1,7 @@
-pnpm-lock.yaml
-node_modules
-lib
+# build
+/lib/
+
+# dependencies
+/node_modules/
+yarn.lock
+package-lock.json
