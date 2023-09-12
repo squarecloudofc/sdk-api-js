@@ -2,10 +2,10 @@ import FormData from 'form-data';
 import { readFile } from 'fs/promises';
 import { validatePathLike, validateString } from '../assertions';
 import APIManager from '../managers/api';
+import BackupManager from '../managers/backup';
 import FilesManager from '../managers/files';
 import {
   APIResponse,
-  ApplicationBackupResponse,
   ApplicationLanguage,
   ApplicationLogsResponse,
   ApplicationStatusResponse,
@@ -51,6 +51,8 @@ export default class Application {
   isWebsite: boolean;
   /** Files manager for this application */
   files: FilesManager;
+  /** Backup manager for this application */
+  backup: BackupManager;
   /** @private API manager for this application */
   readonly #apiManager: APIManager;
 
@@ -65,6 +67,7 @@ export default class Application {
     this.isWebsite = data.isWebsite;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
     this.files = new FilesManager(apiManager, data.id);
+    this.backup = new BackupManager(apiManager, data.id);
     this.#apiManager = apiManager;
   }
 
@@ -108,15 +111,6 @@ export default class Application {
     );
 
     return data.response?.logs!;
-  }
-
-  /** @returns A backup download URL */
-  async backupURL(): Promise<string> {
-    const data = <APIResponse<ApplicationBackupResponse>>(
-      await this.#apiManager.application('backup', this.id)
-    );
-
-    return data.response?.downloadURL!;
   }
 
   /**
