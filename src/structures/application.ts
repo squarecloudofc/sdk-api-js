@@ -87,7 +87,7 @@ export default class Application {
       status,
       uptime,
       time,
-    } = data.response!;
+    } = data.response;
 
     return {
       status,
@@ -110,7 +110,7 @@ export default class Application {
       await this.#apiManager.application('logs', this.id)
     );
 
-    return data.response?.logs!;
+    return data.response.logs;
   }
 
   /**

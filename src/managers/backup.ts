@@ -17,7 +17,7 @@ export default class BackupManager {
       await this.#apiManager.application('backup', this.appId)
     );
 
-    return data.response?.downloadURL!;
+    return data.response.downloadURL;
   }
 
   /** @returns The generated backup buffer */
