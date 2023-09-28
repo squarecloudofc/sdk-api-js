@@ -23,6 +23,8 @@ export default class Application {
   id: string;
   /** The application display name */
   tag: string;
+  /** The application description */
+  description?: string;
   /** The url to manage the application via web */
   url: string;
   /** The application total ram */
@@ -56,6 +58,7 @@ export default class Application {
   constructor(apiManager: APIManager, data: ApplicationType) {
     this.id = data.id;
     this.tag = data.tag;
+    this.description = data.desc;
     this.ram = data.ram;
     this.lang = data.lang;
     this.tier = data.type;

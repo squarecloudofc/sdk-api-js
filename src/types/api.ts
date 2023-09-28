@@ -68,6 +68,7 @@ export interface UserPlanDuration {
 export interface Application {
   id: string;
   tag: string;
+  desc?: string;
   ram: number;
   lang: ApplicationLanguage;
   type: ApplicationTier;
