@@ -1,16 +1,13 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { SquareCloudAPI } from '..';
 import { validatePathLike, validateString } from '../assertions';
-import APIManager from './api';
 
 export default class FilesManager {
-  readonly #apiManager: APIManager;
-  private readonly appId: string;
-
-  constructor(apiManager: APIManager, appId: string) {
-    this.#apiManager = apiManager;
-    this.appId = appId;
-  }
+  constructor(
+    public readonly client: SquareCloudAPI,
+    private readonly appId: string,
+  ) {}
 
   /**
    * Lists the files inside a directory
@@ -20,7 +17,7 @@ export default class FilesManager {
   async list(path: string = '/') {
     validateString(path, 'LIST_FILES_PATH');
 
-    const { response } = await this.#apiManager.application(
+    const { response } = await this.client.api.application(
       'files/list',
       this.appId,
       { path },
@@ -37,7 +34,7 @@ export default class FilesManager {
   async read(path: string) {
     validateString(path, 'READ_FILE_PATH');
 
-    const { response } = await this.#apiManager.application(
+    const { response } = await this.client.api.application(
       'files/read',
       this.appId,
       { path },
@@ -64,7 +61,7 @@ export default class FilesManager {
       file = await readFile(file);
     }
 
-    const { status } = await this.#apiManager.application(
+    const { status } = await this.client.api.application(
       'files/create',
       this.appId,
       undefined,
@@ -88,7 +85,7 @@ export default class FilesManager {
   async delete(path: string) {
     validateString(path, 'DELETE_FILE_PATH');
 
-    const { status } = await this.#apiManager.application(
+    const { status } = await this.client.api.application(
       'files/delete',
       this.appId,
       { path },

@@ -1,7 +1,7 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
+import { SquareCloudAPI } from '..';
 import { validatePathLike, validateString } from '../assertions';
-import APIManager from '../managers/api';
 import BackupManager from '../managers/backup';
 import FilesManager from '../managers/files';
 import {
@@ -52,10 +52,11 @@ export default class Application {
   files: FilesManager;
   /** Backup manager for this application */
   backup: BackupManager;
-  /** @private API manager for this application */
-  readonly #apiManager: APIManager;
 
-  constructor(apiManager: APIManager, data: ApplicationType) {
+  constructor(
+    public readonly client: SquareCloudAPI,
+    data: ApplicationType,
+  ) {
     this.id = data.id;
     this.tag = data.tag;
     this.description = data.desc;
@@ -66,14 +67,13 @@ export default class Application {
     this.cluster = data.cluster;
     this.isWebsite = data.isWebsite;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
-    this.files = new FilesManager(apiManager, data.id);
-    this.backup = new BackupManager(apiManager, data.id);
-    this.#apiManager = apiManager;
+    this.files = new FilesManager(client, data.id);
+    this.backup = new BackupManager(client, data.id);
   }
 
   /** @returns The application current status information */
   async getStatus(): Promise<ApplicationStatusData> {
-    const data = await this.#apiManager.application('status', this.id);
+    const data = await this.client.api.application('status', this.id);
 
     const {
       network,
@@ -104,7 +104,7 @@ export default class Application {
 
   /** @returns The application logs */
   async getLogs(): Promise<string> {
-    const data = await this.#apiManager.application('logs', this.id);
+    const data = await this.client.api.application('logs', this.id);
 
     return data.response.logs;
   }
@@ -114,7 +114,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async start(): Promise<boolean> {
-    const data = await this.#apiManager.application(
+    const data = await this.client.api.application(
       'start',
       this.id,
       undefined,
@@ -129,7 +129,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async stop(): Promise<boolean> {
-    const data = await this.#apiManager.application(
+    const data = await this.client.api.application(
       'stop',
       this.id,
       undefined,
@@ -144,7 +144,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async restart(): Promise<boolean> {
-    const data = await this.#apiManager.application(
+    const data = await this.client.api.application(
       'restart',
       this.id,
       undefined,
@@ -161,7 +161,7 @@ export default class Application {
    * @returns `true` for success or `false` for fail
    */
   async delete(): Promise<boolean> {
-    const data = await this.#apiManager.application(
+    const data = await this.client.api.application(
       'delete',
       this.id,
       undefined,
@@ -205,7 +205,7 @@ export default class Application {
     const formData = new FormData();
     formData.append('file', file, { filename: fileName || 'app.zip' });
 
-    const data = await this.#apiManager.application(
+    const data = await this.client.api.application(
       `commit`,
       this.id,
       {

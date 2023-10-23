@@ -1,18 +1,15 @@
+import { SquareCloudAPI } from '..';
 import SquareCloudAPIError from '../structures/error';
-import APIManager from './api';
 
 export default class BackupManager {
-  readonly #apiManager: APIManager;
-  private readonly appId: string;
-
-  constructor(apiManager: APIManager, appId: string) {
-    this.#apiManager = apiManager;
-    this.appId = appId;
-  }
+  constructor(
+    public readonly client: SquareCloudAPI,
+    private readonly appId: string,
+  ) {}
 
   /** @returns The generated backup URL */
   async url(): Promise<string> {
-    const data = await this.#apiManager.application('backup', this.appId);
+    const data = await this.client.api.application('backup', this.appId);
 
     return data.response.downloadURL;
   }

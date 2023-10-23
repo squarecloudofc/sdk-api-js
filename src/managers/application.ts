@@ -1,19 +1,15 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
+import { SquareCloudAPI } from '..';
 import { validatePathLike, validateString } from '../assertions';
 import Application from '../structures/application';
 import Collection from '../structures/collection';
 import SquareCloudAPIError from '../structures/error';
 import { FullUser } from '../structures/user';
 import { UploadedApplicationResponse } from '../types';
-import APIManager from './api';
 
 export default class ApplicationManager {
-  readonly #apiManager: APIManager;
-
-  constructor(apiManager: APIManager) {
-    this.#apiManager = apiManager;
-  }
+  constructor(public readonly client: SquareCloudAPI) {}
 
   /**
    * If the ID is provided, it will return an application that you can manage or get information
@@ -26,8 +22,8 @@ export default class ApplicationManager {
   async get(
     appId?: string,
   ): Promise<Application | Collection<string, Application>> {
-    const { response } = await this.#apiManager.user();
-    const { applications } = new FullUser(this.#apiManager, response);
+    const { response } = await this.client.api.user();
+    const { applications } = new FullUser(this.client, response);
 
     if (appId) {
       validateString(appId, 'APP_ID');
@@ -59,7 +55,7 @@ export default class ApplicationManager {
     const formData = new FormData();
     formData.append('file', file, { filename: 'app.zip' });
 
-    const data = await this.#apiManager.application(
+    const data = await this.client.api.application(
       'upload',
       undefined,
       undefined,

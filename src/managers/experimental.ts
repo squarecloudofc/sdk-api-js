@@ -1,13 +1,9 @@
+import { SquareCloudAPI } from '..';
 import { validateString } from '../assertions';
 import { Prompt } from '../types/experimental';
-import APIManager from './api';
 
 export default class ExperimentalManager {
-  readonly #apiManager: APIManager;
-
-  constructor(apiManager: APIManager) {
-    this.#apiManager = apiManager;
-  }
+  constructor(public readonly client: SquareCloudAPI) {}
 
   /**
    * @experimental
@@ -23,7 +19,7 @@ export default class ExperimentalManager {
     }
     validateString(prompt.question);
 
-    const { response } = await this.#apiManager.fetch<string>(
+    const { response } = await this.client.api.fetch<string>(
       'ai',
       {
         method: 'POST',

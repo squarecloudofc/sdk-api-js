@@ -5,16 +5,16 @@ import ExperimentalManager from './managers/experimental';
 import UserManager from './managers/user';
 import { APIOptions } from './types';
 
-export class SquareCloudAPI {
+export class SquareCloudAPI<Ex extends boolean = boolean> {
   static apiInfo = {
     latestVersion: 'v2',
     baseUrl: 'https://api.squarecloud.app/',
   };
 
-  private apiManager: APIManager;
+  public readonly api: APIManager;
 
   /** Use experimental features */
-  public experimental?: ExperimentalManager;
+  public experimental: Ex extends true ? ExperimentalManager : undefined;
   /** The applications manager */
   public applications: ApplicationManager;
   /** The users manager */
@@ -26,14 +26,15 @@ export class SquareCloudAPI {
    * @param apiKey - Your API Token (generate at [Square Cloud Dashboard](https://squarecloud.app/dashboard))
    * @param options.experimental - Whether to enable experimental features
    */
-  constructor(apiKey: string, options?: APIOptions) {
+  constructor(apiKey: string, options?: APIOptions<Ex>) {
     validateString(apiKey, 'API_KEY');
 
-    this.apiManager = new APIManager(apiKey);
-    this.experimental = options?.experimental
-      ? new ExperimentalManager(this.apiManager)
-      : undefined;
-    this.applications = new ApplicationManager(this.apiManager);
-    this.users = new UserManager(this.apiManager);
+    this.experimental = (
+      options?.experimental ? new ExperimentalManager(this) : undefined
+    ) as Ex extends true ? ExperimentalManager : undefined;
+
+    this.api = new APIManager(apiKey);
+    this.applications = new ApplicationManager(this);
+    this.users = new UserManager(this);
   }
 }

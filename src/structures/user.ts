@@ -1,7 +1,7 @@
 /* eslint-disable no-redeclare */
 /* eslint-disable import/export */
 
-import APIManager from '../managers/api';
+import { SquareCloudAPI } from '..';
 import { UserResponse } from '../types';
 import { UserPlanData } from '../types/user';
 import Application from './application';
@@ -61,15 +61,12 @@ export class FullUser extends User {
   /** The user's registered applications Collection */
   applications: Collection<string, Application>;
 
-  constructor(apiManager: APIManager, data: UserResponse) {
+  constructor(client: SquareCloudAPI, data: UserResponse) {
     super(data);
 
     this.email = data.user.email!;
     this.applications = new Collection(
-      data.applications.map((app) => [
-        app.id,
-        new Application(apiManager, app),
-      ]),
+      data.applications.map((app) => [app.id, new Application(client, app)]),
     );
   }
 }
