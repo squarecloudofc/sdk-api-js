@@ -2,7 +2,6 @@ import SquareCloudAPIError from '../structures/error';
 import {
   APIApplicationEndpoints,
   APIResponse,
-  APIRootPath,
   APIVersion,
   UserResponse,
 } from '../types';
@@ -45,20 +44,20 @@ export default class APIManager {
     path: string,
     options: RequestInit = {},
     version: APIVersion<1 | 2> = 'v2',
-    rootPath?: APIRootPath,
   ): Promise<APIResponse<T>> {
-    options = {
-      ...options,
-      method: options.method || 'GET',
-      headers: { ...(options.headers || {}), Authorization: this.apiKey },
+    options.method = options.method || 'GET';
+    options.headers = {
+      ...(options.headers || {}),
+      Authorization: this.apiKey,
     };
 
     const res = await fetch(
-      `${this.baseUrl}/${version}${rootPath ? `/${rootPath}` : ''}/${path}`,
+      `${this.baseUrl}/${version}/${path}`,
       options,
     ).catch((err) => {
       throw new SquareCloudAPIError(err.code, err.message);
     });
+
     const data = await res.json();
 
     if (!data || data.status === 'error' || !res.ok) {
