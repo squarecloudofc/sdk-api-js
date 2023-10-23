@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "latest": "pnpm build && pnpm publish --tag latest",
+    "latest": "npm run build && npm run publish --tag latest",
     "build": "tsc",
     "lint": "eslint \"src/**/*.ts\" --fix"
   },
@@ -31,7 +31,7 @@
   "devDependencies": {
     "@synclab/eslint-config": "^1.1.2",
     "@types/node": "^20.8.7",
-    "eslint": "^8.48.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
     "typescript": "^5.2.2"
   },
   "repository": {

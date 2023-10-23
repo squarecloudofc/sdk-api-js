@@ -1,4 +1,4 @@
-import z from 'zod';
+import * as z from 'zod';
 import SquareCloudAPIError from './structures/error';
 
 const stringSchema = z.coerce.string();
