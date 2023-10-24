@@ -16,9 +16,9 @@ export class SquareCloudAPI extends TypedEventEmitter<APIEvents> {
   public readonly api: APIManager;
 
   /** The applications manager */
-  public applications: ApplicationManager;
+  public applications = new ApplicationManager(this);
   /** The users manager */
-  public users: UserManager;
+  public users = new UserManager(this);
   /** The global cache manager */
   public cache = new CacheManager();
 
@@ -33,8 +33,5 @@ export class SquareCloudAPI extends TypedEventEmitter<APIEvents> {
 
     validateString(apiKey, 'API_KEY');
     this.api = new APIManager(apiKey);
-
-    this.applications = new ApplicationManager(this);
-    this.users = new UserManager(this);
   }
 }
