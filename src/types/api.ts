@@ -5,7 +5,6 @@ import {
   ApplicationLanguage,
   ApplicationLanguageVersion,
   ApplicationStatus,
-  ApplicationTier,
   UserPlanName,
 } from './enums';
 
@@ -40,7 +39,6 @@ export interface User {
   locale: string;
   email: string;
   plan: UserPlan;
-  blocklist: boolean;
 }
 
 export interface UserPlan {
@@ -48,7 +46,8 @@ export interface UserPlan {
   name: UserPlanName;
   /** How much RAM memory the plan provides */
   memory: UserPlanMemory;
-  duration: UserPlanDuration;
+  /** The plan duration in millisseconds */
+  duration: number;
 }
 
 export interface UserPlanMemory {
@@ -60,18 +59,12 @@ export interface UserPlanMemory {
   used: number;
 }
 
-export interface UserPlanDuration {
-  formatted: string;
-  raw: number;
-}
-
 export interface Application {
   id: string;
   tag: string;
   desc?: string;
   ram: number;
   lang: ApplicationLanguage;
-  type: ApplicationTier;
   cluster: string;
   isWebsite: boolean;
   avatar: string;

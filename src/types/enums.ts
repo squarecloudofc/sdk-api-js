@@ -23,11 +23,6 @@ export enum ApplicationLanguageVersion {
   Latest = 'latest',
 }
 
-export enum ApplicationTier {
-  Free = 'free',
-  Paid = 'paid',
-}
-
 export enum ApplicationStatus {
   Exited = 'exited',
   Created = 'created',

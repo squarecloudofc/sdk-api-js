@@ -5,11 +5,7 @@ import { validatePathLike, validateString } from '../assertions';
 import ApplicationBackupManager from '../managers/application/backup';
 import ApplicationCacheManager from '../managers/application/cache';
 import ApplicationFilesManager from '../managers/application/files';
-import {
-  ApplicationLanguage,
-  ApplicationTier,
-  Application as ApplicationType,
-} from '../types';
+import { ApplicationLanguage, Application as ApplicationType } from '../types';
 import { ApplicationStatusData } from '../types/application';
 
 /**
@@ -41,8 +37,6 @@ export default class Application {
    * - 'go'
    */
   lang: ApplicationLanguage;
-  /** The application plan tier ('free' or 'paid') */
-  tier: ApplicationTier;
   /** The application avatar URL */
   avatar: string;
   /** The application current cluster */
@@ -65,7 +59,6 @@ export default class Application {
     this.description = data.desc;
     this.ram = data.ram;
     this.lang = data.lang;
-    this.tier = data.type;
     this.avatar = data.avatar;
     this.cluster = data.cluster;
     this.isWebsite = data.isWebsite;

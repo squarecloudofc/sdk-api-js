@@ -20,8 +20,6 @@ export default class User {
   locale: string;
   /** The user's current plan */
   plan: UserPlanData;
-  /** Whether the user is blocked for Square Cloud services or not */
-  blocklist: boolean;
   /** The user's registered email */
   email: string;
   /** The user's registered applications Collection */
@@ -31,13 +29,11 @@ export default class User {
     this.id = data.user.id;
     this.tag = data.user.tag;
     this.locale = data.user.locale;
-    this.blocklist = data.user.blocklist;
     this.plan = {
       ...data.user.plan,
-      duration: data.user.plan.duration.formatted,
-      expiresTimestamp: data.user.plan.duration.raw,
-      expires: data.user.plan.duration.raw
-        ? new Date(data.user.plan.duration.raw)
+      expiresTimestamp: data.user.plan.duration,
+      expires: data.user.plan.duration
+        ? new Date(data.user.plan.duration)
         : undefined,
     };
     this.email = data.user.email;
