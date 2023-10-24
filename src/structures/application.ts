@@ -2,8 +2,9 @@ import FormData from 'form-data';
 import { readFile } from 'fs/promises';
 import { SquareCloudAPI } from '..';
 import { validatePathLike, validateString } from '../assertions';
-import BackupManager from '../managers/backup';
-import FilesManager from '../managers/files';
+import ApplicationBackupManager from '../managers/application/backup';
+import ApplicationCacheManager from '../managers/application/cache';
+import ApplicationFilesManager from '../managers/application/files';
 import {
   ApplicationLanguage,
   ApplicationTier,
@@ -49,9 +50,11 @@ export default class Application {
   /** Whether the application is a website or not */
   isWebsite: boolean;
   /** Files manager for this application */
-  files: FilesManager;
+  files: ApplicationFilesManager;
   /** Backup manager for this application */
-  backup: BackupManager;
+  backup: ApplicationBackupManager;
+  /** Cache manager for this application */
+  cache = new ApplicationCacheManager();
 
   constructor(
     public readonly client: SquareCloudAPI,
@@ -67,8 +70,8 @@ export default class Application {
     this.cluster = data.cluster;
     this.isWebsite = data.isWebsite;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
-    this.files = new FilesManager(client, data.id);
-    this.backup = new BackupManager(client, data.id);
+    this.files = new ApplicationFilesManager(this);
+    this.backup = new ApplicationBackupManager(this);
   }
 
   /** @returns The application current status information */
@@ -87,7 +90,7 @@ export default class Application {
       time,
     } = data.response;
 
-    return {
+    const applicationStatus = {
       status,
       running,
       network,
@@ -100,13 +103,27 @@ export default class Application {
       lastCheckTimestamp: time || 0,
       lastCheck: time ? new Date(time) : undefined,
     };
+
+    this.client.emit(
+      'statusUpdate',
+      this,
+      this.cache.status,
+      applicationStatus,
+    );
+    this.cache.set('status', applicationStatus);
+
+    return applicationStatus;
   }
 
   /** @returns The application logs */
   async getLogs(): Promise<string> {
     const data = await this.client.api.application('logs', this.id);
+    const { logs } = data.response;
 
-    return data.response.logs;
+    this.client.emit('logsUpdate', this, this.cache.logs, logs);
+    this.cache.set('logs', logs);
+
+    return logs;
   }
 
   /**

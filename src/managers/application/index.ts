@@ -1,12 +1,12 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import { SquareCloudAPI } from '..';
-import { validatePathLike, validateString } from '../assertions';
-import Application from '../structures/application';
-import Collection from '../structures/collection';
-import SquareCloudAPIError from '../structures/error';
-import { FullUser } from '../structures/user';
-import { UploadedApplicationResponse } from '../types';
+import { SquareCloudAPI } from '../..';
+import { validatePathLike, validateString } from '../../assertions';
+import Application from '../../structures/application';
+import Collection from '../../structures/collection';
+import SquareCloudAPIError from '../../structures/error';
+import User from '../../structures/user';
+import { UploadedApplicationResponse } from '../../types';
 
 export default class ApplicationManager {
   constructor(public readonly client: SquareCloudAPI) {}
@@ -18,16 +18,19 @@ export default class ApplicationManager {
    * @param appId - The application ID, you must own the application
    */
   async get(): Promise<Collection<string, Application>>;
-  async get(appId: string): Promise<Application>;
+  async get(applicationId: string): Promise<Application>;
   async get(
-    appId?: string,
+    applicationId?: string,
   ): Promise<Application | Collection<string, Application>> {
     const { response } = await this.client.api.user();
-    const { applications } = new FullUser(this.client, response);
+    const user = new User(this.client, response);
 
-    if (appId) {
-      validateString(appId, 'APP_ID');
-      const application = applications.get(appId);
+    this.client.emit('userUpdate', this.client.cache.user, user);
+    this.client.cache.set('user', user);
+
+    if (applicationId) {
+      validateString(applicationId, 'APP_ID');
+      const application = user.applications.get(applicationId);
 
       if (!application) {
         throw new SquareCloudAPIError('APP_NOT_FOUND');
@@ -36,7 +39,7 @@ export default class ApplicationManager {
       return application;
     }
 
-    return applications;
+    return user.applications;
   }
 
   /**

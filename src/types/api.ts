@@ -38,7 +38,7 @@ export interface User {
   id: string;
   tag: string;
   locale: string;
-  email?: string | null;
+  email: string;
   plan: UserPlan;
   blocklist: boolean;
 }
