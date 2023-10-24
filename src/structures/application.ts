@@ -12,7 +12,7 @@ import { ApplicationStatusData } from '../types/application';
  * Represents a Square Cloud application
  *
  * @constructor
- * @param apiManager - The APIManager for this application
+ * @param client - The client for this application
  * @param data - The data from this application
  */
 export default class Application {

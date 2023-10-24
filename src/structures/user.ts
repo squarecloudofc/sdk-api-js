@@ -8,7 +8,7 @@ import Collection from './collection';
  * Represents a Square Cloud user
  *
  * @constructor
- * @param apiManager - The APIManager for this user
+ * @param client - The client for this user
  * @param data - The data from this user
  */
 export default class User {
