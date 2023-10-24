@@ -1,13 +1,14 @@
 /* eslint-disable no-unreachable */
 import { validateString } from './assertions';
-import APIManager from './managers/api';
-import ApplicationManager from './managers/application';
-import CacheManager from './managers/cache';
-import UserManager from './managers/user';
-import { APIEvents } from './types';
-import { TypedEventEmitter } from './types/eventemitter';
+import {
+  APIManager,
+  ApplicationManager,
+  CacheManager,
+  UserManager,
+} from './managers';
+import { ClientEvents, TypedEventEmitter } from './types';
 
-export class SquareCloudAPI extends TypedEventEmitter<APIEvents> {
+export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
   static apiInfo = {
     latestVersion: 'v2',
     baseUrl: 'https://api.squarecloud.app/',
@@ -35,3 +36,6 @@ export class SquareCloudAPI extends TypedEventEmitter<APIEvents> {
     this.api = new APIManager(apiKey);
   }
 }
+
+export * from './structures';
+export * from './types';

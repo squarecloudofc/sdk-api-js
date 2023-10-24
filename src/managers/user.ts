@@ -1,7 +1,6 @@
-import { SquareCloudAPI } from '..';
-import User from '../structures/user';
+import { SquareCloudAPI, User } from '..';
 
-export default class UserManager {
+export class UserManager {
   constructor(public readonly client: SquareCloudAPI) {}
 
   /**

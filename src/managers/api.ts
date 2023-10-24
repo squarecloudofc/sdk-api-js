@@ -1,4 +1,4 @@
-import SquareCloudAPIError from '../structures/error';
+import { SquareCloudAPIError } from '../structures';
 import {
   APIApplicationEndpoints,
   APIResponse,
@@ -6,7 +6,7 @@ import {
   UserResponse,
 } from '../types';
 
-export default class APIManager {
+export class APIManager {
   public readonly baseUrl = 'https://api.squarecloud.app';
 
   constructor(readonly apiKey: string) {}

@@ -2,10 +2,15 @@ import FormData from 'form-data';
 import { readFile } from 'fs/promises';
 import { SquareCloudAPI } from '..';
 import { validatePathLike, validateString } from '../assertions';
-import ApplicationBackupManager from '../managers/application/backup';
-import ApplicationCacheManager from '../managers/application/cache';
-import ApplicationFilesManager from '../managers/application/files';
-import { ApplicationLanguage, Application as ApplicationType } from '../types';
+import {
+  ApplicationBackupManager,
+  ApplicationCacheManager,
+  ApplicationFilesManager,
+} from '../managers';
+import {
+  ApplicationLanguage,
+  ApplicationData as ApplicationType,
+} from '../types';
 import { ApplicationStatusData } from '../types/application';
 
 /**
@@ -15,7 +20,7 @@ import { ApplicationStatusData } from '../types/application';
  * @param client - The client for this application
  * @param data - The data from this application
  */
-export default class Application {
+export class Application {
   /** The application Id */
   id: string;
   /** The application display name */
@@ -41,8 +46,6 @@ export default class Application {
   avatar: string;
   /** The application current cluster */
   cluster: string;
-  /** Whether the application is a website or not */
-  isWebsite: boolean;
   /** Files manager for this application */
   files: ApplicationFilesManager;
   /** Backup manager for this application */
@@ -61,7 +64,6 @@ export default class Application {
     this.lang = data.lang;
     this.avatar = data.avatar;
     this.cluster = data.cluster;
-    this.isWebsite = data.isWebsite;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
     this.files = new ApplicationFilesManager(this);
     this.backup = new ApplicationBackupManager(this);

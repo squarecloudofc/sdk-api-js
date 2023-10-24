@@ -1,10 +1,8 @@
-import Application from '../structures/application';
-import Collection from '../structures/collection';
-import User from '../structures/user';
+import { Application, Collection, User } from '../structures';
 
 export type CacheKey = 'user' | 'applications';
 
-export default class CacheManager {
+export class CacheManager {
   readonly user?: User;
   readonly applications?: Collection<string, Application>;
 

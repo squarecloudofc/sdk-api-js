@@ -1,8 +1,6 @@
-import { SquareCloudAPI } from '..';
+import { Application, Collection, SquareCloudAPI } from '..';
 import { UserResponse } from '../types';
 import { UserPlanData } from '../types/user';
-import Application from './application';
-import Collection from './collection';
 
 /**
  * Represents a Square Cloud user
@@ -11,7 +9,7 @@ import Collection from './collection';
  * @param client - The client for this user
  * @param data - The data from this user
  */
-export default class User {
+export class User {
   /** The user's id */
   id: string;
   /** The user's Discord tag */

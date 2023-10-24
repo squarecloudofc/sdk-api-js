@@ -1,4 +1,4 @@
-export default class SquareCloudAPIError extends TypeError {
+export class SquareCloudAPIError extends TypeError {
   constructor(code: string, message?: string) {
     super(code);
 

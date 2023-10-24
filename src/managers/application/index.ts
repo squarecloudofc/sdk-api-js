@@ -1,14 +1,16 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import { SquareCloudAPI } from '../..';
+import {
+  Application,
+  Collection,
+  SquareCloudAPI,
+  SquareCloudAPIError,
+  User,
+} from '../..';
 import { validatePathLike, validateString } from '../../assertions';
-import Application from '../../structures/application';
-import Collection from '../../structures/collection';
-import SquareCloudAPIError from '../../structures/error';
-import User from '../../structures/user';
 import { UploadedApplicationResponse } from '../../types';
 
-export default class ApplicationManager {
+export class ApplicationManager {
   constructor(public readonly client: SquareCloudAPI) {}
 
   /**
@@ -72,3 +74,7 @@ export default class ApplicationManager {
     return data.response;
   }
 }
+
+export * from './backup';
+export * from './cache';
+export * from './files';

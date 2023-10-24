@@ -33,7 +33,7 @@ export interface ServiceStatisticsResponse {
 
 /** /user/:userId? */
 
-export interface User {
+export interface UserData {
   id: string;
   tag: string;
   locale: string;
@@ -59,7 +59,7 @@ export interface UserPlanMemory {
   used: number;
 }
 
-export interface Application {
+export interface ApplicationData {
   id: string;
   tag: string;
   desc?: string;
@@ -71,8 +71,8 @@ export interface Application {
 }
 
 export interface UserResponse {
-  user: User;
-  applications: Application[];
+  user: UserData;
+  applications: ApplicationData[];
 }
 
 /** /apps - utils */

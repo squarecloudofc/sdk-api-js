@@ -1,7 +1,6 @@
-import Application from '../../structures/application';
-import SquareCloudAPIError from '../../structures/error';
+import { Application, SquareCloudAPIError } from '../../structures';
 
-export default class ApplicationBackupManager {
+export class ApplicationBackupManager {
   constructor(public readonly application: Application) {}
 
   /** @returns The generated backup URL */

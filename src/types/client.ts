@@ -1,4 +1,6 @@
 import EventEmitter from 'events';
+import { ApplicationStatusData } from './application';
+import { Application, User } from '../structures';
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
   private emitter = new EventEmitter();
@@ -23,4 +25,23 @@ export class TypedEventEmitter<TEvents extends Record<string, any>> {
   ) {
     this.emitter.off(eventName, handler as any);
   }
+}
+
+export interface ClientEvents {
+  logsUpdate: [
+    application: Application,
+    before: string | undefined,
+    after: string,
+  ];
+  backupUpdate: [
+    application: Application,
+    before: string | undefined,
+    after: string,
+  ];
+  statusUpdate: [
+    application: Application,
+    before: ApplicationStatusData | undefined,
+    after: ApplicationStatusData,
+  ];
+  userUpdate: [before: User | undefined, after: User];
 }

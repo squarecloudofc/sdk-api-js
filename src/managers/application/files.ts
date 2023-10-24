@@ -1,9 +1,9 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { validatePathLike, validateString } from '../../assertions';
-import Application from '../../structures/application';
+import { Application } from '../../structures';
 
-export default class ApplicationFilesManager {
+export class ApplicationFilesManager {
   constructor(public readonly application: Application) {}
 
   /**

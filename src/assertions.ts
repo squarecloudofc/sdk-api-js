@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import SquareCloudAPIError from './structures/error';
+import { SquareCloudAPIError } from './structures';
 
 const stringSchema = z.coerce.string();
 const booleanSchema = z.coerce.boolean();

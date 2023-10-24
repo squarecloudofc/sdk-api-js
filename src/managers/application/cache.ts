@@ -2,7 +2,7 @@ import { ApplicationStatusData } from '../../types/application';
 
 export type ApplicationCacheKey = 'status' | 'backup' | 'logs';
 
-export default class ApplicationCacheManager {
+export class ApplicationCacheManager {
   readonly status?: ApplicationStatusData;
   readonly backup?: string;
   readonly logs?: string;
