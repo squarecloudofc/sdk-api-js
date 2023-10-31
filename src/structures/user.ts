@@ -1,6 +1,6 @@
-import { Application, Collection, SquareCloudAPI } from "..";
-import { UserResponse } from "../types";
-import { UserPlanData } from "../types/user";
+import { BaseApplication, Collection, SquareCloudAPI } from "@";
+import { UserPlanData } from "@/types/user";
+import { APIUserInfo } from "@squarecloud/api-types/v2";
 
 /**
  * Represents a Square Cloud user
@@ -21,18 +21,18 @@ export class User {
   /** The user's registered email */
   email: string;
   /** The user's registered applications Collection */
-  applications: Collection<string, Application>;
+  applications: Collection<string, BaseApplication>;
 
-  constructor(client: SquareCloudAPI, data: UserResponse) {
+  constructor(client: SquareCloudAPI, data: APIUserInfo) {
     this.id = data.user.id;
     this.tag = data.user.tag;
     this.locale = data.user.locale;
     this.plan = {
       ...data.user.plan,
-      expiresTimestamp: data.user.plan.duration,
-      expires: data.user.plan.duration ? new Date(data.user.plan.duration) : undefined,
+      expiresInTimestamp: data.user.plan.duration ?? undefined,
+      expiresIn: data.user.plan.duration ? new Date(data.user.plan.duration) : undefined,
     };
     this.email = data.user.email;
-    this.applications = new Collection(data.applications.map((app) => [app.id, new Application(client, app)]));
+    this.applications = new Collection(data.applications.map((app) => [app.id, new BaseApplication(client, app)]));
   }
 }

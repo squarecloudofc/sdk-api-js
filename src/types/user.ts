@@ -1,8 +1,8 @@
-import { UserPlan } from "./api";
+import { APIUserPlan } from "@squarecloud/api-types/v2";
 
-export interface UserPlanData extends Omit<UserPlan, "duration"> {
-  /** When the plan was purchased in millisseconds */
-  expiresTimestamp?: number;
-  /** When the plan was purchased */
-  expires?: Date;
+export interface UserPlanData extends Omit<APIUserPlan, "duration"> {
+  /** In how many milliseconds the plan will expire */
+  expiresInTimestamp?: number;
+  /** In how much time the plan will expire */
+  expiresIn?: Date;
 }

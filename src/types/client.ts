@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import EventEmitter from "events";
-import { Application, User } from "../structures";
+import { Application, User } from "@/structures";
 import { ApplicationStatusData } from "./application";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {

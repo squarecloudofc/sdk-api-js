@@ -1,9 +1,8 @@
-import { ApplicationStatusNetwork } from "./api";
-import { ApplicationStatus } from "./enums";
+import { APIApplicationStatusNetwork, ApplicationStatus } from "@squarecloud/api-types/v2";
 
 export interface ApplicationStatusData {
   /** The application's network status */
-  network: ApplicationStatusNetwork;
+  network: APIApplicationStatusNetwork;
   /** How much storage the application is currently using */
   storageUsage: string;
   /** How much cpu the application is currently using */
@@ -29,8 +28,4 @@ export interface ApplicationStatusData {
   uptimeTimestamp: number;
   /** For how long the app is running */
   uptime?: Date;
-  /** The last time this information has been checked in millisseconds */
-  lastCheckTimestamp?: number;
-  /** The last time this information has been checked */
-  lastCheck?: Date;
 }

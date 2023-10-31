@@ -1,4 +1,4 @@
-import { Application, Collection, User } from "../structures";
+import { Application, Collection, User } from "..";
 
 export type CacheKey = "user" | "applications";
 

@@ -1,8 +1,9 @@
+import { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
-import { Application, Collection, SquareCloudAPI, SquareCloudAPIError, User } from "../..";
-import { validatePathLike, validateString } from "../../assertions";
-import { UploadedApplicationResponse } from "../../types";
+import { Application, Collection, SquareCloudAPI, SquareCloudAPIError, User } from "@";
+import { validatePathLike, validateString } from "@/assertions";
+import { BaseApplication } from "@/structures/application/base";
 
 export class ApplicationManager {
   constructor(public readonly client: SquareCloudAPI) {}
@@ -13,9 +14,9 @@ export class ApplicationManager {
    *
    * @param appId - The application ID, you must own the application
    */
-  async get(): Promise<Collection<string, Application>>;
+  async get(): Promise<Collection<string, BaseApplication>>;
   async get(applicationId: string): Promise<Application>;
-  async get(applicationId?: string): Promise<Application | Collection<string, Application>> {
+  async get(applicationId?: string): Promise<Application | Collection<string, BaseApplication>> {
     const { response } = await this.client.api.user();
     const user = new User(this.client, response);
 
@@ -30,7 +31,7 @@ export class ApplicationManager {
         throw new SquareCloudAPIError("APP_NOT_FOUND");
       }
 
-      return application;
+      return application.fetch();
     }
 
     return user.applications;
@@ -42,7 +43,7 @@ export class ApplicationManager {
    * @param file - The zip file path or Buffer
    * @returns The uploaded application data
    */
-  async create(file: string | Buffer): Promise<UploadedApplicationResponse> {
+  async create(file: string | Buffer): Promise<RESTPostAPIApplicationUploadResult> {
     validatePathLike(file, "COMMIT_DATA");
 
     if (typeof file === "string") {

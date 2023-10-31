@@ -1,7 +1,7 @@
+import { validatePathLike, validateString } from "@/assertions";
+import { Application } from "@";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { validatePathLike, validateString } from "../../assertions";
-import { Application } from "../../structures";
 
 export class ApplicationFilesManager {
   constructor(public readonly application: Application) {}

@@ -1,10 +1,11 @@
+import { validatePathLike, validateString } from "@/assertions";
+import { SquareCloudAPI } from "@";
+import { ApplicationBackupManager, ApplicationCacheManager, ApplicationFilesManager } from "@/managers";
+import { ApplicationStatusData } from "@/types/application";
+import { APIApplication, ApplicationLanguage } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
-import { SquareCloudAPI } from "../..";
-import { validatePathLike, validateString } from "../../assertions";
-import { ApplicationBackupManager, ApplicationCacheManager, ApplicationFilesManager } from "../../managers";
-import { ApplicationLanguage, ApplicationData as ApplicationType } from "../../types";
-import { ApplicationStatusData } from "../../types/application";
+import { WebsiteApplication } from "./website";
 
 /**
  * Represents a Square Cloud application
@@ -14,31 +15,35 @@ import { ApplicationStatusData } from "../../types/application";
  * @param data - The data from this application
  */
 export class Application {
-  /** The application Id */
+  /** The application ID */
   id: string;
   /** The application display name */
-  tag: string;
+  name: string;
   /** The application description */
   description?: string;
   /** The url to manage the application via web */
   url: string;
+  /** The application avatar URL */
+  avatar: string;
+  /** The application current cluster */
+  cluster: string;
   /** The application total ram */
   ram: number;
   /**
    * The application programming language
    *
-   * - 'javascript'
-   * - 'typescript'
-   * - 'python'
-   * - 'java'
-   * - 'rust'
-   * - 'go'
+   * - `javascript`
+   * - `typescript`
+   * - `python`
+   * - `java`
+   * - `elixir`
+   * - `rust`
+   * - `go`
+   * - `php`
    */
-  lang: ApplicationLanguage;
-  /** The application avatar URL */
-  avatar: string;
-  /** The application current cluster */
-  cluster: string;
+  language: ApplicationLanguage;
+  /** Whether this application has GitHub integration configured or not */
+  gitIntegration: boolean;
   /** Files manager for this application */
   files: ApplicationFilesManager;
   /** Backup manager for this application */
@@ -48,15 +53,16 @@ export class Application {
 
   constructor(
     public readonly client: SquareCloudAPI,
-    data: ApplicationType,
+    data: APIApplication,
   ) {
     this.id = data.id;
-    this.tag = data.tag;
+    this.name = data.name;
     this.description = data.desc;
-    this.ram = data.ram;
-    this.lang = data.lang;
     this.avatar = data.avatar;
     this.cluster = data.cluster;
+    this.ram = data.ram;
+    this.language = data.language;
+    this.gitIntegration = data.gitIntegration;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
     this.files = new ApplicationFilesManager(this);
     this.backup = new ApplicationBackupManager(this);
@@ -75,7 +81,6 @@ export class Application {
       running,
       status,
       uptime,
-      time,
     } = data.response;
 
     const applicationStatus = {
@@ -88,8 +93,6 @@ export class Application {
       storageUsage,
       uptimeTimestamp: uptime || 0,
       uptime: uptime ? new Date(uptime) : undefined,
-      lastCheckTimestamp: time || 0,
-      lastCheck: time ? new Date(time) : undefined,
     };
 
     this.client.emit("statusUpdate", this, this.cache.status, applicationStatus);
@@ -195,5 +198,10 @@ export class Application {
     );
 
     return data?.code === "SUCCESS";
+  }
+
+  isWebsite(): this is WebsiteApplication {
+    const domain = Reflect.get(this, "domain");
+    return Boolean(domain);
   }
 }
