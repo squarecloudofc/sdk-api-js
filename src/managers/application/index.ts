@@ -1,9 +1,9 @@
-import { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
-import FormData from "form-data";
-import { readFile } from "fs/promises";
 import { Application, Collection, SquareCloudAPI, SquareCloudAPIError, User } from "@";
 import { validatePathLike, validateString } from "@/assertions";
 import { BaseApplication } from "@/structures/application/base";
+import { APIApplicationStatusAll, RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
+import FormData from "form-data";
+import { readFile } from "fs/promises";
 
 export class ApplicationManager {
   constructor(public readonly client: SquareCloudAPI) {}
@@ -58,6 +58,15 @@ export class ApplicationManager {
       body: formData.getBuffer(),
       headers: formData.getHeaders(),
     });
+
+    return data.response;
+  }
+
+  /**
+   * Returns the status for all your applications
+   */
+  async status(): Promise<APIApplicationStatusAll[]> {
+    const data = await this.client.api.application("all/status");
 
     return data.response;
   }

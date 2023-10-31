@@ -3,6 +3,7 @@ import {
   APIApplicationBackup,
   APIApplicationLogs,
   APIApplicationStatus,
+  APIApplicationStatusAll,
   APIListedFile,
   APIReadFile,
   APIWebsiteApplication,
@@ -17,4 +18,5 @@ export interface APIApplicationEndpoints {
   backup: APIApplicationBackup;
   "files/list": APIListedFile[];
   "files/read": APIReadFile;
+  "all/status": APIApplicationStatusAll[];
 }
