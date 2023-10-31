@@ -1,7 +1,7 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
-import { validatePathLike, validateString } from '../../assertions';
-import { Application } from '../../structures';
+import { readFile } from "fs/promises";
+import { join } from "path";
+import { validatePathLike, validateString } from "../../assertions";
+import { Application } from "../../structures";
 
 export class ApplicationFilesManager {
   constructor(public readonly application: Application) {}
@@ -11,14 +11,10 @@ export class ApplicationFilesManager {
    *
    * @param path - The absolute directory path
    */
-  async list(path: string = '/') {
-    validateString(path, 'LIST_FILES_PATH');
+  async list(path: string = "/") {
+    validateString(path, "LIST_FILES_PATH");
 
-    const { response } = await this.application.client.api.application(
-      'files/list',
-      this.application.id,
-      { path },
-    );
+    const { response } = await this.application.client.api.application("files/list", this.application.id, { path });
 
     return response;
   }
@@ -29,13 +25,9 @@ export class ApplicationFilesManager {
    * @param path - The absolute file path
    */
   async read(path: string) {
-    validateString(path, 'READ_FILE_PATH');
+    validateString(path, "READ_FILE_PATH");
 
-    const { response } = await this.application.client.api.application(
-      'files/read',
-      this.application.id,
-      { path },
-    );
+    const { response } = await this.application.client.api.application("files/read", this.application.id, { path });
 
     if (!response) {
       return;
@@ -51,27 +43,22 @@ export class ApplicationFilesManager {
    * @param fileName - The file name with extension
    * @param path - The absolute file path
    */
-  async create(file: string | Buffer, fileName: string, path: string = '/') {
-    validatePathLike(file, 'CREATE_FILE');
+  async create(file: string | Buffer, fileName: string, path: string = "/") {
+    validatePathLike(file, "CREATE_FILE");
 
-    if (typeof file === 'string') {
+    if (typeof file === "string") {
       file = await readFile(file);
     }
 
-    const { status } = await this.application.client.api.application(
-      'files/create',
-      this.application.id,
-      undefined,
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          buffer: file.toJSON(),
-          path: join(path, fileName),
-        }),
-      },
-    );
+    const { status } = await this.application.client.api.application("files/create", this.application.id, undefined, {
+      method: "POST",
+      body: JSON.stringify({
+        buffer: file.toJSON(),
+        path: join(path, fileName),
+      }),
+    });
 
-    return status === 'success';
+    return status === "success";
   }
 
   /**
@@ -80,15 +67,15 @@ export class ApplicationFilesManager {
    * @param path - The absolute file or directory path
    */
   async delete(path: string) {
-    validateString(path, 'DELETE_FILE_PATH');
+    validateString(path, "DELETE_FILE_PATH");
 
     const { status } = await this.application.client.api.application(
-      'files/delete',
+      "files/delete",
       this.application.id,
       { path },
-      'DELETE',
+      "DELETE",
     );
 
-    return status === 'success';
+    return status === "success";
   }
 }

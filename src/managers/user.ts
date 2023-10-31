@@ -1,4 +1,4 @@
-import { SquareCloudAPI, User } from '..';
+import { SquareCloudAPI, User } from "..";
 
 export class UserManager {
   constructor(public readonly client: SquareCloudAPI) {}
@@ -12,8 +12,8 @@ export class UserManager {
     const { response } = await this.client.api.user();
     const user = new User(this.client, response);
 
-    this.client.emit('userUpdate', this.client.cache.user, user);
-    this.client.cache.set('user', user);
+    this.client.emit("userUpdate", this.client.cache.user, user);
+    this.client.cache.set("user", user);
 
     return user;
   }

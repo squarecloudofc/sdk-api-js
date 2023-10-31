@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 /* eslint-disable no-redeclare */
 /* eslint-disable import/export */
 /* eslint-disable no-use-before-define */
@@ -39,7 +40,7 @@ export class Collection<K, V> extends Map<K, V> {
   public first(): V | undefined;
   public first(amount: number): V[];
   public first(amount?: number): V | V[] | undefined {
-    if (typeof amount === 'undefined') {
+    if (typeof amount === "undefined") {
       return this.values().next().value;
     }
 
@@ -62,7 +63,7 @@ export class Collection<K, V> extends Map<K, V> {
   public last(amount: number): V[];
   public last(amount?: number): V | V[] | undefined {
     const arr = [...this.values()];
-    if (typeof amount === 'undefined') return arr[arr.length - 1];
+    if (typeof amount === "undefined") return arr[arr.length - 1];
     if (amount < 0) return this.first(amount * -1);
     if (!amount) return [];
     return arr.slice(-amount);
@@ -94,33 +95,23 @@ export class Collection<K, V> extends Map<K, V> {
    * collection.find(user => user.username === 'Bob');
    * ```
    */
-  public find<V2 extends V>(
-    fn: (value: V, key: K, collection: this) => value is V2,
-  ): V2 | undefined;
+  public find<V2 extends V>(fn: (value: V, key: K, collection: this) => value is V2): V2 | undefined;
 
-  public find(
-    fn: (value: V, key: K, collection: this) => unknown,
-  ): V | undefined;
+  public find(fn: (value: V, key: K, collection: this) => unknown): V | undefined;
 
   public find<This, V2 extends V>(
     fn: (this: This, value: V, key: K, collection: this) => value is V2,
     thisArg: This,
   ): V2 | undefined;
 
-  public find<This>(
-    fn: (this: This, value: V, key: K, collection: this) => unknown,
-    thisArg: This,
-  ): V | undefined;
+  public find<This>(fn: (this: This, value: V, key: K, collection: this) => unknown, thisArg: This): V | undefined;
 
-  public find(
-    fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown,
-  ): V | undefined {
-    if (typeof fn !== 'function') {
+  public find(fn: (value: V, key: K, collection: this) => unknown, thisArg?: unknown): V | undefined {
+    if (typeof fn !== "function") {
       throw new TypeError(`${fn} is not a function`);
     }
 
-    if (typeof thisArg !== 'undefined') {
+    if (typeof thisArg !== "undefined") {
       fn = fn.bind(thisArg);
     }
 
@@ -141,17 +132,11 @@ export class Collection<K, V> extends Map<K, V> {
    * collection.filter(user => user.username === 'Bob');
    * ```
    */
-  public filter<K2 extends K>(
-    fn: (value: V, key: K, collection: this) => key is K2,
-  ): Collection<K2, V>;
+  public filter<K2 extends K>(fn: (value: V, key: K, collection: this) => key is K2): Collection<K2, V>;
 
-  public filter<V2 extends V>(
-    fn: (value: V, key: K, collection: this) => value is V2,
-  ): Collection<K, V2>;
+  public filter<V2 extends V>(fn: (value: V, key: K, collection: this) => value is V2): Collection<K, V2>;
 
-  public filter(
-    fn: (value: V, key: K, collection: this) => unknown,
-  ): Collection<K, V>;
+  public filter(fn: (value: V, key: K, collection: this) => unknown): Collection<K, V>;
 
   public filter<This, K2 extends K>(
     fn: (this: This, value: V, key: K, collection: this) => key is K2,
@@ -163,20 +148,14 @@ export class Collection<K, V> extends Map<K, V> {
     thisArg: This,
   ): Collection<K, V2>;
 
-  public filter<This>(
-    fn: (this: This, value: V, key: K, collection: this) => unknown,
-    thisArg: This,
-  ): Collection<K, V>;
+  public filter<This>(fn: (this: This, value: V, key: K, collection: this) => unknown, thisArg: This): Collection<K, V>;
 
-  public filter(
-    fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown,
-  ): Collection<K, V> {
-    if (typeof fn !== 'function') {
+  public filter(fn: (value: V, key: K, collection: this) => unknown, thisArg?: unknown): Collection<K, V> {
+    if (typeof fn !== "function") {
       throw new TypeError(`${fn} is not a function`);
     }
 
-    if (typeof thisArg !== 'undefined') {
+    if (typeof thisArg !== "undefined") {
       fn = fn.bind(thisArg);
     }
 
@@ -200,20 +179,14 @@ export class Collection<K, V> extends Map<K, V> {
    * ```
    */
   public map<T>(fn: (value: V, key: K, collection: this) => T): T[];
-  public map<This, T>(
-    fn: (this: This, value: V, key: K, collection: this) => T,
-    thisArg: This,
-  ): T[];
+  public map<This, T>(fn: (this: This, value: V, key: K, collection: this) => T, thisArg: This): T[];
 
-  public map<T>(
-    fn: (value: V, key: K, collection: this) => T,
-    thisArg?: unknown,
-  ): T[] {
-    if (typeof fn !== 'function') {
+  public map<T>(fn: (value: V, key: K, collection: this) => T, thisArg?: unknown): T[] {
+    if (typeof fn !== "function") {
       throw new TypeError(`${fn} is not a function`);
     }
 
-    if (typeof thisArg !== 'undefined') {
+    if (typeof thisArg !== "undefined") {
       fn = fn.bind(thisArg);
     }
 
@@ -235,20 +208,14 @@ export class Collection<K, V> extends Map<K, V> {
    * ```
    */
   public some(fn: (value: V, key: K, collection: this) => unknown): boolean;
-  public some<T>(
-    fn: (this: T, value: V, key: K, collection: this) => unknown,
-    thisArg: T,
-  ): boolean;
+  public some<T>(fn: (this: T, value: V, key: K, collection: this) => unknown, thisArg: T): boolean;
 
-  public some(
-    fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown,
-  ): boolean {
-    if (typeof fn !== 'function') {
+  public some(fn: (value: V, key: K, collection: this) => unknown, thisArg?: unknown): boolean {
+    if (typeof fn !== "function") {
       throw new TypeError(`${fn} is not a function`);
     }
 
-    if (typeof thisArg !== 'undefined') {
+    if (typeof thisArg !== "undefined") {
       fn = fn.bind(thisArg);
     }
 
@@ -270,13 +237,9 @@ export class Collection<K, V> extends Map<K, V> {
    * collection.every(user => !user.bot);
    * ```
    */
-  public every<K2 extends K>(
-    fn: (value: V, key: K, collection: this) => key is K2,
-  ): this is Collection<K2, V>;
+  public every<K2 extends K>(fn: (value: V, key: K, collection: this) => key is K2): this is Collection<K2, V>;
 
-  public every<V2 extends V>(
-    fn: (value: V, key: K, collection: this) => value is V2,
-  ): this is Collection<K, V2>;
+  public every<V2 extends V>(fn: (value: V, key: K, collection: this) => value is V2): this is Collection<K, V2>;
 
   public every(fn: (value: V, key: K, collection: this) => unknown): boolean;
   public every<This, K2 extends K>(
@@ -289,20 +252,14 @@ export class Collection<K, V> extends Map<K, V> {
     thisArg: This,
   ): this is Collection<K, V2>;
 
-  public every<This>(
-    fn: (this: This, value: V, key: K, collection: this) => unknown,
-    thisArg: This,
-  ): boolean;
+  public every<This>(fn: (this: This, value: V, key: K, collection: this) => unknown, thisArg: This): boolean;
 
-  public every(
-    fn: (value: V, key: K, collection: this) => unknown,
-    thisArg?: unknown,
-  ): boolean {
-    if (typeof fn !== 'function') {
+  public every(fn: (value: V, key: K, collection: this) => unknown, thisArg?: unknown): boolean {
+    if (typeof fn !== "function") {
       throw new TypeError(`${fn} is not a function`);
     }
 
-    if (typeof thisArg !== 'undefined') {
+    if (typeof thisArg !== "undefined") {
       fn = fn.bind(thisArg);
     }
 
@@ -325,16 +282,13 @@ export class Collection<K, V> extends Map<K, V> {
    * collection.reduce((acc, guild) => acc + guild.memberCount, 0);
    * ```
    */
-  public reduce<T>(
-    fn: (accumulator: T, value: V, key: K, collection: this) => T,
-    initialValue?: T,
-  ): T {
-    if (typeof fn !== 'function') {
+  public reduce<T>(fn: (accumulator: T, value: V, key: K, collection: this) => T, initialValue?: T): T {
+    if (typeof fn !== "function") {
       throw new TypeError(`${fn} is not a function`);
     }
     let accumulator!: T;
 
-    if (typeof initialValue !== 'undefined') {
+    if (typeof initialValue !== "undefined") {
       accumulator = initialValue;
       for (const [key, val] of this) {
         accumulator = fn(accumulator, val, key, this);
@@ -354,7 +308,7 @@ export class Collection<K, V> extends Map<K, V> {
     }
 
     if (first) {
-      throw new TypeError('Reduce of empty collection with no initial value');
+      throw new TypeError("Reduce of empty collection with no initial value");
     }
 
     return accumulator;
@@ -376,16 +330,10 @@ export class Collection<K, V> extends Map<K, V> {
    * ```
    */
   public each(fn: (value: V, key: K, collection: this) => void): this;
-  public each<T>(
-    fn: (this: T, value: V, key: K, collection: this) => void,
-    thisArg: T,
-  ): this;
+  public each<T>(fn: (this: T, value: V, key: K, collection: this) => void, thisArg: T): this;
 
-  public each(
-    fn: (value: V, key: K, collection: this) => void,
-    thisArg?: unknown,
-  ): this {
-    if (typeof fn !== 'function') {
+  public each(fn: (value: V, key: K, collection: this) => void, thisArg?: unknown): this {
+    if (typeof fn !== "function") {
       throw new TypeError(`${fn} is not a function`);
     }
 

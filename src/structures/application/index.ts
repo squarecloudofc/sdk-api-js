@@ -1,17 +1,10 @@
-import FormData from 'form-data';
-import { readFile } from 'fs/promises';
-import { SquareCloudAPI } from '../..';
-import { validatePathLike, validateString } from '../../assertions';
-import {
-  ApplicationBackupManager,
-  ApplicationCacheManager,
-  ApplicationFilesManager,
-} from '../../managers';
-import {
-  ApplicationLanguage,
-  ApplicationData as ApplicationType,
-} from '../../types';
-import { ApplicationStatusData } from '../../types/application';
+import FormData from "form-data";
+import { readFile } from "fs/promises";
+import { SquareCloudAPI } from "../..";
+import { validatePathLike, validateString } from "../../assertions";
+import { ApplicationBackupManager, ApplicationCacheManager, ApplicationFilesManager } from "../../managers";
+import { ApplicationLanguage, ApplicationData as ApplicationType } from "../../types";
+import { ApplicationStatusData } from "../../types/application";
 
 /**
  * Represents a Square Cloud application
@@ -71,7 +64,7 @@ export class Application {
 
   /** @returns The application current status information */
   async getStatus(): Promise<ApplicationStatusData> {
-    const data = await this.client.api.application('status', this.id);
+    const data = await this.client.api.application("status", this.id);
 
     const {
       network,
@@ -99,24 +92,19 @@ export class Application {
       lastCheck: time ? new Date(time) : undefined,
     };
 
-    this.client.emit(
-      'statusUpdate',
-      this,
-      this.cache.status,
-      applicationStatus,
-    );
-    this.cache.set('status', applicationStatus);
+    this.client.emit("statusUpdate", this, this.cache.status, applicationStatus);
+    this.cache.set("status", applicationStatus);
 
     return applicationStatus;
   }
 
   /** @returns The application logs */
   async getLogs(): Promise<string> {
-    const data = await this.client.api.application('logs', this.id);
+    const data = await this.client.api.application("logs", this.id);
     const { logs } = data.response;
 
-    this.client.emit('logsUpdate', this, this.cache.logs, logs);
-    this.cache.set('logs', logs);
+    this.client.emit("logsUpdate", this, this.cache.logs, logs);
+    this.cache.set("logs", logs);
 
     return logs;
   }
@@ -126,14 +114,9 @@ export class Application {
    * @returns `true` for success or `false` for fail
    */
   async start(): Promise<boolean> {
-    const data = await this.client.api.application(
-      'start',
-      this.id,
-      undefined,
-      'POST',
-    );
+    const data = await this.client.api.application("start", this.id, undefined, "POST");
 
-    return data?.code === 'ACTION_SENT';
+    return data?.code === "ACTION_SENT";
   }
 
   /**
@@ -141,14 +124,9 @@ export class Application {
    * @returns `true` for success or `false` for fail
    */
   async stop(): Promise<boolean> {
-    const data = await this.client.api.application(
-      'stop',
-      this.id,
-      undefined,
-      'POST',
-    );
+    const data = await this.client.api.application("stop", this.id, undefined, "POST");
 
-    return data?.code === 'ACTION_SENT';
+    return data?.code === "ACTION_SENT";
   }
 
   /**
@@ -156,14 +134,9 @@ export class Application {
    * @returns `true` for success or `false` for fail
    */
   async restart(): Promise<boolean> {
-    const data = await this.client.api.application(
-      'restart',
-      this.id,
-      undefined,
-      'POST',
-    );
+    const data = await this.client.api.application("restart", this.id, undefined, "POST");
 
-    return data?.code === 'ACTION_SENT';
+    return data?.code === "ACTION_SENT";
   }
 
   /**
@@ -173,14 +146,9 @@ export class Application {
    * @returns `true` for success or `false` for fail
    */
   async delete(): Promise<boolean> {
-    const data = await this.client.api.application(
-      'delete',
-      this.id,
-      undefined,
-      'DELETE',
-    );
+    const data = await this.client.api.application("delete", this.id, undefined, "DELETE");
 
-    return data?.code === 'APP_DELETED';
+    return data?.code === "APP_DELETED";
   }
 
   /**
@@ -199,23 +167,19 @@ export class Application {
    * @param restart - Whether the application should be restarted after the commit
    * @returns `true` for success or `false` for fail
    */
-  async commit(
-    file: string | Buffer,
-    fileName?: string,
-    restart?: boolean,
-  ): Promise<boolean> {
-    validatePathLike(file, 'COMMIT_DATA');
+  async commit(file: string | Buffer, fileName?: string, restart?: boolean): Promise<boolean> {
+    validatePathLike(file, "COMMIT_DATA");
 
     if (fileName) {
-      validateString(fileName, 'FILE_NAME');
+      validateString(fileName, "FILE_NAME");
     }
 
-    if (typeof file === 'string') {
+    if (typeof file === "string") {
       file = await readFile(file);
     }
 
     const formData = new FormData();
-    formData.append('file', file, { filename: fileName || 'app.zip' });
+    formData.append("file", file, { filename: fileName || "app.zip" });
 
     const data = await this.client.api.application(
       `commit`,
@@ -224,12 +188,12 @@ export class Application {
         restart: `${Boolean(restart)}`,
       },
       {
-        method: 'POST',
+        method: "POST",
         body: formData.getBuffer(),
         headers: formData.getHeaders(),
       },
     );
 
-    return data?.code === 'SUCCESS';
+    return data?.code === "SUCCESS";
   }
 }

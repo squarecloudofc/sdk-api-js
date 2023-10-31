@@ -1,16 +1,13 @@
-import { ApplicationStatusData } from '../../types/application';
+import { ApplicationStatusData } from "../../types/application";
 
-export type ApplicationCacheKey = 'status' | 'backup' | 'logs';
+export type ApplicationCacheKey = "status" | "backup" | "logs";
 
 export class ApplicationCacheManager {
   readonly status?: ApplicationStatusData;
   readonly backup?: string;
   readonly logs?: string;
 
-  set<T extends ApplicationCacheKey>(
-    key: T,
-    value: ApplicationCacheManager[T],
-  ) {
+  set<T extends ApplicationCacheKey>(key: T, value: ApplicationCacheManager[T]) {
     Reflect.set(this, key, value);
   }
 
@@ -22,9 +19,9 @@ export class ApplicationCacheManager {
     if (key) {
       Reflect.set(this, key, undefined);
     } else {
-      Reflect.set(this, 'status', undefined);
-      Reflect.set(this, 'backup', undefined);
-      Reflect.set(this, 'logs', undefined);
+      Reflect.set(this, "status", undefined);
+      Reflect.set(this, "backup", undefined);
+      Reflect.set(this, "logs", undefined);
     }
   }
 }

@@ -6,11 +6,11 @@ import {
   ApplicationLanguageVersion,
   ApplicationStatus,
   UserPlanName,
-} from './enums';
+} from "./enums";
 
-export type APIResponseStatus = 'error' | 'success';
+export type APIResponseStatus = "error" | "success";
 
-export interface APIResponse<TResponse = any> {
+export interface APIResponse<TResponse = unknown> {
   response: TResponse;
   status: APIResponseStatus;
   code?: string | null;
@@ -82,8 +82,8 @@ export interface APIApplicationEndpoints {
   status: ApplicationStatusResponse;
   logs: ApplicationLogsResponse;
   backup: ApplicationBackupResponse;
-  'files/list': ApplicationFilesListResponse;
-  'files/read': ApplicationFilesReadResponse;
+  "files/list": ApplicationFilesListResponse;
+  "files/read": ApplicationFilesReadResponse;
 }
 
 /** /apps/upload */

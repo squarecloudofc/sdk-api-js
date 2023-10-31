@@ -1,5 +1,5 @@
-import { ApplicationStatusNetwork } from './api';
-import { ApplicationStatus } from './enums';
+import { ApplicationStatusNetwork } from "./api";
+import { ApplicationStatus } from "./enums";
 
 export interface ApplicationStatusData {
   /** The application's network status */

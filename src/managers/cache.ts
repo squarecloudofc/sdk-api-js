@@ -1,6 +1,6 @@
-import { Application, Collection, User } from '../structures';
+import { Application, Collection, User } from "../structures";
 
-export type CacheKey = 'user' | 'applications';
+export type CacheKey = "user" | "applications";
 
 export class CacheManager {
   readonly user?: User;
@@ -18,8 +18,8 @@ export class CacheManager {
     if (key) {
       Reflect.set(this, key, undefined);
     } else {
-      Reflect.set(this, 'user', undefined);
-      Reflect.set(this, 'applications', undefined);
+      Reflect.set(this, "user", undefined);
+      Reflect.set(this, "applications", undefined);
     }
   }
 }

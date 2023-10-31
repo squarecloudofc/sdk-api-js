@@ -1,14 +1,12 @@
-import EventEmitter from 'events';
-import { ApplicationStatusData } from './application';
-import { Application, User } from '../structures';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import EventEmitter from "events";
+import { Application, User } from "../structures";
+import { ApplicationStatusData } from "./application";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
   private emitter = new EventEmitter();
 
-  emit<TEventName extends keyof TEvents & string>(
-    eventName: TEventName,
-    ...eventArg: TEvents[TEventName]
-  ) {
+  emit<TEventName extends keyof TEvents & string>(eventName: TEventName, ...eventArg: TEvents[TEventName]) {
     this.emitter.emit(eventName, ...(eventArg as []));
   }
 
@@ -28,20 +26,8 @@ export class TypedEventEmitter<TEvents extends Record<string, any>> {
 }
 
 export interface ClientEvents {
-  logsUpdate: [
-    application: Application,
-    before: string | undefined,
-    after: string,
-  ];
-  backupUpdate: [
-    application: Application,
-    before: string | undefined,
-    after: string,
-  ];
-  statusUpdate: [
-    application: Application,
-    before: ApplicationStatusData | undefined,
-    after: ApplicationStatusData,
-  ];
+  logsUpdate: [application: Application, before: string | undefined, after: string];
+  backupUpdate: [application: Application, before: string | undefined, after: string];
+  statusUpdate: [application: Application, before: ApplicationStatusData | undefined, after: ApplicationStatusData];
   userUpdate: [before: User | undefined, after: User];
 }

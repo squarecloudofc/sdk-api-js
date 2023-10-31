@@ -1,6 +1,6 @@
-import { Application, Collection, SquareCloudAPI } from '..';
-import { UserResponse } from '../types';
-import { UserPlanData } from '../types/user';
+import { Application, Collection, SquareCloudAPI } from "..";
+import { UserResponse } from "../types";
+import { UserPlanData } from "../types/user";
 
 /**
  * Represents a Square Cloud user
@@ -30,13 +30,9 @@ export class User {
     this.plan = {
       ...data.user.plan,
       expiresTimestamp: data.user.plan.duration,
-      expires: data.user.plan.duration
-        ? new Date(data.user.plan.duration)
-        : undefined,
+      expires: data.user.plan.duration ? new Date(data.user.plan.duration) : undefined,
     };
     this.email = data.user.email;
-    this.applications = new Collection(
-      data.applications.map((app) => [app.id, new Application(client, app)]),
-    );
+    this.applications = new Collection(data.applications.map((app) => [app.id, new Application(client, app)]));
   }
 }
