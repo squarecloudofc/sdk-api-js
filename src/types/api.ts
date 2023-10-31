@@ -3,8 +3,8 @@ import {
   APIApplicationBackup,
   APIApplicationLogs,
   APIApplicationStatus,
-  APIBufferFile,
-  APIFile,
+  APIListedFile,
+  APIReadFile,
   APIWebsiteApplication,
   RESTPostAPIApplicationUploadResult,
 } from "@squarecloud/api-types/v2";
@@ -15,6 +15,6 @@ export interface APIApplicationEndpoints {
   status: APIApplicationStatus;
   logs: APIApplicationLogs;
   backup: APIApplicationBackup;
-  "files/list": APIFile[];
-  "files/read": APIBufferFile;
+  "files/list": APIListedFile[];
+  "files/read": APIReadFile;
 }

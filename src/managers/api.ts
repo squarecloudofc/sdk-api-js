@@ -1,14 +1,14 @@
-import { APICommonPayload, APIUserInfo } from "@squarecloud/api-types/v2";
+import { APIPayload, APIUserInfo, APIVersion } from "@squarecloud/api-types/v2";
 import { SquareCloudAPIError } from "../structures";
 import { APIApplicationEndpoints } from "../types";
 
 export class APIManager {
   public readonly baseUrl = "https://api.squarecloud.app";
-  public readonly version = "v2";
+  public readonly version: APIVersion<1 | 2> = "v2";
 
   constructor(readonly apiKey: string) {}
 
-  user(userId?: string): Promise<APICommonPayload<APIUserInfo>> {
+  user(userId?: string): Promise<APIPayload<APIUserInfo>> {
     return this.fetch("user" + (userId ? `/${userId}` : ""));
   }
 
@@ -17,7 +17,7 @@ export class APIManager {
     appId?: string,
     params?: Record<string, string>,
     options?: RequestInit | "GET" | "POST" | "DELETE",
-  ): Promise<APICommonPayload<T extends keyof APIApplicationEndpoints ? APIApplicationEndpoints[T] : never>> {
+  ): Promise<APIPayload<T extends keyof APIApplicationEndpoints ? APIApplicationEndpoints[T] : never>> {
     if (typeof options === "string") {
       options = {
         method: options,
@@ -33,7 +33,7 @@ export class APIManager {
     return this.fetch(url, options);
   }
 
-  async fetch<T>(path: string, options: RequestInit = {}): Promise<APICommonPayload<T>> {
+  async fetch<T>(path: string, options: RequestInit = {}): Promise<APIPayload<T>> {
     options.method = options.method || "GET";
     options.headers = {
       ...(options.headers || {}),
