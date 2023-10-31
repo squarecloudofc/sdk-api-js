@@ -1,17 +1,17 @@
 import FormData from 'form-data';
 import { readFile } from 'fs/promises';
-import { SquareCloudAPI } from '..';
-import { validatePathLike, validateString } from '../assertions';
+import { SquareCloudAPI } from '../..';
+import { validatePathLike, validateString } from '../../assertions';
 import {
   ApplicationBackupManager,
   ApplicationCacheManager,
   ApplicationFilesManager,
-} from '../managers';
+} from '../../managers';
 import {
   ApplicationLanguage,
   ApplicationData as ApplicationType,
-} from '../types';
-import { ApplicationStatusData } from '../types/application';
+} from '../../types';
+import { ApplicationStatusData } from '../../types/application';
 
 /**
  * Represents a Square Cloud application
