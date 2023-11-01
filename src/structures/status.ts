@@ -61,9 +61,7 @@ export class ApplicationStatus extends SimpleApplicationStatus {
   ) {
     super(client, {
       id: applicationId,
-      cpu: data.cpu,
-      ram: data.ram,
-      running: data.running,
+      ...data,
     });
 
     this.usage = {
