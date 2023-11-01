@@ -1,10 +1,9 @@
-import { Application, Collection, User } from "..";
+import { User } from "..";
 
-export type CacheKey = "user" | "applications";
+export type CacheKey = "user";
 
 export class CacheManager {
   readonly user?: User;
-  readonly applications?: Collection<string, Application>;
 
   set<T extends CacheKey>(key: T, value: CacheManager[T]) {
     Reflect.set(this, key, value);
@@ -14,12 +13,7 @@ export class CacheManager {
     return this[key];
   }
 
-  clear(key?: CacheKey) {
-    if (key) {
-      Reflect.set(this, key, undefined);
-    } else {
-      Reflect.set(this, "user", undefined);
-      Reflect.set(this, "applications", undefined);
-    }
+  clear() {
+    Reflect.set(this, "user", undefined);
   }
 }
