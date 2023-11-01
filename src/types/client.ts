@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Application, ApplicationStatus, User } from "@/structures";
 import EventEmitter from "events";
-import { Application, User } from "@/structures";
-import { ApplicationStatusData } from "./application";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
   private emitter = new EventEmitter();
@@ -28,6 +27,6 @@ export class TypedEventEmitter<TEvents extends Record<string, any>> {
 export interface ClientEvents {
   logsUpdate: [application: Application, before: string | undefined, after: string];
   backupUpdate: [application: Application, before: string | undefined, after: string];
-  statusUpdate: [application: Application, before: ApplicationStatusData | undefined, after: ApplicationStatusData];
+  statusUpdate: [application: Application, before: ApplicationStatus | undefined, after: ApplicationStatus];
   userUpdate: [before: User | undefined, after: User];
 }

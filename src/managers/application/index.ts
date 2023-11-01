@@ -1,7 +1,7 @@
 import { Application, Collection, SquareCloudAPI, SquareCloudAPIError, User } from "@";
 import { validatePathLike, validateString } from "@/assertions";
-import { BaseApplication } from "@/structures/application/base";
-import { APIApplicationStatusAll, RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
+import { BaseApplication, SimpleApplicationStatus } from "@/structures";
+import { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
 
@@ -65,10 +65,10 @@ export class ApplicationManager {
   /**
    * Returns the status for all your applications
    */
-  async status(): Promise<APIApplicationStatusAll[]> {
+  async status(): Promise<SimpleApplicationStatus[]> {
     const data = await this.client.api.application("all/status");
 
-    return data.response;
+    return data.response.map((status) => new SimpleApplicationStatus(this.client, status));
   }
 }
 

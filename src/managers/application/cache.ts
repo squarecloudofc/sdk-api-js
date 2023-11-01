@@ -1,9 +1,9 @@
-import { ApplicationStatusData } from "@/types/application";
+import { ApplicationStatus } from "@/structures";
 
 export type ApplicationCacheKey = "status" | "backup" | "logs";
 
 export class ApplicationCacheManager {
-  readonly status?: ApplicationStatusData;
+  readonly status?: ApplicationStatus;
   readonly backup?: string;
   readonly logs?: string;
 

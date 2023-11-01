@@ -1,4 +1,4 @@
-import { SquareCloudAPI } from "@";
+import { ApplicationStatus, SquareCloudAPI } from "@";
 import { validatePathLike, validateString } from "@/assertions";
 import {
   ApplicationBackupManager,
@@ -6,7 +6,6 @@ import {
   ApplicationDeploysManager,
   ApplicationFilesManager,
 } from "@/managers";
-import { ApplicationStatusData } from "@/types/application";
 import { APIApplication, ApplicationLanguage } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
@@ -74,36 +73,14 @@ export class Application {
   }
 
   /** @returns The application current status information */
-  async getStatus(): Promise<ApplicationStatusData> {
+  async getStatus(): Promise<ApplicationStatus> {
     const data = await this.client.api.application("status", this.id);
+    const status = new ApplicationStatus(this.client, data.response, this.id);
 
-    const {
-      network,
-      cpu: cpuUsage,
-      ram: ramUsage,
-      storage: storageUsage,
-      requests,
-      running,
-      status,
-      uptime,
-    } = data.response;
+    this.client.emit("statusUpdate", this, this.cache.status, status);
+    this.cache.set("status", status);
 
-    const applicationStatus = {
-      status,
-      running,
-      network,
-      requests,
-      cpuUsage,
-      ramUsage,
-      storageUsage,
-      uptimeTimestamp: uptime || 0,
-      uptime: uptime ? new Date(uptime) : undefined,
-    };
-
-    this.client.emit("statusUpdate", this, this.cache.status, applicationStatus);
-    this.cache.set("status", applicationStatus);
-
-    return applicationStatus;
+    return status;
   }
 
   /** @returns The application logs */

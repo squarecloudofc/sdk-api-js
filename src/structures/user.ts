@@ -1,5 +1,5 @@
 import { BaseApplication, Collection, SquareCloudAPI } from "@";
-import { UserPlanData } from "@/types/user";
+import { UserPlan } from "@/types/user";
 import { APIUserInfo } from "@squarecloud/api-types/v2";
 
 /**
@@ -17,7 +17,7 @@ export class User {
   /** The user's locale */
   locale: string;
   /** The user's current plan */
-  plan: UserPlanData;
+  plan: UserPlan;
   /** The user's registered email */
   email: string;
   /** The user's registered applications Collection */
