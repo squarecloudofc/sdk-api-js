@@ -1,4 +1,5 @@
 import { Application, SquareCloudAPI } from "@";
+import { ApplicationNetworkManager } from "@/managers/application/network";
 import { APIWebsiteApplication } from "@squarecloud/api-types/v2";
 
 /**
@@ -13,6 +14,8 @@ export class WebsiteApplication extends Application {
   domain: string;
   /** The custom configured domain (e.g. yoursite.com) */
   custom?: string;
+  /** Network manager for this application */
+  network = new ApplicationNetworkManager(this);
 
   constructor(
     public readonly client: SquareCloudAPI,

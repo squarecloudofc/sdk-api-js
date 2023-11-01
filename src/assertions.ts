@@ -17,7 +17,7 @@ export function validatePathLike(value: unknown, code?: string): asserts value i
   handleParse({ schema: pathLikeSchema, expect: "string or Buffer", value, code });
 }
 
-function handleParse({
+export function handleParse({
   schema,
   value,
   expect,

@@ -5,6 +5,7 @@ import {
   APIApplicationStatus,
   APIApplicationStatusAll,
   APIListedFile,
+  APINetworkAnalytics,
   APIReadFile,
   APIWebsiteApplication,
   RESTPostAPIApplicationUploadResult,
@@ -19,4 +20,5 @@ export interface APIApplicationEndpoints {
   "files/list": APIListedFile[];
   "files/read": APIReadFile;
   "all/status": APIApplicationStatusAll[];
+  "network/analytics": APINetworkAnalytics;
 }

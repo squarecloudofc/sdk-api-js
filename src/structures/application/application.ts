@@ -45,9 +45,9 @@ export class Application {
   /** Whether this application has GitHub integration configured or not */
   gitIntegration: boolean;
   /** Files manager for this application */
-  files: ApplicationFilesManager;
+  files = new ApplicationFilesManager(this);
   /** Backup manager for this application */
-  backup: ApplicationBackupManager;
+  backup = new ApplicationBackupManager(this);
   /** Cache manager for this application */
   cache = new ApplicationCacheManager();
 
@@ -64,8 +64,6 @@ export class Application {
     this.language = data.language;
     this.gitIntegration = data.gitIntegration;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
-    this.files = new ApplicationFilesManager(this);
-    this.backup = new ApplicationBackupManager(this);
   }
 
   /** @returns The application current status information */
