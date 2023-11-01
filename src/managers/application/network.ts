@@ -1,14 +1,14 @@
-import { validateString } from "@/assertions";
 import { WebsiteApplication } from "@";
+import { validateString } from "@/assertions";
 
 export class ApplicationNetworkManager {
   constructor(public readonly application: WebsiteApplication) {}
 
   /**
-   * Changes the custom domain for your website application
-   * - Requires Senior plan or higher
+   * Integrates your website with a custom domain
+   * - Requires [Senior plan](https://squarecloud.app/plans) or higher
    *
-   * @returns Whether the domain was changed or not
+   * @param domain - The custom domain you want to use (e.g. yoursite.com)
    */
   async setCustomDomain(domain: string) {
     validateString(domain, "CUSTOM_DOMAIN");
@@ -23,9 +23,9 @@ export class ApplicationNetworkManager {
   }
 
   /**
-   * Gets analytics to your website application custom domain
-   * - Requires Senior plan or higher
-   * - Requires the app to have a configured custom domain
+   * Gets analytics for a custom domain
+   * - Requires [Senior plan](https://squarecloud.app/plans) or higher
+   * - Requires the application to have an integrated custom domain
    */
   async analytics() {
     const data = await this.application.client.api.application("network/analytics", this.application.id);
