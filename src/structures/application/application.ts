@@ -124,7 +124,7 @@ export class Application {
   async start(): Promise<boolean> {
     const data = await this.client.api.application("start", this.id, undefined, "POST");
 
-    return data?.code === "ACTION_SENT";
+    return data?.status === "success";
   }
 
   /**
@@ -134,7 +134,7 @@ export class Application {
   async stop(): Promise<boolean> {
     const data = await this.client.api.application("stop", this.id, undefined, "POST");
 
-    return data?.code === "ACTION_SENT";
+    return data?.status === "success";
   }
 
   /**
@@ -144,7 +144,7 @@ export class Application {
   async restart(): Promise<boolean> {
     const data = await this.client.api.application("restart", this.id, undefined, "POST");
 
-    return data?.code === "ACTION_SENT";
+    return data?.status === "success";
   }
 
   /**
@@ -156,7 +156,7 @@ export class Application {
   async delete(): Promise<boolean> {
     const data = await this.client.api.application("delete", this.id, undefined, "DELETE");
 
-    return data?.code === "APP_DELETED";
+    return data?.status === "success";
   }
 
   /**
@@ -202,7 +202,7 @@ export class Application {
       },
     );
 
-    return data?.code === "SUCCESS";
+    return data?.status === "success";
   }
 
   isWebsite(): this is WebsiteApplication {
