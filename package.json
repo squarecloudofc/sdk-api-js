@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "latest": "npm run build && npm publish --tag latest",
+    "release": "npm run build && npm publish --access=public --tag latest",
     "build": "npm run lint && tsc && tsc-alias",
     "lint": "eslint \"src/**/*.ts\" --fix"
   },
