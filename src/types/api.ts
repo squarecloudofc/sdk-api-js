@@ -4,6 +4,7 @@ import {
   APIApplicationLogs,
   APIApplicationStatus,
   APIApplicationStatusAll,
+  APIDeploy,
   APIListedFile,
   APINetworkAnalytics,
   APIReadFile,
@@ -21,4 +22,5 @@ export interface APIApplicationEndpoints {
   "files/read": APIReadFile;
   "all/status": APIApplicationStatusAll[];
   "network/analytics": APINetworkAnalytics;
+  "deploys/list": APIDeploy[];
 }

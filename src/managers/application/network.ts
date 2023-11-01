@@ -1,5 +1,5 @@
 import { validateString } from "@/assertions";
-import { WebsiteApplication } from "../..";
+import { WebsiteApplication } from "@";
 
 export class ApplicationNetworkManager {
   constructor(public readonly application: WebsiteApplication) {}

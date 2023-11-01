@@ -1,6 +1,11 @@
-import { validatePathLike, validateString } from "@/assertions";
 import { SquareCloudAPI } from "@";
-import { ApplicationBackupManager, ApplicationCacheManager, ApplicationFilesManager } from "@/managers";
+import { validatePathLike, validateString } from "@/assertions";
+import {
+  ApplicationBackupManager,
+  ApplicationCacheManager,
+  ApplicationDeploysManager,
+  ApplicationFilesManager,
+} from "@/managers";
 import { ApplicationStatusData } from "@/types/application";
 import { APIApplication, ApplicationLanguage } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
@@ -48,6 +53,8 @@ export class Application {
   files = new ApplicationFilesManager(this);
   /** Backup manager for this application */
   backup = new ApplicationBackupManager(this);
+  /** Deploys manager for this application */
+  deploys = new ApplicationDeploysManager(this);
   /** Cache manager for this application */
   cache = new ApplicationCacheManager();
 

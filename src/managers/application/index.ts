@@ -74,4 +74,6 @@ export class ApplicationManager {
 
 export * from "./backup";
 export * from "./cache";
+export * from "./deploys";
 export * from "./files";
+export * from "./network";

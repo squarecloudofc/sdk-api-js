@@ -1,5 +1,5 @@
 import { Application, SquareCloudAPI } from "@";
-import { ApplicationNetworkManager } from "@/managers/application/network";
+import { ApplicationNetworkManager } from "@/managers";
 import { APIWebsiteApplication } from "@squarecloud/api-types/v2";
 
 /**
