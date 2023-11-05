@@ -7,7 +7,8 @@
   "scripts": {
     "release": "npm run build && changeset publish",
     "build": "npm run lint && tsc && tsc-alias",
-    "lint": "eslint \"src/**/*.ts\" --fix"
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "test": "tsnd test/index.ts"
   },
   "keywords": [
     "wrapper",
@@ -35,6 +36,8 @@
     "eslint": "^8.52.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-prettier": "^5.0.1",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.8",
     "typescript": "^5.2.2"
   },
