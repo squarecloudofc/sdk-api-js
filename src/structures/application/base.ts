@@ -1,5 +1,7 @@
-import { Application, SquareCloudAPI, WebsiteApplication } from "@";
+import { SquareCloudAPI } from "@/index";
 import { APIUserApplication, APIWebsiteApplication, ApplicationLanguage } from "@squarecloud/api-types/v2";
+import { Application } from "./application";
+import { WebsiteApplication } from "./website";
 
 /**
  * Represents the base application from the user endpoint

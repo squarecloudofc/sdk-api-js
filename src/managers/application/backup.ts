@@ -1,4 +1,4 @@
-import { Application, SquareCloudAPIError } from "@";
+import { Application, SquareCloudAPIError } from "@/index";
 
 export class ApplicationBackupManager {
   constructor(public readonly application: Application) {}

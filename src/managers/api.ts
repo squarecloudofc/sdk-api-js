@@ -1,6 +1,5 @@
 import { APIPayload, APIUserInfo, APIVersion } from "@squarecloud/api-types/v2";
-import { SquareCloudAPIError } from "../structures";
-import { APIApplicationEndpoints } from "../types";
+import { APIApplicationEndpoints, SquareCloudAPIError } from "..";
 
 export class APIManager {
   public readonly baseUrl = "https://api.squarecloud.app";

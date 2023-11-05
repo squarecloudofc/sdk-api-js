@@ -1,6 +1,6 @@
-import { BaseApplication, Collection, SquareCloudAPI } from "@";
 import { UserPlan } from "@/types/user";
 import { APIUserInfo } from "@squarecloud/api-types/v2";
+import { BaseApplication, Collection, SquareCloudAPI } from "..";
 
 /**
  * Represents a Square Cloud user

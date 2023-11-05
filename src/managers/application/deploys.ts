@@ -1,5 +1,5 @@
 import { validateString } from "@/assertions";
-import { Application } from "@";
+import { Application } from "@/index";
 
 export class ApplicationDeploysManager {
   constructor(public readonly application: Application) {}

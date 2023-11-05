@@ -14,7 +14,6 @@
     "strictFunctionTypes": true,
     "skipLibCheck": true,
     "paths": {
-      "@": ["./src/"],
       "@/*": ["./src/*"],
     }
   },

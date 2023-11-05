@@ -1,6 +1,13 @@
-import { Application, Collection, SquareCloudAPI, SquareCloudAPIError, User } from "@";
 import { validatePathLike, validateString } from "@/assertions";
-import { BaseApplication, SimpleApplicationStatus } from "@/structures";
+import {
+  Application,
+  BaseApplication,
+  Collection,
+  SimpleApplicationStatus,
+  SquareCloudAPI,
+  SquareCloudAPIError,
+  User,
+} from "@/index";
 import { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";

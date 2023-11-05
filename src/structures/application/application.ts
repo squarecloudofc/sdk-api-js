@@ -1,5 +1,5 @@
-import { ApplicationStatus, SquareCloudAPI } from "@";
 import { validatePathLike, validateString } from "@/assertions";
+import { ApplicationStatus, SquareCloudAPI } from "@/index";
 import {
   ApplicationBackupManager,
   ApplicationCacheManager,

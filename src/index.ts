@@ -32,5 +32,6 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
   }
 }
 
+export * from "./managers";
 export * from "./structures";
 export * from "./types";

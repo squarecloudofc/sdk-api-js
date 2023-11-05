@@ -1,5 +1,5 @@
 import { validatePathLike, validateString } from "@/assertions";
-import { Application } from "@";
+import { Application } from "@/index";
 import { readFile } from "fs/promises";
 import { join } from "path";
 
