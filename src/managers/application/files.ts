@@ -49,12 +49,13 @@ export class ApplicationFilesManager {
     if (typeof file === "string") {
       file = await readFile(file);
     }
+    path = join(path, fileName).replaceAll("\\", "/");
 
     const { status } = await this.application.client.api.application("files/create", this.application.id, undefined, {
       method: "POST",
       body: JSON.stringify({
         buffer: file.toJSON(),
-        path: join(path, fileName),
+        path,
       }),
     });
 
