@@ -8,7 +8,7 @@ npm install @squarecloud/api
 
 ## **Documentação**
 
-Acesse nossa [documentação oficial](https://synclab.gitbook.io/squarecloud-api/) para mais informações sobre como utilizar a livraria!
+Acesse nossa [documentação oficial](https://docs.squarecloud.app/sdks/js/client) para mais informações sobre como utilizar a livraria!
 
 ## **Contribuição**
 
