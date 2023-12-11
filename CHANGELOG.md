@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.3.3
+
+### Patch Changes
+
+- 298743f: Fix error interpretation exception
+
 ## 3.3.2
 
 ### Patch Changes
