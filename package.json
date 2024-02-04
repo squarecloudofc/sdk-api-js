@@ -48,7 +48,7 @@
   "bugs": {
     "url": "https://github.com/squarecloudofc/wrapper-api-js/issues"
   },
-  "homepage": "https://synclab.gitbook.io/squarecloud-api/",
+  "homepage": "https://docs.squarecloud.app/sdks/js/client",
   "dependencies": {
     "@squarecloud/api-types": "^0.2.0",
     "form-data": "^4.0.0",
