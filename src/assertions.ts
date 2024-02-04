@@ -6,18 +6,18 @@ const booleanSchema = z.coerce.boolean();
 const pathLikeSchema = z.string().or(z.instanceof(Buffer));
 
 export function validateString(value: unknown, code?: string): asserts value is string {
-  handleParse({ schema: stringSchema, expect: "string", value, code });
+  handleValidation({ schema: stringSchema, expect: "string", value, code });
 }
 
 export function validateBoolean(value: unknown, code?: string): asserts value is boolean {
-  handleParse({ schema: booleanSchema, expect: "boolean", value, code });
+  handleValidation({ schema: booleanSchema, expect: "boolean", value, code });
 }
 
 export function validatePathLike(value: unknown, code?: string): asserts value is string | Buffer {
-  handleParse({ schema: pathLikeSchema, expect: "string or Buffer", value, code });
+  handleValidation({ schema: pathLikeSchema, expect: "string or Buffer", value, code });
 }
 
-export function handleParse({
+export function handleValidation({
   schema,
   value,
   expect,
