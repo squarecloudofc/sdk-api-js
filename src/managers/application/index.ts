@@ -1,4 +1,4 @@
-import { validatePathLike, validateString } from "@/assertions";
+import { assertPathLike, assertString } from "@/assertions/common";
 import {
   Application,
   BaseApplication,
@@ -31,7 +31,7 @@ export class ApplicationManager {
     this.client.cache.set("user", user);
 
     if (applicationId) {
-      validateString(applicationId, "APP_ID");
+      assertString(applicationId, "APP_ID");
       const application = user.applications.get(applicationId);
 
       if (!application) {
@@ -51,7 +51,7 @@ export class ApplicationManager {
    * @returns The uploaded application data
    */
   async create(file: string | Buffer): Promise<RESTPostAPIApplicationUploadResult> {
-    validatePathLike(file, "COMMIT_DATA");
+    assertPathLike(file, "COMMIT_DATA");
 
     if (typeof file === "string") {
       file = await readFile(file);

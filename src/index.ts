@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-import { validateString } from "./assertions";
+import { assertString } from "./assertions/common";
 import { APIManager, ApplicationManager, CacheManager, UserManager } from "./managers";
 import { ClientEvents, TypedEventEmitter } from "./types";
 
@@ -27,7 +27,7 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
   constructor(apiKey: string) {
     super();
 
-    validateString(apiKey, "API_KEY");
+    assertString(apiKey, "API_KEY");
     this.api = new APIManager(apiKey);
   }
 }

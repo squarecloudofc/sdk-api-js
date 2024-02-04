@@ -1,4 +1,4 @@
-import { validateString } from "@/assertions";
+import { assertString } from "@/assertions/common";
 import { Application } from "@/index";
 
 export class ApplicationDeploysManager {
@@ -10,7 +10,7 @@ export class ApplicationDeploysManager {
    * @param accessToken - The access token for your GitHub repository. You can find this in your [GitHub Tokens Classic](https://github.com/settings/tokens/new)
    */
   async setGithubWebhook(accessToken: string) {
-    validateString(accessToken);
+    assertString(accessToken);
 
     const data = await this.application.client.api.application("deploy/git-webhook", this.application.id, undefined, {
       method: "POST",

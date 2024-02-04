@@ -1,4 +1,4 @@
-import { validateString } from "@/assertions";
+import { assertString } from "@/assertions/common";
 import { WebsiteApplication } from "@/index";
 
 export class ApplicationNetworkManager {
@@ -11,7 +11,7 @@ export class ApplicationNetworkManager {
    * @param domain - The custom domain you want to use (e.g. yoursite.com)
    */
   async setCustomDomain(domain: string) {
-    validateString(domain, "CUSTOM_DOMAIN");
+    assertString(domain, "CUSTOM_DOMAIN");
     const data = await this.application.client.api.application(
       `network/custom/${encodeURIComponent(domain)}`,
       this.application.id,

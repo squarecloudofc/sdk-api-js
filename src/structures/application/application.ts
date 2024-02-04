@@ -1,4 +1,4 @@
-import { validatePathLike, validateString } from "@/assertions";
+import { assertPathLike, assertString } from "@/assertions/common";
 import { ApplicationStatus, SquareCloudAPI } from "@/index";
 import {
   ApplicationBackupManager,
@@ -150,10 +150,10 @@ export class Application {
    * @returns `true` for success or `false` for fail
    */
   async commit(file: string | Buffer, fileName?: string, restart?: boolean): Promise<boolean> {
-    validatePathLike(file, "COMMIT_DATA");
+    assertPathLike(file, "COMMIT_DATA");
 
     if (fileName) {
-      validateString(fileName, "FILE_NAME");
+      assertString(fileName, "FILE_NAME");
     }
 
     if (typeof file === "string") {

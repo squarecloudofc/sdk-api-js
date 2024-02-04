@@ -1,4 +1,4 @@
-import { validatePathLike, validateString } from "@/assertions";
+import { assertPathLike, assertString } from "@/assertions/common";
 import { Application } from "@/index";
 import { readFile } from "fs/promises";
 import { join } from "path";
@@ -12,7 +12,7 @@ export class ApplicationFilesManager {
    * @param path - The absolute directory path
    */
   async list(path: string = "/") {
-    validateString(path, "LIST_FILES_PATH");
+    assertString(path, "LIST_FILES_PATH");
 
     const { response } = await this.application.client.api.application("files/list", this.application.id, { path });
 
@@ -25,7 +25,7 @@ export class ApplicationFilesManager {
    * @param path - The absolute file path
    */
   async read(path: string) {
-    validateString(path, "READ_FILE_PATH");
+    assertString(path, "READ_FILE_PATH");
 
     const { response } = await this.application.client.api.application("files/read", this.application.id, { path });
 
@@ -44,7 +44,7 @@ export class ApplicationFilesManager {
    * @param path - The absolute file path
    */
   async create(file: string | Buffer, fileName: string, path: string = "/") {
-    validatePathLike(file, "CREATE_FILE");
+    assertPathLike(file, "CREATE_FILE");
 
     if (typeof file === "string") {
       file = await readFile(file);
@@ -68,7 +68,7 @@ export class ApplicationFilesManager {
    * @param path - The absolute file or directory path
    */
   async delete(path: string) {
-    validateString(path, "DELETE_FILE_PATH");
+    assertString(path, "DELETE_FILE_PATH");
 
     const { status } = await this.application.client.api.application(
       "files/delete",
