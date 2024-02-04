@@ -27,8 +27,6 @@ export class Application {
   description?: string;
   /** The url to manage the application via web */
   url: string;
-  /** The application avatar URL */
-  avatar: string;
   /** The application current cluster */
   cluster: string;
   /** The application total ram */
@@ -64,7 +62,6 @@ export class Application {
     this.id = data.id;
     this.name = data.name;
     this.description = data.desc;
-    this.avatar = data.avatar;
     this.cluster = data.cluster;
     this.ram = data.ram;
     this.language = data.language;

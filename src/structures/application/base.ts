@@ -31,7 +31,6 @@ export class BaseApplication {
   language: ApplicationLanguage;
   cluster: string;
   isWebsite: boolean;
-  avatar: string;
 
   constructor(
     public readonly client: SquareCloudAPI,
@@ -44,7 +43,6 @@ export class BaseApplication {
     this.language = data.lang;
     this.cluster = data.cluster;
     this.isWebsite = data.isWebsite;
-    this.avatar = data.avatar;
     this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
   }
 
