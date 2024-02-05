@@ -15,7 +15,7 @@ const userSchema = z
         available: z.number(),
         used: z.number(),
       }),
-      duration: z.number().nullable(),
+      duration: z.number().nullable().optional(),
     }),
   })
   .passthrough();
