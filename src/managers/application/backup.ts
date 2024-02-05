@@ -1,37 +1,45 @@
 import { Application, SquareCloudAPIError } from "@/index";
 
 export class ApplicationBackupManager {
-  constructor(public readonly application: Application) {}
+	constructor(public readonly application: Application) {}
 
-  /** @returns The generated backup URL */
-  async url(): Promise<string> {
-    const data = await this.application.client.api.application("backup", this.application.id);
+	/** @returns The generated backup URL */
+	async url(): Promise<string> {
+		const data = await this.application.client.api.application(
+			"backup",
+			this.application.id,
+		);
 
-    const backup = data.response.downloadURL;
+		const backup = data.response.downloadURL;
 
-    this.application.client.emit("backupUpdate", this.application, this.application.cache.backup, backup);
-    this.application.cache.set("backup", backup);
+		this.application.client.emit(
+			"backupUpdate",
+			this.application,
+			this.application.cache.backup,
+			backup,
+		);
+		this.application.cache.set("backup", backup);
 
-    return backup;
-  }
+		return backup;
+	}
 
-  /** @returns The generated backup buffer */
-  async download(): Promise<Buffer> {
-    const url = await this.url();
+	/** @returns The generated backup buffer */
+	async download(): Promise<Buffer> {
+		const url = await this.url();
 
-    const registryUrl = url.replace(
-      "https://squarecloud.app/dashboard/backup/",
-      "https://registry.squarecloud.app/v1/backup/download/",
-    );
+		const registryUrl = url.replace(
+			"https://squarecloud.app/dashboard/backup/",
+			"https://registry.squarecloud.app/v1/backup/download/",
+		);
 
-    const res = await fetch(registryUrl)
-      .then((res) => res.arrayBuffer())
-      .catch(() => undefined);
+		const res = await fetch(registryUrl)
+			.then((res) => res.arrayBuffer())
+			.catch(() => undefined);
 
-    if (!res) {
-      throw new SquareCloudAPIError("BACKUP_DOWNLOAD_FAILED");
-    }
+		if (!res) {
+			throw new SquareCloudAPIError("BACKUP_DOWNLOAD_FAILED");
+		}
 
-    return Buffer.from(res);
-  }
+		return Buffer.from(res);
+	}
 }

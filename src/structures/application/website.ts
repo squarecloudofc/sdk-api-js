@@ -12,23 +12,23 @@ import { Application } from "./application";
  * @param data - The data from this application
  */
 export class WebsiteApplication extends Application {
-  /** The application default domain (e.g. example.squareweb.app) */
-  domain: string;
-  /** The custom configured domain (e.g. yoursite.com) */
-  custom?: string;
-  /** Network manager for this application */
-  network = new ApplicationNetworkManager(this);
+	/** The application default domain (e.g. example.squareweb.app) */
+	domain: string;
+	/** The custom configured domain (e.g. yoursite.com) */
+	custom?: string;
+	/** Network manager for this application */
+	network = new ApplicationNetworkManager(this);
 
-  constructor(
-    public readonly client: SquareCloudAPI,
-    data: APIWebsiteApplication,
-  ) {
-    super(client, data);
-    assertWebsiteApplication(data);
+	constructor(
+		public readonly client: SquareCloudAPI,
+		data: APIWebsiteApplication,
+	) {
+		super(client, data);
+		assertWebsiteApplication(data);
 
-    const { domain, custom } = data;
+		const { domain, custom } = data;
 
-    this.domain = domain;
-    this.custom = custom || undefined;
-  }
+		this.domain = domain;
+		this.custom = custom || undefined;
+	}
 }

@@ -3,17 +3,17 @@ import { User } from "..";
 export type CacheKey = "user";
 
 export class CacheManager {
-  readonly user?: User;
+	readonly user?: User;
 
-  set<T extends CacheKey>(key: T, value: CacheManager[T]) {
-    Reflect.set(this, key, value);
-  }
+	set<T extends CacheKey>(key: T, value: CacheManager[T]) {
+		Reflect.set(this, key, value);
+	}
 
-  get<T extends CacheKey>(key: T): CacheManager[T] {
-    return this[key];
-  }
+	get<T extends CacheKey>(key: T): CacheManager[T] {
+		return this[key];
+	}
 
-  clear() {
-    Reflect.set(this, "user", undefined);
-  }
+	clear() {
+		Reflect.set(this, "user", undefined);
+	}
 }

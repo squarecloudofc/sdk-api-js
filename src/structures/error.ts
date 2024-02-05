@@ -1,13 +1,14 @@
 export class SquareCloudAPIError extends TypeError {
-  constructor(code: string, message?: string) {
-    super(code);
+	constructor(code: string, message?: string) {
+		super(code);
 
-    this.name = "SquareCloudAPIError";
+		this.name = "SquareCloudAPIError";
 
-    this.message =
-      (code
-        ?.replaceAll("_", " ")
-        .toLowerCase()
-        .replace(/(^|\s)\S/g, (L) => L.toUpperCase()) || "UNKNOWN_CODE") + (message ? `: ${message}` : "");
-  }
+		this.message =
+			(code
+				?.replaceAll("_", " ")
+				.toLowerCase()
+				.replace(/(^|\s)\S/g, (L) => L.toUpperCase()) || "UNKNOWN_CODE") +
+			(message ? `: ${message}` : "");
+	}
 }

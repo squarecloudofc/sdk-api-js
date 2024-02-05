@@ -7,7 +7,7 @@
   "scripts": {
     "release": "npm run build && changeset publish",
     "build": "npm run lint && tsc && tsc-alias",
-    "lint": "eslint \"src/**/*.ts\" --fix",
+    "lint": "biome check --apply .",
     "test": "tsnd test/index.ts"
   },
   "keywords": [
@@ -30,12 +30,9 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
     "@changesets/cli": "^2.27.1",
-    "@squarecloud/eslint-config": "^0.1.6",
     "@types/node": "^20.11.16",
-    "eslint": "^8.56.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-prettier": "^5.1.3",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.8",
