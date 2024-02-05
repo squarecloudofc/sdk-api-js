@@ -9,7 +9,8 @@
     "release": "npm run lint && npm run build && changeset publish",
     "build": "tsup ./src",
     "lint": "biome check --apply .",
-    "test": "tsnd test/index.ts"
+    "test": "tsnd test/index.ts",
+    "prepare": "husky install"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -23,6 +24,7 @@
     "@biomejs/biome": "^1.5.3",
     "@changesets/cli": "^2.27.1",
     "@types/node": "^20.11.16",
+    "husky": "^9.0.10",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.8",
