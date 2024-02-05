@@ -1,3 +1,4 @@
+import { assertWebsiteApplication } from "@/assertions/application";
 import { SquareCloudAPI } from "@/index";
 import { ApplicationNetworkManager } from "@/managers";
 import { APIWebsiteApplication } from "@squarecloud/api-types/v2";
@@ -23,8 +24,11 @@ export class WebsiteApplication extends Application {
     data: APIWebsiteApplication,
   ) {
     super(client, data);
+    assertWebsiteApplication(data);
 
-    this.domain = data.domain;
-    this.custom = data.custom || undefined;
+    const { domain, custom } = data;
+
+    this.domain = domain;
+    this.custom = custom || undefined;
   }
 }

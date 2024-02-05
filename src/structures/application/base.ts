@@ -36,14 +36,16 @@ export class BaseApplication {
     public readonly client: SquareCloudAPI,
     data: APIUserApplication,
   ) {
-    this.id = data.id;
-    this.tag = data.tag;
-    this.description = data.desc;
-    this.ram = data.ram;
-    this.language = data.lang;
-    this.cluster = data.cluster;
-    this.isWebsite = data.isWebsite;
-    this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
+    const { id, tag, desc, ram, lang, cluster, isWebsite } = data;
+
+    this.id = id;
+    this.tag = tag;
+    this.description = desc;
+    this.ram = ram;
+    this.language = lang;
+    this.cluster = cluster;
+    this.isWebsite = isWebsite;
+    this.url = `https://squarecloud.app/dashboard/app/${id}`;
   }
 
   async fetch() {

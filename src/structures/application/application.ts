@@ -1,3 +1,4 @@
+import { assertApplication } from "@/assertions/application";
 import { assertPathLike, assertString } from "@/assertions/common";
 import { ApplicationStatus, SquareCloudAPI } from "@/index";
 import {
@@ -59,14 +60,18 @@ export class Application {
     public readonly client: SquareCloudAPI,
     data: APIApplication,
   ) {
-    this.id = data.id;
-    this.name = data.name;
-    this.description = data.desc;
-    this.cluster = data.cluster;
-    this.ram = data.ram;
-    this.language = data.language;
-    this.gitIntegration = data.gitIntegration;
-    this.url = `https://squarecloud.app/dashboard/app/${data.id}`;
+    assertApplication(data);
+
+    const { id, name, desc, cluster, ram, language, gitIntegration } = data;
+
+    this.id = id;
+    this.name = name;
+    this.description = desc;
+    this.cluster = cluster;
+    this.ram = ram;
+    this.language = language;
+    this.gitIntegration = gitIntegration;
+    this.url = `https://squarecloud.app/dashboard/app/${id}`;
   }
 
   /** @returns The application current status information */
