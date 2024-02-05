@@ -2,31 +2,35 @@ import { ApplicationLanguage, UserPlanName } from "@squarecloud/api-types/v2";
 import * as z from "zod";
 import { SquareCloudAPIError } from "..";
 
-const userSchema = z.object({
-  id: z.string(),
-  tag: z.string(),
-  locale: z.string(),
-  email: z.string(),
-  plan: z.object({
-    name: z.nativeEnum(UserPlanName),
-    memory: z.object({
-      limit: z.number(),
-      available: z.number(),
-      used: z.number(),
+const userSchema = z
+  .object({
+    id: z.string(),
+    tag: z.string(),
+    locale: z.string(),
+    email: z.string(),
+    plan: z.object({
+      name: z.nativeEnum(UserPlanName),
+      memory: z.object({
+        limit: z.number(),
+        available: z.number(),
+        used: z.number(),
+      }),
+      duration: z.number().nullable(),
     }),
-    duration: z.number().nullable(),
-  }),
-});
+  })
+  .passthrough();
 
-const userApplicationSchema = z.object({
-  id: z.string(),
-  tag: z.string(),
-  desc: z.string().optional(),
-  ram: z.number(),
-  lang: z.nativeEnum(ApplicationLanguage),
-  cluster: z.string(),
-  isWebsite: z.boolean(),
-});
+const userApplicationSchema = z
+  .object({
+    id: z.string(),
+    tag: z.string(),
+    desc: z.string().optional(),
+    ram: z.number(),
+    lang: z.nativeEnum(ApplicationLanguage),
+    cluster: z.string(),
+    isWebsite: z.boolean(),
+  })
+  .passthrough();
 
 const userInfoSchema = z.object({
   user: userSchema,
