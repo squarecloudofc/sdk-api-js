@@ -1,3 +1,4 @@
+import { assertSimpleStatus, assertStatus } from "@/assertions/status";
 import { ApplicationStatusUsage } from "@/types/application";
 import {
   APIApplicationStatus,
@@ -6,24 +7,30 @@ import {
 } from "@squarecloud/api-types/v2";
 import { SquareCloudAPI } from "..";
 
-export class SimpleApplicationStatus {
+export class SimpleApplicationStatus<R extends boolean> {
   /** The application's ID this status came from */
   applicationId: string;
   /** Usage statuses for this application */
-  usage: Pick<ApplicationStatusUsage, "cpu" | "ram">;
+  usage: R extends true ? Pick<ApplicationStatusUsage, "cpu" | "ram"> : undefined;
   /** Whether the application is running or not */
-  running: boolean;
+  running: R;
 
   constructor(
     public readonly client: SquareCloudAPI,
     data: APIApplicationStatusAll,
   ) {
-    this.applicationId = data.id;
-    this.usage = {
-      cpu: data.cpu,
-      ram: data.ram,
-    };
-    this.running = data.running;
+    assertSimpleStatus(data);
+
+    const { id, running } = data;
+
+    this.applicationId = id;
+    this.running = running as R;
+
+    if (running) {
+      const { cpu, ram } = data;
+
+      this.usage = { cpu, ram } as R extends true ? Pick<ApplicationStatusUsage, "cpu" | "ram"> : undefined;
+    }
   }
 
   async fetch() {
@@ -33,9 +40,13 @@ export class SimpleApplicationStatus {
   }
 }
 
-export class ApplicationStatus extends SimpleApplicationStatus {
+export class ApplicationStatus {
+  /** The application's ID this status came from */
+  applicationId: string;
   /** Usage statuses for this application */
-  declare usage: ApplicationStatusUsage;
+  usage: ApplicationStatusUsage;
+  /** Whether the application is running or not */
+  running: boolean;
   /**
    * The status of the application
    *
@@ -59,20 +70,16 @@ export class ApplicationStatus extends SimpleApplicationStatus {
     data: APIApplicationStatus,
     applicationId: string,
   ) {
-    super(client, {
-      id: applicationId,
-      ...data,
-    });
+    assertStatus(data);
 
-    this.usage = {
-      cpu: data.cpu,
-      ram: data.ram,
-      network: data.network,
-      storage: data.storage,
-    };
-    this.status = data.status;
-    this.requests = data.requests;
-    this.uptime = data.uptime ? new Date(data.uptime) : undefined;
-    this.uptimeTimestamp = data.uptime ?? undefined;
+    const { cpu, ram, network, storage, running, status, requests, uptime } = data;
+
+    this.applicationId = applicationId;
+    this.usage = { cpu, ram, network, storage };
+    this.running = running;
+    this.status = status;
+    this.requests = requests;
+    this.uptime = uptime ? new Date(uptime) : undefined;
+    this.uptimeTimestamp = uptime ?? undefined;
   }
 }
