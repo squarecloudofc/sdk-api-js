@@ -17,5 +17,5 @@
       "@/*": ["./src/*"],
     }
   },
-  "exclude": ["./test/"]
+  "exclude": ["./test/", "./lib/", "tsup.config.ts"]
 }

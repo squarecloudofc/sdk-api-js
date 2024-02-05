@@ -4,11 +4,30 @@
   "description": "A NodeJS wrapper for Square Cloud API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "module": "lib/index.mjs",
   "scripts": {
-    "release": "npm run build && changeset publish",
-    "build": "npm run lint && tsc && tsc-alias",
+    "release": "npm run lint && npm run build && changeset publish",
+    "build": "tsup ./src",
     "lint": "biome check --apply .",
     "test": "tsnd test/index.ts"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@squarecloud/api-types": "^0.2.0",
+    "form-data": "^4.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^20.11.16",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.8",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
   },
   "keywords": [
     "wrapper",
@@ -25,19 +44,6 @@
     "name": "bluey#0012",
     "url": "https://github.com/bluee-js"
   },
-  "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@changesets/cli": "^2.27.1",
-    "@types/node": "^20.11.16",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "tsc-alias": "^1.8.8",
-    "typescript": "^5.3.3"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/squarecloudofc/wrapper-api-js.git"
@@ -46,9 +52,5 @@
     "url": "https://github.com/squarecloudofc/wrapper-api-js/issues"
   },
   "homepage": "https://docs.squarecloud.app/sdks/js/client",
-  "dependencies": {
-    "@squarecloud/api-types": "^0.2.0",
-    "form-data": "^4.0.0",
-    "zod": "^3.22.4"
-  }
+  "license": "MIT"
 }
