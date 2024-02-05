@@ -1,3 +1,4 @@
+import { assertUserInfo } from "@/assertions/user";
 import { UserPlan } from "@/types/user";
 import { APIUserInfo } from "@squarecloud/api-types/v2";
 import { BaseApplication, Collection, SquareCloudAPI } from "..";
@@ -24,15 +25,21 @@ export class User {
   applications: Collection<string, BaseApplication>;
 
   constructor(client: SquareCloudAPI, data: APIUserInfo) {
-    this.id = data.user.id;
-    this.tag = data.user.tag;
-    this.locale = data.user.locale;
+    assertUserInfo(data);
+
+    const { user, applications } = data;
+    const { id, tag, locale, plan, email } = user;
+    const { duration } = plan;
+
+    this.id = id;
+    this.tag = tag;
+    this.locale = locale;
+    this.email = email;
     this.plan = {
-      ...data.user.plan,
-      expiresInTimestamp: data.user.plan.duration ?? undefined,
-      expiresIn: data.user.plan.duration ? new Date(data.user.plan.duration) : undefined,
+      ...plan,
+      expiresInTimestamp: duration ?? undefined,
+      expiresIn: duration ? new Date(duration) : undefined,
     };
-    this.email = data.user.email;
-    this.applications = new Collection(data.applications.map((app) => [app.id, new BaseApplication(client, app)]));
+    this.applications = new Collection(applications.map((app) => [app.id, new BaseApplication(client, app)]));
   }
 }
