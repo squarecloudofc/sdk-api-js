@@ -1,5 +1,20 @@
 # @squarecloud/api
 
+## 3.4.0
+
+### Minor Changes
+
+- a8320be: Remove `Application#avatar` due to API changes
+- 5e84636: Remove `Application#gitIntegration` due to API changes
+
+### Patch Changes
+
+- 08f91ee: Add assertions for `User` structure
+- db0ddb0: Add assertions for `Application` and `WebsiteApplication`
+- 86765eb: Refactor typing and add assertions for `SimpleApplicationStatus` and `ApplicationStatus`
+- 384a563: Using @biomejs/biome as linter instead of eslint
+- 7ac1d2e: Using tsup as builder instead of tsc
+
 ## 3.3.3
 
 ### Patch Changes
