@@ -45,8 +45,6 @@ export class Application {
 	 * - `php`
 	 */
 	language: ApplicationLanguage;
-	/** Whether this application has GitHub integration configured or not */
-	gitIntegration: boolean;
 	/** Files manager for this application */
 	files = new ApplicationFilesManager(this);
 	/** Backup manager for this application */
@@ -62,7 +60,7 @@ export class Application {
 	) {
 		assertApplication(data);
 
-		const { id, name, desc, cluster, ram, language, gitIntegration } = data;
+		const { id, name, desc, cluster, ram, language } = data;
 
 		this.id = id;
 		this.name = name;
@@ -70,7 +68,6 @@ export class Application {
 		this.cluster = cluster;
 		this.ram = ram;
 		this.language = language;
-		this.gitIntegration = gitIntegration;
 		this.url = `https://squarecloud.app/dashboard/app/${id}`;
 	}
 

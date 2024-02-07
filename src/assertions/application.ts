@@ -11,7 +11,6 @@ const applicationSchema = z
 		ram: z.number(),
 		language: z.nativeEnum(ApplicationLanguage),
 		isWebsite: z.boolean(),
-		gitIntegration: z.boolean(),
 	})
 	.passthrough();
 
