@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.4.1
+
+### Patch Changes
+
+- b05f12b: Update API types
+
 ## 3.4.0
 
 ### Minor Changes
