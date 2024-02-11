@@ -38,3 +38,4 @@ jobs:
           commit_message: "build: ${{ github.sha }}"
           branch: build
           commit_options: "--no-verify"
+          push_options: "--no-verify"
