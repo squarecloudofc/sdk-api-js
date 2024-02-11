@@ -10,7 +10,6 @@
     "build": "tsup ./src",
     "lint": "biome check --apply .",
     "test": "tsnd test/index.ts",
-    "postinstall": "npm run build",
     "prepare": "husky"
   },
   "engines": {
