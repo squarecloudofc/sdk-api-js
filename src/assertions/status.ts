@@ -1,6 +1,6 @@
 import { ApplicationStatus } from "@squarecloud/api-types/v2";
 import * as z from "zod";
-import { SquareCloudAPIError } from "..";
+import { handleAPIObjectAssertion } from "./common";
 
 const simpleStatusSchema = z
 	.object({
@@ -38,27 +38,21 @@ const statusSchema = z
 export function assertSimpleStatus(
 	value: unknown,
 ): asserts value is z.infer<typeof simpleStatusSchema> {
-	try {
-		simpleStatusSchema.parse(value);
-	} catch (err) {
-		throw new SquareCloudAPIError(
-			"INVALID_API_STATUS_ALL",
-			"Invalid simple status object received from API /apps/all/status",
-			{ cause: err.errors },
-		);
-	}
+	handleAPIObjectAssertion({
+		schema: simpleStatusSchema,
+		value,
+		code: "STATUS_ALL",
+		route: "/apps/all/status",
+	});
 }
 
 export function assertStatus(
 	value: unknown,
 ): asserts value is z.infer<typeof statusSchema> {
-	try {
-		statusSchema.parse(value);
-	} catch (err) {
-		throw new SquareCloudAPIError(
-			"INVALID_API_STATUS",
-			"Invalid status object received from API /apps/{app_id}/status",
-			{ cause: err.errors },
-		);
-	}
+	handleAPIObjectAssertion({
+		schema: statusSchema,
+		value,
+		code: "STATUS",
+		route: "/apps/{app_id}/status",
+	});
 }

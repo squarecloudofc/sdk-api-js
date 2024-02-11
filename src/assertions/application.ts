@@ -1,6 +1,6 @@
 import { ApplicationLanguage } from "@squarecloud/api-types/v2";
 import * as z from "zod";
-import { SquareCloudAPIError } from "..";
+import { handleAPIObjectAssertion } from "./common";
 
 const applicationSchema = z
 	.object({
@@ -25,27 +25,21 @@ const websiteApplicationSchema = applicationSchema
 export function assertApplication(
 	value: unknown,
 ): asserts value is z.infer<typeof applicationSchema> {
-	try {
-		applicationSchema.parse(value);
-	} catch (err) {
-		throw new SquareCloudAPIError(
-			"INVALID_API_APPLICATION",
-			"Invalid application object received from API /apps/{app_id}",
-			{ cause: err.errors },
-		);
-	}
+	handleAPIObjectAssertion({
+		schema: applicationSchema,
+		value,
+		code: "APPLICATION",
+		route: "/apps/{app_id}",
+	});
 }
 
 export function assertWebsiteApplication(
 	value: unknown,
 ): asserts value is z.infer<typeof websiteApplicationSchema> {
-	try {
-		websiteApplicationSchema.parse(value);
-	} catch (err) {
-		throw new SquareCloudAPIError(
-			"INVALID_API_WEBSITE_APPLICATION",
-			"Invalid website application object received from API /apps/{app_id}",
-			{ cause: err.errors },
-		);
-	}
+	handleAPIObjectAssertion({
+		schema: websiteApplicationSchema,
+		value,
+		code: "WEBSITE_APPLICATION",
+		route: "/apps/{app_id}",
+	});
 }

@@ -1,5 +1,5 @@
 import { assertApplication } from "@/assertions/application";
-import { assertPathLike, assertString } from "@/assertions/common";
+import { assertPathLike, assertString } from "@/assertions/literal";
 import { ApplicationStatus, SquareCloudAPI } from "@/index";
 import {
 	ApplicationBackupManager,

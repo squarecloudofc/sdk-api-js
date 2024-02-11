@@ -1,5 +1,5 @@
 import { join } from "path";
-import { assertPathLike, assertString } from "@/assertions/common";
+import { assertPathLike, assertString } from "@/assertions/literal";
 import { Application } from "@/index";
 import { readFile } from "fs/promises";
 

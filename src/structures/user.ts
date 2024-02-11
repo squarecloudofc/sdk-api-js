@@ -15,8 +15,6 @@ export class User {
 	id: string;
 	/** The user's Discord tag */
 	tag: string;
-	/** The user's locale */
-	locale: string;
 	/** The user's current plan */
 	plan: UserPlan;
 	/** The user's registered email */
@@ -28,12 +26,11 @@ export class User {
 		assertUserInfo(data);
 
 		const { user, applications } = data;
-		const { id, tag, locale, plan, email } = user;
+		const { id, tag, plan, email } = user;
 		const { duration } = plan;
 
 		this.id = id;
 		this.tag = tag;
-		this.locale = locale;
 		this.email = email;
 		this.plan = {
 			...plan,

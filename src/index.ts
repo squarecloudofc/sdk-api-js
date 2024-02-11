@@ -1,4 +1,4 @@
-import { assertString } from "./assertions/common";
+import { assertString } from "./assertions/literal";
 import {
 	APIManager,
 	ApplicationManager,

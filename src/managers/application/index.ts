@@ -1,4 +1,4 @@
-import { assertPathLike, assertString } from "@/assertions/common";
+import { assertPathLike, assertString } from "@/assertions/literal";
 import {
 	Application,
 	BaseApplication,
