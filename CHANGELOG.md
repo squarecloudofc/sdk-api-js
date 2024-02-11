@@ -1,5 +1,12 @@
 # @squarecloud/api
 
+## 3.4.2
+
+### Patch Changes
+
+- 066a0a3: update API types ([Check changes](https://github.com/squarecloudofc/api-types/releases/tag/v0.2.3))
+- 825da92: improve new assertions debugging
+
 ## 3.4.1
 
 ### Patch Changes
