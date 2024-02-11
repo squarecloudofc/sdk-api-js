@@ -42,10 +42,11 @@ export function assertUserInfo(
 ): asserts value is z.infer<typeof userInfoSchema> {
 	try {
 		userInfoSchema.parse(value);
-	} catch {
+	} catch (err) {
 		throw new SquareCloudAPIError(
 			"INVALID_API_USER_INFO",
 			"Invalid user info object received from API /user",
+			{ cause: err.errors },
 		);
 	}
 }

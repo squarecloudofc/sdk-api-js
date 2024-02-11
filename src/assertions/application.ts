@@ -27,10 +27,11 @@ export function assertApplication(
 ): asserts value is z.infer<typeof applicationSchema> {
 	try {
 		applicationSchema.parse(value);
-	} catch {
+	} catch (err) {
 		throw new SquareCloudAPIError(
 			"INVALID_API_APPLICATION",
 			"Invalid application object received from API /apps/{app_id}",
+			{ cause: err.errors },
 		);
 	}
 }
@@ -40,10 +41,11 @@ export function assertWebsiteApplication(
 ): asserts value is z.infer<typeof websiteApplicationSchema> {
 	try {
 		websiteApplicationSchema.parse(value);
-	} catch {
+	} catch (err) {
 		throw new SquareCloudAPIError(
 			"INVALID_API_WEBSITE_APPLICATION",
 			"Invalid website application object received from API /apps/{app_id}",
+			{ cause: err.errors },
 		);
 	}
 }

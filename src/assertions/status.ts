@@ -40,10 +40,11 @@ export function assertSimpleStatus(
 ): asserts value is z.infer<typeof simpleStatusSchema> {
 	try {
 		simpleStatusSchema.parse(value);
-	} catch {
+	} catch (err) {
 		throw new SquareCloudAPIError(
 			"INVALID_API_STATUS_ALL",
 			"Invalid simple status object received from API /apps/all/status",
+			{ cause: err.errors },
 		);
 	}
 }
@@ -53,10 +54,11 @@ export function assertStatus(
 ): asserts value is z.infer<typeof statusSchema> {
 	try {
 		statusSchema.parse(value);
-	} catch {
+	} catch (err) {
 		throw new SquareCloudAPIError(
 			"INVALID_API_STATUS",
 			"Invalid status object received from API /apps/{app_id}/status",
+			{ cause: err.errors },
 		);
 	}
 }
