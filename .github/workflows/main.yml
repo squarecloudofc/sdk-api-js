@@ -39,3 +39,4 @@ jobs:
           branch: build
           commit_options: "--no-verify"
           push_options: "--no-verify"
+          skip_checkout: true
