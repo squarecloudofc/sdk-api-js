@@ -10,6 +10,7 @@ import {
 	APIReadFile,
 	APIWebsiteApplication,
 	RESTPostAPIApplicationUploadResult,
+	RESTPostAPIGithubWebhookResult,
 } from "@squarecloud/api-types/v2";
 
 export interface APIApplicationEndpoints {
@@ -23,4 +24,5 @@ export interface APIApplicationEndpoints {
 	"all/status": APIApplicationStatusAll[];
 	"network/analytics": APINetworkAnalytics;
 	"deploys/list": APIDeploy[];
+	"deploy/git-webhook": RESTPostAPIGithubWebhookResult;
 }
