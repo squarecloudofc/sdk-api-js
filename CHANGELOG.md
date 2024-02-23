@@ -1,5 +1,12 @@
 # @squarecloud/api
 
+## 3.4.3
+
+### Patch Changes
+
+- 3298bff: Fix `Application#deploys#setGithubWebhook` not returning the webhook URL
+- 3298bff: Rename `Application#deploys#setGithubWebhook` to `getGithubWebhook`
+
 ## 3.4.2
 
 ### Patch Changes
