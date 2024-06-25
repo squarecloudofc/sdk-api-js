@@ -81,7 +81,7 @@ export class ApplicationManager {
 	/**
 	 * Returns the status for all your applications
 	 */
-	async status(): Promise<SimpleApplicationStatus[]> {
+	async statusAll(): Promise<SimpleApplicationStatus[]> {
 		const data = await this.client.api.application("all/status");
 
 		return data.response.map(
