@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.5.1-next.0
+
+### Patch Changes
+
+- Attempt to fix circular dependency error
+
 ## 3.5.0
 
 ### Minor Changes
