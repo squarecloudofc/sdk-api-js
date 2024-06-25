@@ -1,5 +1,5 @@
 {
-	"mode": "pre",
+	"mode": "exit",
 	"tag": "next",
 	"initialVersions": {
 		"@squarecloud/api": "3.5.0"

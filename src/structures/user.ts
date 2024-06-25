@@ -1,7 +1,7 @@
 import { assertUserInfo } from "@/assertions/user";
-import { UserPlan } from "@/types/user";
-import { APIUserInfo } from "@squarecloud/api-types/v2";
-import { Collection, SquareCloudAPI } from "..";
+import type { UserPlan } from "@/types/user";
+import type { APIUserInfo } from "@squarecloud/api-types/v2";
+import { Collection, type SquareCloudAPI } from "..";
 import { BaseApplication } from "./application/base";
 
 /**

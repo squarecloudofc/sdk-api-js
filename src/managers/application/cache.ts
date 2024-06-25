@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "@/structures";
+import type { ApplicationStatus } from "@/structures";
 
 export type ApplicationCacheKey = "status" | "backup" | "logs";
 

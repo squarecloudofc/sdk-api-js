@@ -1,4 +1,4 @@
-import { APIApplicationStatusNetwork } from "@squarecloud/api-types/v2";
+import type { APIApplicationStatusNetwork } from "@squarecloud/api-types/v2";
 
 export interface ApplicationStatusUsage {
 	/** How much memory the application is currently using */

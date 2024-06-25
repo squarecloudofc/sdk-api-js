@@ -5,7 +5,7 @@ import {
 	CacheManager,
 	UserManager,
 } from "./managers";
-import { ClientEvents, TypedEventEmitter } from "./types";
+import { type ClientEvents, TypedEventEmitter } from "./types";
 
 export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 	static apiInfo = {

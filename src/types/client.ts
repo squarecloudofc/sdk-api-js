@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import { Application, ApplicationStatus, User } from "..";
+import type { Application, ApplicationStatus, User } from "..";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
 	private emitter = new EventEmitter();

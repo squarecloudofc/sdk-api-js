@@ -1,4 +1,4 @@
-import { SquareCloudAPI, User } from "..";
+import { type SquareCloudAPI, User } from "..";
 
 export class UserManager {
 	constructor(public readonly client: SquareCloudAPI) {}

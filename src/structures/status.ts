@@ -1,11 +1,11 @@
 import { assertSimpleStatus, assertStatus } from "@/assertions/status";
-import { ApplicationStatusUsage } from "@/types/application";
-import {
+import type { ApplicationStatusUsage } from "@/types/application";
+import type {
 	APIApplicationStatus,
 	APIApplicationStatusAll,
 	ApplicationStatus as ApplicationStatusType,
 } from "@squarecloud/api-types/v2";
-import { SquareCloudAPI } from "..";
+import type { SquareCloudAPI } from "..";
 
 export class SimpleApplicationStatus<R extends boolean = boolean> {
 	/** The application's ID this status came from */

@@ -1,4 +1,4 @@
-import { APIUserPlan } from "@squarecloud/api-types/v2";
+import type { APIUserPlan } from "@squarecloud/api-types/v2";
 
 export interface UserPlan extends Omit<APIUserPlan, "duration"> {
 	/** In how many milliseconds the plan will expire */

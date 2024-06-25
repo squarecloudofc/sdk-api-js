@@ -1,5 +1,5 @@
 import { assertString } from "@/assertions/literal";
-import { Application } from "@/index";
+import type { Application } from "@/index";
 
 export class ApplicationDeploysManager {
 	constructor(public readonly application: Application) {}

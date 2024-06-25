@@ -1,5 +1,5 @@
 import { assertString } from "@/assertions/literal";
-import { WebsiteApplication } from "@/index";
+import type { WebsiteApplication } from "@/index";
 
 export class ApplicationNetworkManager {
 	constructor(public readonly application: WebsiteApplication) {}

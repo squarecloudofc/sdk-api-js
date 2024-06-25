@@ -1,6 +1,6 @@
 import { join } from "path";
 import { assertPathLike, assertString } from "@/assertions/literal";
-import { Application } from "@/index";
+import type { Application } from "@/index";
 import { readFile } from "fs/promises";
 
 export class ApplicationFilesManager {

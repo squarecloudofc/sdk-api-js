@@ -1,4 +1,4 @@
-import { ZodSchema } from "zod";
+import type { ZodSchema } from "zod";
 
 export interface BaseAssertionProps {
 	schema: ZodSchema;

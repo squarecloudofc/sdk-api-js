@@ -4,7 +4,6 @@
 export interface CollectionConstructor {
 	new (): Collection<unknown, unknown>;
 	new <K, V>(entries?: readonly (readonly [K, V])[] | null): Collection<K, V>;
-	// biome-ignore lint/suspicious/noRedeclare: Needed to merge the constructor and the instance methods
 	new <K, V>(iterable: Iterable<readonly [K, V]>): Collection<K, V>;
 	readonly prototype: Collection<unknown, unknown>;
 	readonly [Symbol.species]: CollectionConstructor;

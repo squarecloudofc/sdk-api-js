@@ -1,14 +1,12 @@
 import { assertPathLike, assertString } from "@/assertions/literal";
-import { ApplicationStatus, SquareCloudAPI } from "@/index";
-import {
+import { ApplicationStatus, type SquareCloudAPI } from "@/index";
+import type {
 	APIUserApplication,
-	APIWebsiteApplication,
 	ApplicationLanguage,
 } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
-import { Application } from "./application";
-import { WebsiteApplication } from "./website";
+import type { Application } from "./application";
 
 /**
  * Represents the base application from the user endpoint
@@ -54,15 +52,7 @@ export class BaseApplication {
 	}
 
 	async fetch(): Promise<Application> {
-		const data = await this.client.api.application("", this.id);
-
-		if ("domain" in data.response && data.response.domain) {
-			return new WebsiteApplication(
-				this.client,
-				data.response as APIWebsiteApplication,
-			);
-		}
-		return new Application(this.client, data.response);
+		return this.client.applications.get(this.id);
 	}
 
 	/** @returns The application current status information */

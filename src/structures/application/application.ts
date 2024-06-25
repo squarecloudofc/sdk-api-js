@@ -1,14 +1,17 @@
 import { assertApplication } from "@/assertions/application";
-import { ApplicationStatus, SquareCloudAPI } from "@/index";
+import { ApplicationStatus, type SquareCloudAPI } from "@/index";
 import {
 	ApplicationBackupManager,
 	ApplicationCacheManager,
 	ApplicationDeploysManager,
 	ApplicationFilesManager,
 } from "@/managers";
-import { APIApplication, ApplicationLanguage } from "@squarecloud/api-types/v2";
+import type {
+	APIApplication,
+	ApplicationLanguage,
+} from "@squarecloud/api-types/v2";
 import { BaseApplication } from "./base";
-import { WebsiteApplication } from "./website";
+import type { WebsiteApplication } from "./website";
 
 /**
  * Represents a Square Cloud application
