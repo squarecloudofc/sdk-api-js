@@ -42,10 +42,10 @@ export class BaseApplication {
 		public readonly client: SquareCloudAPI,
 		data: APIUserApplication,
 	) {
-		const { id, tag, desc, ram, lang, cluster, isWebsite } = data;
+		const { id, name, desc, ram, lang, cluster } = data;
 
 		this.id = id;
-		this.name = tag;
+		this.name = name;
 		this.description = desc;
 		this.ram = ram;
 		this.language = lang;
@@ -56,7 +56,7 @@ export class BaseApplication {
 	async fetch(): Promise<Application> {
 		const data = await this.client.api.application("", this.id);
 
-		if (data.response.isWebsite) {
+		if ("domain" in data.response && data.response.domain) {
 			return new WebsiteApplication(
 				this.client,
 				data.response as APIWebsiteApplication,

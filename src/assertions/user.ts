@@ -5,7 +5,7 @@ import { handleAPIObjectAssertion } from "./common";
 const userSchema = z
 	.object({
 		id: z.string(),
-		tag: z.string(),
+		name: z.string(),
 		email: z.string(),
 		plan: z.object({
 			name: z.nativeEnum(UserPlanName),
@@ -22,12 +22,11 @@ const userSchema = z
 const userApplicationSchema = z
 	.object({
 		id: z.string(),
-		tag: z.string(),
+		name: z.string(),
 		desc: z.string().optional(),
 		ram: z.number(),
 		lang: z.nativeEnum(ApplicationLanguage),
 		cluster: z.string(),
-		isWebsite: z.boolean(),
 	})
 	.passthrough();
 

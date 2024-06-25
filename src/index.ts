@@ -25,8 +25,7 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 	/**
 	 * Creates an API instance
 	 *
-	 * @param apiKey - Your API Token (generate at [Square Cloud Dashboard](https://squarecloud.app/dashboard))
-	 * @param options.experimental - Whether to enable experimental features
+	 * @param apiKey - Your API Token (request at [Square Cloud Dashboard](https://squarecloud.app/dashboard))
 	 */
 	constructor(apiKey: string) {
 		super();

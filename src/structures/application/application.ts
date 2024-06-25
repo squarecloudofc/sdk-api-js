@@ -56,7 +56,7 @@ export class Application extends BaseApplication {
 		data: APIApplication,
 	) {
 		assertApplication(data);
-		super(client, { ...data, tag: data.name, lang: data.language });
+		super(client, { ...data, lang: data.language });
 
 		const { id, name, desc, cluster, ram, language } = data;
 

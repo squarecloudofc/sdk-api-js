@@ -10,13 +10,11 @@ const applicationSchema = z
 		cluster: z.string(),
 		ram: z.number(),
 		language: z.nativeEnum(ApplicationLanguage),
-		isWebsite: z.boolean(),
 	})
 	.passthrough();
 
 const websiteApplicationSchema = applicationSchema
 	.extend({
-		isWebsite: z.literal(true),
 		domain: z.string(),
 		custom: z.string().nullable().optional(),
 	})

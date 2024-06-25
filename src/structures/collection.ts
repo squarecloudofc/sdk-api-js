@@ -194,7 +194,7 @@ export class Collection<K, V> extends Map<K, V> {
 	 * @param thisArg - Value to use as `this` when executing function
 	 * @example
 	 * ```ts
-	 * collection.map(user => user.tag);
+	 * collection.map(user => user.name);
 	 * ```
 	 */
 	public map<T>(fn: (value: V, key: K, collection: this) => T): T[];

@@ -13,8 +13,8 @@ import { BaseApplication, Collection, SquareCloudAPI } from "..";
 export class User {
 	/** The user's id */
 	id: string;
-	/** The user's Discord tag */
-	tag: string;
+	/** The user's display name */
+	name: string;
 	/** The user's current plan */
 	plan: UserPlan;
 	/** The user's registered email */
@@ -26,11 +26,11 @@ export class User {
 		assertUserInfo(data);
 
 		const { user, applications } = data;
-		const { id, tag, plan, email } = user;
+		const { id, name, plan, email } = user;
 		const { duration } = plan;
 
 		this.id = id;
-		this.tag = tag;
+		this.name = name;
 		this.email = email;
 		this.plan = {
 			...plan,
