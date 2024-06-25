@@ -1,8 +1,0 @@
-{
-	"mode": "exit",
-	"tag": "next",
-	"initialVersions": {
-		"@squarecloud/api": "3.5.0"
-	},
-	"changesets": ["good-cheetahs-kneel"]
-}
