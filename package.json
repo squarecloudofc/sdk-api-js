@@ -48,10 +48,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/squarecloudofc/wrapper-api-js.git"
+		"url": "git+https://github.com/squarecloudofc/sdk-api-js.git"
 	},
 	"bugs": {
-		"url": "https://github.com/squarecloudofc/wrapper-api-js/issues"
+		"url": "https://github.com/squarecloudofc/sdk-api-js/issues"
 	},
 	"homepage": "https://docs.squarecloud.app/sdks/js/client",
 	"license": "MIT"

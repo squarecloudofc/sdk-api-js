@@ -43,7 +43,7 @@ const application = user.applications.get("Application ID")
 
 ## Contributing
 
-Feel free to contribute with suggestions or bug reports at our [GitHub repository](https://github.com/squarecloudofc/wrapper-api-js).
+Feel free to contribute with suggestions or bug reports at our [GitHub repository](https://github.com/squarecloudofc/sdk-api-js).
 
 ## Authors
 
