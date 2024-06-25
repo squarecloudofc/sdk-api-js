@@ -1,13 +1,13 @@
 import { assertPathLike, assertString } from "@/assertions/literal";
 import {
 	Application,
-	BaseApplication,
 	Collection,
 	SimpleApplicationStatus,
 	SquareCloudAPI,
 	SquareCloudAPIError,
 	User,
 } from "@/index";
+import { BaseApplication } from "@/structures/application/base";
 import { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";

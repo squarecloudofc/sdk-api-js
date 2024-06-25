@@ -1,5 +1,5 @@
 import { assertApplication } from "@/assertions/application";
-import { ApplicationStatus, BaseApplication, SquareCloudAPI } from "@/index";
+import { ApplicationStatus, SquareCloudAPI } from "@/index";
 import {
 	ApplicationBackupManager,
 	ApplicationCacheManager,
@@ -7,6 +7,7 @@ import {
 	ApplicationFilesManager,
 } from "@/managers";
 import { APIApplication, ApplicationLanguage } from "@squarecloud/api-types/v2";
+import { BaseApplication } from "./base";
 import { WebsiteApplication } from "./website";
 
 /**
