@@ -1,21 +1,21 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["DOM", "ESNext"],
-    "module": "commonjs",
-    "rootDir": "./src",
-    "declaration": true,
-    "sourceMap": true,
-    "outDir": "./lib",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "skipLibCheck": true,
-    "paths": {
-      "@/*": ["./src/*"],
-    }
-  },
-  "exclude": ["./test/", "./lib/", "tsup.config.ts"]
+	"compilerOptions": {
+		"target": "ESNext",
+		"lib": ["DOM", "ESNext"],
+		"module": "commonjs",
+		"rootDir": "./src",
+		"declaration": true,
+		"sourceMap": true,
+		"outDir": "./lib",
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"skipLibCheck": true,
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
+	"exclude": ["./test/", "./lib/", "tsup.config.ts"]
 }

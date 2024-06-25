@@ -1,5 +1,5 @@
 {
-	"target": "node18",
+	"target": "es2020",
 	"format": ["cjs", "esm"],
 	"outDir": "lib",
 	"splitting": false,
