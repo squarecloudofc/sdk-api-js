@@ -1,5 +1,16 @@
 # @squarecloud/api
 
+## 3.5.0
+
+### Minor Changes
+
+- 6e42e39: Rename all `tag` properties (user and application) to `name` as API deprecated them.
+- 6394ebd: Allow some app methods at BaseApplication
+
+### Patch Changes
+
+- 9adbbfe: Rename `ApplicationManager#status` method to `statusAll` to match its API endpoint.
+
 ## 3.4.3
 
 ### Patch Changes
