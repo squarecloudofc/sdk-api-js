@@ -52,7 +52,7 @@ export class BaseApplication {
 	}
 
 	async fetch(): Promise<Application> {
-		return this.client.applications.get(this.id);
+		return this.client.applications.fetch(this.id);
 	}
 
 	/** @returns The application current status information */

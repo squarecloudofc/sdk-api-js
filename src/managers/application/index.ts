@@ -1,13 +1,13 @@
 import { assertPathLike, assertString } from "@/assertions/literal";
 import {
-	type Application,
+	Application,
+	type BaseApplication,
 	type Collection,
 	SimpleApplicationStatus,
 	type SquareCloudAPI,
 	SquareCloudAPIError,
 	User,
 } from "@/index";
-import type { BaseApplication } from "@/structures/application/base";
 import type { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
@@ -19,15 +19,13 @@ export class ApplicationManager {
 	 * If the ID is provided, it will return an application that you can manage or get information
 	 * If the ID is not provided, it will return a collection of applications
 	 *
-	 * @param appId - The application ID, you must own the application
+	 * @param applicationId - The application ID, you must own the application
 	 */
 	async get(): Promise<Collection<string, BaseApplication>>;
-	async get(applicationId: string): Promise<Application>;
+	async get(applicationId: string): Promise<BaseApplication>;
 	async get(
 		applicationId?: string,
-	): Promise<
-		Application | BaseApplication | Collection<string, BaseApplication>
-	> {
+	): Promise<BaseApplication | Collection<string, BaseApplication>> {
 		const { response } = await this.client.api.user();
 		const user = new User(this.client, response);
 
@@ -89,6 +87,17 @@ export class ApplicationManager {
 		return data.response.map(
 			(status) => new SimpleApplicationStatus(this.client, status),
 		);
+	}
+
+	/**
+	 * Returns an application that you can manage or get information
+	 *
+	 * @param applicationId - The application ID, you must own the application
+	 */
+	async fetch(applicationId: string): Promise<Application> {
+		const { response } = await this.client.api.application("", applicationId);
+
+		return new Application(this.client, response);
 	}
 }
 
