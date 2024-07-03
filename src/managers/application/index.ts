@@ -25,7 +25,9 @@ export class ApplicationManager {
 	async get(applicationId: string): Promise<Application>;
 	async get(
 		applicationId?: string,
-	): Promise<Application | Collection<string, BaseApplication>> {
+	): Promise<
+		Application | BaseApplication | Collection<string, BaseApplication>
+	> {
 		const { response } = await this.client.api.user();
 		const user = new User(this.client, response);
 
@@ -40,7 +42,7 @@ export class ApplicationManager {
 				throw new SquareCloudAPIError("APP_NOT_FOUND");
 			}
 
-			return application.fetch();
+			return application;
 		}
 
 		return user.applications;
