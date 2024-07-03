@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.5.3
+
+### Patch Changes
+
+- 613579f: Fix `Application#fetch` request loop
+
 ## 3.5.1
 
 ### Patch Changes
