@@ -17,6 +17,24 @@ export class APIManager {
 		path: Route<T>,
 		options?: APIRequestOptions<T>,
 	): Promise<APIResponse<T>> {
+		const { url, init } = this.parseRequestOptions(path, options);
+
+		const response = await fetch(url, init).catch((err) => {
+			throw new SquareCloudAPIError(err.code, err.message);
+		});
+		const data = await response.json();
+
+		if (!data || data.status === "error" || !response.ok) {
+			throw new SquareCloudAPIError(data?.code || "COMMON_ERROR");
+		}
+
+		return data;
+	}
+
+	private parseRequestOptions(
+		path: string,
+		options?: APIRequestOptions<APIEndpoint>,
+	) {
 		const init = options || ({} as RequestInit);
 
 		init.method = init.method || "GET";
@@ -37,41 +55,6 @@ export class APIManager {
 			init.body = JSON.stringify(init.body);
 		}
 
-		const response = await fetch(url, init).catch((err) => {
-			throw new SquareCloudAPIError(err.code, err.message);
-		});
-		const data = await response.json();
-
-		if (!data || data.status === "error" || !response.ok) {
-			throw new SquareCloudAPIError(data?.code || "COMMON_ERROR");
-		}
-
-		return data;
-	}
-
-	async fetch<T>(
-		path: string,
-		options: RequestInit = {},
-	): Promise<APIPayload<T>> {
-		options.method = options.method || "GET";
-		options.headers = {
-			...(options.headers || {}),
-			Authorization: this.apiKey,
-		};
-
-		const res = await fetch(
-			`${this.baseUrl}/${this.version}/${path}`,
-			options,
-		).catch((err) => {
-			throw new SquareCloudAPIError(err.code, err.message);
-		});
-
-		const data = await res.json();
-
-		if (!data || data.status === "error" || !res.ok) {
-			throw new SquareCloudAPIError(data?.code || "COMMON_ERROR");
-		}
-
-		return data;
+		return { url, init };
 	}
 }
