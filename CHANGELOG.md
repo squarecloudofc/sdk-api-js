@@ -1,5 +1,20 @@
 # @squarecloud/api
 
+## 3.6.0
+
+### Minor Changes
+
+- d7e9b0e: New `Application#deploys#current` method for getting the current deployment URL
+- 73c92c2: New `Application#files#edit` method for editing files
+- 010e8b9: New `Application#backups#list` method for listing snapshots
+- 18cf349: New `Application#network#dns` method for getting DNS records status
+- 2da679a: New `Application#files#move` for moving or renaming files
+- 4f68026: Implement new API routes convention
+
+### Patch Changes
+
+- a138094: Rename `Application#deploys#getGithubWebhook` to `integrateGithubWebhook`
+
 ## 3.5.3
 
 ### Patch Changes
