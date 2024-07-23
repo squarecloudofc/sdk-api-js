@@ -1,9 +1,30 @@
 import { type Application, SquareCloudAPIError } from "@/index";
 import { Routes } from "@/lib/routes";
-import type { RESTPostAPIApplicationBackupResult } from "@squarecloud/api-types/v2";
+import type {
+	APIApplicationBackup,
+	RESTPostAPIApplicationBackupResult,
+} from "@squarecloud/api-types/v2";
 
 export class ApplicationBackupManager {
 	constructor(public readonly application: Application) {}
+
+	async list(): Promise<APIApplicationBackup[]> {
+		const data = await this.application.client.api.request(
+			Routes.apps.backups(this.application.id),
+		);
+
+		const backups = data.response;
+
+		this.application.client.emit(
+			"backupsUpdate",
+			this.application,
+			this.application.cache.backups,
+			backups,
+		);
+		this.application.cache.set("backups", backups);
+
+		return backups;
+	}
 
 	/** @returns The generated backup URL */
 	async create(): Promise<RESTPostAPIApplicationBackupResult> {
@@ -12,17 +33,7 @@ export class ApplicationBackupManager {
 			{ method: "POST" },
 		);
 
-		const backup = data.response;
-
-		this.application.client.emit(
-			"backupUpdate",
-			this.application,
-			this.application.cache.backup,
-			backup,
-		);
-		this.application.cache.set("backup", backup);
-
-		return backup;
+		return data.response;
 	}
 
 	/** @returns The generated backup buffer */
