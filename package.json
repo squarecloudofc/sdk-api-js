@@ -22,7 +22,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.8.2",
 		"@changesets/cli": "^2.27.6",
-		"@squarecloud/api-types": "^0.2.5",
+		"@squarecloud/api-types": "^0.3.1",
 		"@types/node": "^20.14.9",
 		"husky": "^9.0.11",
 		"ts-node": "^10.9.2",
