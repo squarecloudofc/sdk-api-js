@@ -52,6 +52,8 @@ export class ApplicationFilesManager {
 	 */
 	async create(file: string | Buffer, fileName: string, path = "/") {
 		assertPathLike(file, "CREATE_FILE");
+		assertString(fileName, "CREATE_FILE_NAME");
+		assertString(path, "CREATE_FILE_PATH");
 
 		if (typeof file === "string") {
 			file = await readFile(file);
@@ -77,7 +79,28 @@ export class ApplicationFilesManager {
 	 * @param path - The absolute file path
 	 */
 	async edit(file: string | Buffer, path = "/") {
+		assertPathLike(file, "EDIT_FILE");
+		assertString(path, "EDIT_FILE_PATH");
+
 		return this.create(file, "", path);
+	}
+
+	/**
+	 * Moves or renames a file
+	 *
+	 * @param path - The current absolute file path
+	 * @param newPath - The new absolute file path
+	 */
+	async move(path: string, newPath: string) {
+		assertString(path, "MOVE_FILE_PATH");
+		assertString(newPath, "MOVE_FILE_NEW_PATH");
+
+		const { status } = await this.application.client.api.request(
+			Routes.apps.files.move(this.application.id),
+			{ method: "PATCH", body: { path, to: newPath } },
+		);
+
+		return status === "success";
 	}
 
 	/**
