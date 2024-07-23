@@ -49,6 +49,7 @@ export interface APIEndpoints {
 		response: APIServiceStatus;
 	};
 	"apps/upload": {
+		method: "POST";
 		body: Buffer;
 		response: RESTPostAPIApplicationUploadResult;
 	};
@@ -68,21 +69,27 @@ export interface APIEndpoints {
 		response: APIApplicationBackup[];
 	};
 	"apps/generate-backup": {
+		method: "POST";
 		response: RESTPostAPIApplicationBackupResult;
 	};
 	"apps/start": {
+		method: "POST";
 		response: undefined;
 	};
 	"apps/restart": {
+		method: "POST";
 		response: undefined;
 	};
 	"apps/stop": {
+		method: "POST";
 		response: undefined;
 	};
 	"apps/delete": {
+		method: "DELETE";
 		response: undefined;
 	};
 	"apps/commit": {
+		method: "POST";
 		query: RESTPostAPIApplicationCommitQuery;
 		body: Buffer;
 		response: undefined;
@@ -96,14 +103,17 @@ export interface APIEndpoints {
 		response: APIListedFile[];
 	};
 	"apps/files/upsert": {
+		method: "PUT";
 		body: RESTPutAPIFileUpsertJSONBody;
 		response: undefined;
 	};
 	"apps/files/move": {
+		method: "PATCH";
 		body: RESTPatchAPIFileMoveJSONBody;
 		response: undefined;
 	};
 	"apps/files/delete": {
+		method: "DELETE";
 		query: RESTDeleteAPIFileDeleteQuery;
 		response: undefined;
 	};
@@ -114,6 +124,7 @@ export interface APIEndpoints {
 		response: APIDeploymentCurrent;
 	};
 	"apps/deployments/webhook": {
+		method: "POST";
 		body: RESTPostAPIGithubWebhookJSONBody;
 		response: RESTPostAPIGithubWebhookResult;
 	};
@@ -124,6 +135,7 @@ export interface APIEndpoints {
 		response: APINetworkAnalytics;
 	};
 	"apps/network/custom": {
+		method: "POST";
 		body: RESTPostAPINetworkCustomDomainJSONBody;
 		response: undefined;
 	};
@@ -131,13 +143,11 @@ export interface APIEndpoints {
 
 export type APIEndpoint = keyof APIEndpoints;
 
-export type APIRequestOptions<
-	T extends APIEndpoint,
-	U extends APIEndpoints[T] = APIEndpoints[T],
-> = Omit<U, "response"> & {
-	method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+export type APIMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+
+export type APIRequestOptions<T extends APIEndpoint> = {
 	headers?: HeadersInit;
-};
+} & Omit<APIEndpoints[T], "response">;
 
 export type APIResponse<T extends APIEndpoint> = APIPayload<
 	APIEndpoints[T]["response"]
