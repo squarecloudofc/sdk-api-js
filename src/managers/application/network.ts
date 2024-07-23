@@ -33,4 +33,15 @@ export class ApplicationNetworkManager {
 
 		return data?.response;
 	}
+
+	/**
+	 * Get the DNS records for your custom domain.
+	 */
+	async dns() {
+		const data = await this.application.client.api.request(
+			Routes.apps.network.dns(this.application.id),
+		);
+
+		return data?.response;
+	}
 }
