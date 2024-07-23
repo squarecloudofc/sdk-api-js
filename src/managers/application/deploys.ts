@@ -31,4 +31,15 @@ export class ApplicationDeploysManager {
 
 		return data?.response;
 	}
+
+	/**
+	 * Gets the current deployment URL
+	 */
+	async current() {
+		const data = await this.application.client.api.request(
+			Routes.apps.deployments.current(this.application.id),
+		);
+
+		return data?.response;
+	}
 }
