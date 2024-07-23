@@ -8,6 +8,7 @@
 	"scripts": {
 		"release": "npm run lint && npm run build && changeset publish",
 		"build": "tsup ./src",
+		"check-types": "tsc --noEmit",
 		"lint": "biome check --write .",
 		"test": "ts-node test/index.ts",
 		"prepare": "husky"
