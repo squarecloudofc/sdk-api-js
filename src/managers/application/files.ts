@@ -70,6 +70,17 @@ export class ApplicationFilesManager {
 	}
 
 	/**
+	 * Edits an existing file (same as create)
+	 *
+	 * @param file - The file content
+	 * @param fileName - The file name with extension
+	 * @param path - The absolute file path
+	 */
+	async edit(file: string | Buffer, path = "/") {
+		return this.create(file, "", path);
+	}
+
+	/**
 	 * Deletes the specified file or directory
 	 *
 	 * @param path - The absolute file or directory path
