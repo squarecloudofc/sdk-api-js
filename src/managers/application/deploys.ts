@@ -1,5 +1,6 @@
 import { assertString } from "@/assertions/literal";
 import type { Application } from "@/index";
+import { Routes } from "@/lib/routes";
 
 export class ApplicationDeploysManager {
 	constructor(public readonly application: Application) {}
@@ -12,14 +13,9 @@ export class ApplicationDeploysManager {
 	async getGithubWebhook(accessToken: string) {
 		assertString(accessToken);
 
-		const data = await this.application.client.api.application(
-			"deploy/git-webhook",
-			this.application.id,
-			undefined,
-			{
-				method: "POST",
-				body: JSON.stringify({ access_token: accessToken }),
-			},
+		const data = await this.application.client.api.request(
+			Routes.apps.deployments.webhook(this.application.id),
+			{ method: "POST", body: { access_token: accessToken } },
 		);
 
 		return data.response.webhook;
@@ -29,9 +25,8 @@ export class ApplicationDeploysManager {
 	 * Gets the last 10 deployments of an application from the last 24 hours
 	 */
 	async list() {
-		const data = await this.application.client.api.application(
-			"deploys/list",
-			this.application.id,
+		const data = await this.application.client.api.request(
+			Routes.apps.deployments.list(this.application.id),
 		);
 
 		return data?.response;

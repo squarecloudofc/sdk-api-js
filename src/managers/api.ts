@@ -1,9 +1,11 @@
-import type {
-	APIPayload,
-	APIUserInfo,
-	APIVersion,
-} from "@squarecloud/api-types/v2";
-import { type APIApplicationEndpoints, SquareCloudAPIError } from "..";
+import type { Route } from "@/lib/routes";
+import type { APIPayload, APIVersion } from "@squarecloud/api-types/v2";
+import {
+	type APIEndpoint,
+	type APIRequestOptions,
+	type APIResponse,
+	SquareCloudAPIError,
+} from "..";
 
 export class APIManager {
 	public readonly baseUrl = "https://api.squarecloud.app";
@@ -11,33 +13,40 @@ export class APIManager {
 
 	constructor(readonly apiKey: string) {}
 
-	user(userId?: string): Promise<APIPayload<APIUserInfo>> {
-		return this.fetch(`user${userId ? `/${userId}` : ""}`);
-	}
+	async request<T extends APIEndpoint>(
+		path: Route<T>,
+		options?: APIRequestOptions<T>,
+	): Promise<APIResponse<T>> {
+		const init = options || ({} as RequestInit);
 
-	application<T extends keyof APIApplicationEndpoints | (string & {})>(
-		path: T,
-		appId?: string,
-		params?: Record<string, string>,
-		options?: RequestInit | "GET" | "POST" | "DELETE",
-	): Promise<
-		APIPayload<
-			T extends keyof APIApplicationEndpoints
-				? APIApplicationEndpoints[T]
-				: never
-		>
-	> {
-		if (typeof options === "string") {
-			options = {
-				method: options,
-			};
+		init.method = init.method || "GET";
+		init.headers = {
+			...(init.headers || {}),
+			Authorization: this.apiKey,
+		};
+
+		const url = new URL(path, `${this.baseUrl}/${this.version}`);
+
+		if ("query" in init && init.query) {
+			const query = new URLSearchParams(init.query as Record<string, string>);
+			url.search = query.toString();
+			init.query = undefined;
 		}
 
-		const url = `apps${appId ? `/${appId}` : ""}${path ? `/${path}` : ""}${
-			params ? `?${new URLSearchParams(params)}` : ""
-		}`;
+		if ("body" in init && init.body && !(init.body instanceof Buffer)) {
+			init.body = JSON.stringify(init.body);
+		}
 
-		return this.fetch(url, options);
+		const response = await fetch(url, init).catch((err) => {
+			throw new SquareCloudAPIError(err.code, err.message);
+		});
+		const data = await response.json();
+
+		if (!data || data.status === "error" || !response.ok) {
+			throw new SquareCloudAPIError(data?.code || "COMMON_ERROR");
+		}
+
+		return data;
 	}
 
 	async fetch<T>(

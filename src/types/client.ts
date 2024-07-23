@@ -1,4 +1,5 @@
 import EventEmitter from "events";
+import type { RESTPostAPIApplicationBackupResult } from "@squarecloud/api-types/v2";
 import type { Application, ApplicationStatus, User } from "..";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
@@ -34,8 +35,8 @@ export interface ClientEvents {
 	];
 	backupUpdate: [
 		application: Application,
-		before: string | undefined,
-		after: string,
+		before: RESTPostAPIApplicationBackupResult | undefined,
+		after: RESTPostAPIApplicationBackupResult,
 	];
 	statusUpdate: [
 		application: Application,

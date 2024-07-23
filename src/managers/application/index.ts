@@ -8,6 +8,7 @@ import {
 	SquareCloudAPIError,
 	User,
 } from "@/index";
+import { Routes } from "@/lib/routes";
 import type { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
@@ -26,7 +27,7 @@ export class ApplicationManager {
 	async get(
 		applicationId?: string,
 	): Promise<BaseApplication | Collection<string, BaseApplication>> {
-		const { response } = await this.client.api.user();
+		const { response } = await this.client.api.request(Routes.user());
 		const user = new User(this.client, response);
 
 		this.client.emit("userUpdate", this.client.cache.user, user);
@@ -64,16 +65,11 @@ export class ApplicationManager {
 		const formData = new FormData();
 		formData.append("file", file, { filename: "app.zip" });
 
-		const data = await this.client.api.application(
-			"upload",
-			undefined,
-			undefined,
-			{
-				method: "POST",
-				body: formData.getBuffer(),
-				headers: formData.getHeaders(),
-			},
-		);
+		const data = await this.client.api.request(Routes.apps.upload(), {
+			method: "POST",
+			body: formData.getBuffer(),
+			headers: formData.getHeaders(),
+		});
 
 		return data.response;
 	}
@@ -82,7 +78,7 @@ export class ApplicationManager {
 	 * Returns the status for all your applications
 	 */
 	async statusAll(): Promise<SimpleApplicationStatus[]> {
-		const data = await this.client.api.application("all/status");
+		const data = await this.client.api.request(Routes.apps.statusAll());
 
 		return data.response.map(
 			(status) => new SimpleApplicationStatus(this.client, status),
@@ -95,7 +91,9 @@ export class ApplicationManager {
 	 * @param applicationId - The application ID, you must own the application
 	 */
 	async fetch(applicationId: string): Promise<Application> {
-		const { response } = await this.client.api.application("", applicationId);
+		const { response } = await this.client.api.request(
+			Routes.apps.info(applicationId),
+		);
 
 		return new Application(this.client, response);
 	}

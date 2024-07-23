@@ -1,4 +1,5 @@
 import { assertSimpleStatus, assertStatus } from "@/assertions/status";
+import { Routes } from "@/lib/routes";
 import type { ApplicationStatusUsage } from "@/types/application";
 import type {
 	APIApplicationStatus,
@@ -38,9 +39,8 @@ export class SimpleApplicationStatus<R extends boolean = boolean> {
 	}
 
 	async fetch() {
-		const data = await this.client.api.application(
-			"status",
-			this.applicationId,
+		const data = await this.client.api.request(
+			Routes.apps.status(this.applicationId),
 		);
 
 		return new ApplicationStatus(

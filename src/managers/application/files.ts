@@ -1,6 +1,7 @@
 import { join } from "path";
 import { assertPathLike, assertString } from "@/assertions/literal";
 import type { Application } from "@/index";
+import { Routes } from "@/lib/routes";
 import { readFile } from "fs/promises";
 
 export class ApplicationFilesManager {
@@ -14,10 +15,9 @@ export class ApplicationFilesManager {
 	async list(path = "/") {
 		assertString(path, "LIST_FILES_PATH");
 
-		const { response } = await this.application.client.api.application(
-			"files/list",
-			this.application.id,
-			{ path },
+		const { response } = await this.application.client.api.request(
+			Routes.apps.files.list(this.application.id),
+			{ query: { path } },
 		);
 
 		return response;
@@ -31,10 +31,9 @@ export class ApplicationFilesManager {
 	async read(path: string) {
 		assertString(path, "READ_FILE_PATH");
 
-		const { response } = await this.application.client.api.application(
-			"files/read",
-			this.application.id,
-			{ path },
+		const { response } = await this.application.client.api.request(
+			Routes.apps.files.read(this.application.id),
+			{ query: { path } },
 		);
 
 		if (!response) {
@@ -59,16 +58,11 @@ export class ApplicationFilesManager {
 		}
 		path = join(path, fileName).replaceAll("\\", "/");
 
-		const { status } = await this.application.client.api.application(
-			"files/create",
-			this.application.id,
-			undefined,
+		const { status } = await this.application.client.api.request(
+			Routes.apps.files.upsert(this.application.id),
 			{
-				method: "POST",
-				body: JSON.stringify({
-					buffer: file.toJSON(),
-					path,
-				}),
+				method: "PUT",
+				body: { content: file.toString("utf8"), path },
 			},
 		);
 
@@ -83,11 +77,9 @@ export class ApplicationFilesManager {
 	async delete(path: string) {
 		assertString(path, "DELETE_FILE_PATH");
 
-		const { status } = await this.application.client.api.application(
-			"files/delete",
-			this.application.id,
-			{ path },
-			"DELETE",
+		const { status } = await this.application.client.api.request(
+			Routes.apps.files.delete(this.application.id),
+			{ method: "DELETE", query: { path } },
 		);
 
 		return status === "success";

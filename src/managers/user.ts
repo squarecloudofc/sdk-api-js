@@ -1,3 +1,4 @@
+import { Routes } from "@/lib/routes";
 import { type SquareCloudAPI, User } from "..";
 
 export class UserManager {
@@ -9,7 +10,7 @@ export class UserManager {
 	 * @param userId - The user ID, if not provided it will get your own information
 	 */
 	async get(): Promise<User> {
-		const { response } = await this.client.api.user();
+		const { response } = await this.client.api.request(Routes.user());
 		const user = new User(this.client, response);
 
 		this.client.emit("userUpdate", this.client.cache.user, user);

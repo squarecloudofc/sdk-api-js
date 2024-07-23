@@ -1,5 +1,6 @@
 import { assertPathLike, assertString } from "@/assertions/literal";
 import { ApplicationStatus, type SquareCloudAPI } from "@/index";
+import { Routes } from "@/lib/routes";
 import type {
 	APIUserApplication,
 	ApplicationLanguage,
@@ -57,7 +58,7 @@ export class BaseApplication {
 
 	/** @returns The application current status information */
 	async getStatus(): Promise<ApplicationStatus> {
-		const data = await this.client.api.application("status", this.id);
+		const data = await this.client.api.request(Routes.apps.status(this.id));
 		const status = new ApplicationStatus(this.client, data.response, this.id);
 
 		return status;
@@ -65,7 +66,7 @@ export class BaseApplication {
 
 	/** @returns The application logs */
 	async getLogs(): Promise<string> {
-		const data = await this.client.api.application("logs", this.id);
+		const data = await this.client.api.request(Routes.apps.logs(this.id));
 		const { logs } = data.response;
 
 		return logs;
@@ -76,12 +77,9 @@ export class BaseApplication {
 	 * @returns `true` for success or `false` for fail
 	 */
 	async start(): Promise<boolean> {
-		const data = await this.client.api.application(
-			"start",
-			this.id,
-			undefined,
-			"POST",
-		);
+		const data = await this.client.api.request(Routes.apps.start(this.id), {
+			method: "POST",
+		});
 
 		return data?.status === "success";
 	}
@@ -91,12 +89,9 @@ export class BaseApplication {
 	 * @returns `true` for success or `false` for fail
 	 */
 	async stop(): Promise<boolean> {
-		const data = await this.client.api.application(
-			"stop",
-			this.id,
-			undefined,
-			"POST",
-		);
+		const data = await this.client.api.request(Routes.apps.stop(this.id), {
+			method: "POST",
+		});
 
 		return data?.status === "success";
 	}
@@ -106,12 +101,9 @@ export class BaseApplication {
 	 * @returns `true` for success or `false` for fail
 	 */
 	async restart(): Promise<boolean> {
-		const data = await this.client.api.application(
-			"restart",
-			this.id,
-			undefined,
-			"POST",
-		);
+		const data = await this.client.api.request(Routes.apps.restart(this.id), {
+			method: "POST",
+		});
 
 		return data?.status === "success";
 	}
@@ -123,12 +115,9 @@ export class BaseApplication {
 	 * @returns `true` for success or `false` for fail
 	 */
 	async delete(): Promise<boolean> {
-		const data = await this.client.api.application(
-			"delete",
-			this.id,
-			undefined,
-			"DELETE",
-		);
+		const data = await this.client.api.request(Routes.apps.delete(this.id), {
+			method: "DELETE",
+		});
 
 		return data?.status === "success";
 	}
@@ -167,18 +156,12 @@ export class BaseApplication {
 		const formData = new FormData();
 		formData.append("file", file, { filename: fileName || "app.zip" });
 
-		const data = await this.client.api.application(
-			"commit",
-			this.id,
-			{
-				restart: `${Boolean(restart)}`,
-			},
-			{
-				method: "POST",
-				body: formData.getBuffer(),
-				headers: formData.getHeaders(),
-			},
-		);
+		const data = await this.client.api.request(Routes.apps.commit(this.id), {
+			method: "POST",
+			query: { restart: Boolean(restart) },
+			body: formData.getBuffer(),
+			headers: formData.getHeaders(),
+		});
 
 		return data?.status === "success";
 	}

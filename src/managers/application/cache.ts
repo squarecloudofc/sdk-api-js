@@ -1,10 +1,11 @@
 import type { ApplicationStatus } from "@/structures";
+import type { RESTPostAPIApplicationBackupResult } from "@squarecloud/api-types/v2";
 
 export type ApplicationCacheKey = "status" | "backup" | "logs";
 
 export class ApplicationCacheManager {
 	readonly status?: ApplicationStatus;
-	readonly backup?: string;
+	readonly backup?: RESTPostAPIApplicationBackupResult;
 	readonly logs?: string;
 
 	set<T extends ApplicationCacheKey>(

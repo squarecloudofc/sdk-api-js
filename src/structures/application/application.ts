@@ -1,5 +1,6 @@
 import { assertApplication } from "@/assertions/application";
 import { ApplicationStatus, type SquareCloudAPI } from "@/index";
+import { Routes } from "@/lib/routes";
 import {
 	ApplicationBackupManager,
 	ApplicationCacheManager,
@@ -75,7 +76,7 @@ export class Application extends BaseApplication {
 
 	/** @returns The application current status information */
 	async getStatus(): Promise<ApplicationStatus> {
-		const data = await this.client.api.application("status", this.id);
+		const data = await this.client.api.request(Routes.apps.status(this.id));
 		const status = new ApplicationStatus(this.client, data.response, this.id);
 
 		this.client.emit("statusUpdate", this, this.cache.status, status);
@@ -86,7 +87,7 @@ export class Application extends BaseApplication {
 
 	/** @returns The application logs */
 	async getLogs(): Promise<string> {
-		const data = await this.client.api.application("logs", this.id);
+		const data = await this.client.api.request(Routes.apps.logs(this.id));
 		const { logs } = data.response;
 
 		this.client.emit("logsUpdate", this, this.cache.logs, logs);

@@ -1,16 +1,18 @@
 import { type Application, SquareCloudAPIError } from "@/index";
+import { Routes } from "@/lib/routes";
+import type { RESTPostAPIApplicationBackupResult } from "@squarecloud/api-types/v2";
 
 export class ApplicationBackupManager {
 	constructor(public readonly application: Application) {}
 
 	/** @returns The generated backup URL */
-	async url(): Promise<string> {
-		const data = await this.application.client.api.application(
-			"backup",
-			this.application.id,
+	async create(): Promise<RESTPostAPIApplicationBackupResult> {
+		const data = await this.application.client.api.request(
+			Routes.apps.generateBackup(this.application.id),
+			{ method: "POST" },
 		);
 
-		const backup = data.response.downloadURL;
+		const backup = data.response;
 
 		this.application.client.emit(
 			"backupUpdate",
@@ -25,14 +27,9 @@ export class ApplicationBackupManager {
 
 	/** @returns The generated backup buffer */
 	async download(): Promise<Buffer> {
-		const url = await this.url();
+		const backup = await this.create();
 
-		const registryUrl = url.replace(
-			"https://squarecloud.app/dashboard/backup/",
-			"https://registry.squarecloud.app/v1/backup/download/",
-		);
-
-		const res = await fetch(registryUrl)
+		const res = await fetch(backup.url)
 			.then((res) => res.arrayBuffer())
 			.catch(() => undefined);
 

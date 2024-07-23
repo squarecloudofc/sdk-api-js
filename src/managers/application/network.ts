@@ -1,5 +1,6 @@
 import { assertString } from "@/assertions/literal";
 import type { WebsiteApplication } from "@/index";
+import { Routes } from "@/lib/routes";
 
 export class ApplicationNetworkManager {
 	constructor(public readonly application: WebsiteApplication) {}
@@ -10,13 +11,11 @@ export class ApplicationNetworkManager {
 	 *
 	 * @param domain - The custom domain you want to use (e.g. yoursite.com)
 	 */
-	async setCustomDomain(domain: string) {
-		assertString(domain, "CUSTOM_DOMAIN");
-		const data = await this.application.client.api.application(
-			`network/custom/${encodeURIComponent(domain)}`,
-			this.application.id,
-			undefined,
-			"POST",
+	async setCustomDomain(custom: string) {
+		assertString(custom, "CUSTOM_DOMAIN");
+		const data = await this.application.client.api.request(
+			Routes.apps.network.custom(this.application.id),
+			{ method: "POST", body: { custom } },
 		);
 
 		return data.status === "success";
@@ -28,9 +27,8 @@ export class ApplicationNetworkManager {
 	 * - Requires the application to have an integrated custom domain
 	 */
 	async analytics() {
-		const data = await this.application.client.api.application(
-			"network/analytics",
-			this.application.id,
+		const data = await this.application.client.api.request(
+			Routes.apps.network.analytics(this.application.id),
 		);
 
 		return data?.response;
