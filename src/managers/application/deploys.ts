@@ -10,7 +10,7 @@ export class ApplicationDeploysManager {
 	 *
 	 * @param accessToken - The access token for your GitHub repository. You can find this in your [GitHub Tokens Classic](https://github.com/settings/tokens/new)
 	 */
-	async getGithubWebhook(accessToken: string) {
+	async integrateGithubWebhook(accessToken: string) {
 		assertString(accessToken);
 
 		const data = await this.application.client.api.request(
