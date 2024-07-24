@@ -39,6 +39,7 @@ export class APIManager {
 
 		init.method = init.method || "GET";
 		init.headers = {
+			Accept: "application/json",
 			...(init.headers || {}),
 			Authorization: this.apiKey,
 		};
@@ -53,6 +54,10 @@ export class APIManager {
 
 		if ("body" in init && init.body && !(init.body instanceof Buffer)) {
 			init.body = JSON.stringify(init.body);
+			init.headers = {
+				...init.headers,
+				"Content-Type": "application/json",
+			};
 		}
 
 		return { url, init };
