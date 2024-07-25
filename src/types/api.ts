@@ -1,3 +1,4 @@
+import type { Route } from "@/lib/routes";
 import type {
 	APIApplication,
 	APIApplicationBackup,
@@ -152,3 +153,15 @@ export type APIRequestOptions<T extends APIEndpoint> = {
 export type APIResponse<T extends APIEndpoint> = APIPayload<
 	APIEndpoints[T]["response"]
 >;
+
+export type QueryOrBody =
+	| { query: any }
+	| { body: any }
+	| { method: APIMethod };
+
+export type APIRequestArgs<
+	T extends APIEndpoint,
+	U extends APIRequestOptions<T> = APIRequestOptions<T>,
+> = U extends QueryOrBody
+	? [path: Route<T>, options: U]
+	: [path: Route<T>, options?: U];

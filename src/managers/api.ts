@@ -1,7 +1,7 @@
-import type { Route } from "@/lib/routes";
 import type { APIVersion } from "@squarecloud/api-types/v2";
 import {
 	type APIEndpoint,
+	type APIRequestArgs,
 	type APIRequestOptions,
 	type APIResponse,
 	SquareCloudAPIError,
@@ -13,9 +13,8 @@ export class APIManager {
 
 	constructor(protected readonly apiKey: string) {}
 
-	async request<T extends APIEndpoint, U extends APIRequestOptions<T>>(
-		path: Route<T>,
-		options?: U,
+	async request<T extends APIEndpoint>(
+		...[path, options]: APIRequestArgs<T>
 	): Promise<APIResponse<T>> {
 		const { url, init } = this.parseRequestOptions(path, options);
 
