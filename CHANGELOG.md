@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.6.1
+
+### Patch Changes
+
+- ed4a0b5: Fix CSharp detecting as invalid lang.
+
 ## 3.6.0
 
 ### Minor Changes
