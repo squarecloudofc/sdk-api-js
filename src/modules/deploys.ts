@@ -1,6 +1,7 @@
 import { assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
 import type { BaseApplication } from "@/structures";
+import { Deployment } from "@/structures/deploy";
 
 export class DeploysModule {
 	constructor(public readonly application: BaseApplication) {}
@@ -29,7 +30,9 @@ export class DeploysModule {
 			Routes.apps.deployments.list(this.application.id),
 		);
 
-		return data.response;
+		return data.response.map(
+			(deployment) => new Deployment(this.application, deployment),
+		);
 	}
 
 	/**
