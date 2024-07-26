@@ -29,17 +29,17 @@ export class DeploysModule {
 			Routes.apps.deployments.list(this.application.id),
 		);
 
-		return data?.response;
+		return data.response;
 	}
 
 	/**
-	 * Gets the current deployment URL
+	 * Gets the current webhook URL
 	 */
-	async current() {
+	async webhookURL() {
 		const data = await this.application.client.api.request(
 			Routes.apps.deployments.current(this.application.id),
 		);
 
-		return data?.response;
+		return data.response.webhook;
 	}
 }
