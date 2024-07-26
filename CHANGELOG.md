@@ -1,5 +1,13 @@
 # @squarecloud/api
 
+## 3.6.3
+
+### Patch Changes
+
+- 138d9d8: Rename `deploys#current()` to `deploys#webhookURL()`.
+- 7a806b0: New structure for backups with download method. It's used at `backups.list()` method.
+- 6f302d8: New structure for deployments. It's used at `deploys.list()` method.
+
 ## 3.6.2
 
 ### Patch Changes
