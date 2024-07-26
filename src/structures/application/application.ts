@@ -7,12 +7,15 @@ import type { WebsiteApplication } from "./website";
 
 /**
  * Represents a Square Cloud application
- *
- * @constructor
- * @param client - The client for this application
- * @param data - The data from this application
  */
 export class Application extends BaseApplication {
+	/**
+	 * Represents a Square Cloud application
+	 *
+	 * @constructor
+	 * @param client - The client for this application
+	 * @param data - The data from this application
+	 */
 	constructor(
 		public readonly client: SquareCloudAPI,
 		data: APIApplication,

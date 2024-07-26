@@ -8,10 +8,6 @@ import { Collection } from "./collection";
 
 /**
  * Represents a Square Cloud user
- *
- * @constructor
- * @param client - The client for this user
- * @param data - The data from this user
  */
 export class User {
 	/** The user's id */
@@ -25,6 +21,13 @@ export class User {
 	/** The user's registered applications Collection */
 	applications: Collection<string, BaseApplication>;
 
+	/**
+	 * Represents a Square Cloud user
+	 *
+	 * @constructor
+	 * @param client - The client for this user
+	 * @param data - The data from this user
+	 */
 	constructor(client: SquareCloudAPI, data: APIUserInfo) {
 		assertUserInfo(data);
 

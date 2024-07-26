@@ -15,10 +15,6 @@ import type { Application } from "./application";
 
 /**
  * Represents the base application from the user endpoint
- *
- * @constructor
- * @param client - The client for this application
- * @param data - The data from this application
  */
 export class BaseApplication {
 	/** The application ID */
@@ -57,6 +53,13 @@ export class BaseApplication {
 	/** Deploys module for this application */
 	deploys = new DeploysModule(this);
 
+	/**
+	 * Represents the base application from the user endpoint
+	 *
+	 * @constructor
+	 * @param client - The client for this application
+	 * @param data - The data from this application
+	 */
 	constructor(
 		public readonly client: SquareCloudAPI,
 		data: APIUserApplication,
@@ -80,11 +83,16 @@ export class BaseApplication {
 		return this.backups;
 	}
 
+	/**
+	 * Fetches this application for full information
+	 */
 	async fetch(): Promise<Application> {
 		return this.client.applications.fetch(this.id);
 	}
 
-	/** @returns The application current status information */
+	/**
+	 * Gets the application current status information
+	 */
 	async getStatus(): Promise<ApplicationStatus> {
 		const data = await this.client.api.request(Routes.apps.status(this.id));
 		const status = new ApplicationStatus(this.client, data.response, this.id);
@@ -95,7 +103,9 @@ export class BaseApplication {
 		return status;
 	}
 
-	/** @returns The application logs */
+	/**
+	 * Gets the application current logs
+	 */
 	async getLogs(): Promise<string> {
 		const data = await this.client.api.request(Routes.apps.logs(this.id));
 		const { logs } = data.response;
@@ -108,7 +118,7 @@ export class BaseApplication {
 
 	/**
 	 * Starts up the application
-	 * @returns `true` for success or `false` for fail
+	 * @returns `boolean` for success or fail
 	 */
 	async start(): Promise<boolean> {
 		const data = await this.client.api.request(Routes.apps.start(this.id), {
@@ -120,7 +130,7 @@ export class BaseApplication {
 
 	/**
 	 * Stops the application
-	 * @returns `true` for success or `false` for fail
+	 * @returns `boolean` for success or fail
 	 */
 	async stop(): Promise<boolean> {
 		const data = await this.client.api.request(Routes.apps.stop(this.id), {
@@ -132,7 +142,7 @@ export class BaseApplication {
 
 	/**
 	 * Restarts the application
-	 * @returns `true` for success or `false` for fail
+	 * @returns `boolean` for success or fail
 	 */
 	async restart(): Promise<boolean> {
 		const data = await this.client.api.request(Routes.apps.restart(this.id), {
@@ -144,9 +154,9 @@ export class BaseApplication {
 
 	/**
 	 * Deletes your whole application
-	 *
 	 * - This action is irreversible.
-	 * @returns `true` for success or `false` for fail
+	 *
+	 * @returns `boolean` for success or fail
 	 */
 	async delete(): Promise<boolean> {
 		const data = await this.client.api.request(Routes.apps.delete(this.id), {
@@ -165,7 +175,7 @@ export class BaseApplication {
 	 * ```ts
 	 * require('path').join(__dirname, 'fileName')
 	 * ```
-	 * - Tip2: use a zip file to commit more than one archive
+	 * - Tip 2: use a zip file to commit more than one archive
 	 *
 	 * @param file - Buffer or absolute path to the file
 	 * @param fileName - The file name (e.g.: "index.js")

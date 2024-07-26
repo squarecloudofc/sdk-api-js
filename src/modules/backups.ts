@@ -7,7 +7,9 @@ import { Backup } from "@/structures/backup";
 export class BackupsModule {
 	constructor(public readonly application: BaseApplication) {}
 
-	/** @returns The list of backups (snapshots) */
+	/**
+	 * Gets the list of generated backups (snapshots) for this application
+	 */
 	async list(): Promise<Backup[]> {
 		const data = await this.application.client.api.request(
 			Routes.apps.backups(this.application.id),
@@ -26,7 +28,10 @@ export class BackupsModule {
 		return backups.map((backup) => new Backup(this.application, backup));
 	}
 
-	/** @returns The generated backup URL and key */
+	/**
+	 * Generates a new backup
+	 * @returns The generated backup URL and key
+	 */
 	async create(): Promise<RESTPostAPIApplicationBackupResult> {
 		const data = await this.application.client.api.request(
 			Routes.apps.generateBackup(this.application.id),
@@ -36,7 +41,10 @@ export class BackupsModule {
 		return data.response;
 	}
 
-	/** @returns The generated backup buffer */
+	/**
+	 * Generates a new backup and downloads it
+	 * @returns The downloaded backup bufer
+	 */
 	async download(): Promise<Buffer> {
 		const backup = await this.create();
 

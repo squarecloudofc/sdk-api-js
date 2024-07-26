@@ -6,9 +6,7 @@ export class UserModule {
 	constructor(public readonly client: SquareCloudAPI) {}
 
 	/**
-	 * Gets a user's informations
-	 *
-	 * @param userId - The user ID, if not provided it will get your own information
+	 * Gets the authenticated user information
 	 */
 	async get(): Promise<User> {
 		const { response } = await this.client.api.request(Routes.user());

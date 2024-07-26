@@ -3,10 +3,10 @@ import type { APIApplicationBackup } from "@squarecloud/api-types/v2";
 import { assertBackup } from "@/assertions/backup";
 import type { BaseApplication } from "./application/base";
 
+/**
+ * Represents an application backup (snapshot)
+ */
 export class Backup {
-	/** The ID of the application from which you fetched the backups. */
-	applicationId: string;
-
 	/** Size of the backup in bytes. */
 	size: number;
 
@@ -22,6 +22,13 @@ export class Backup {
 	/** The URL for downloading this backup */
 	url: string;
 
+	/**
+	 * Represents an application backup (snapshot)
+	 *
+	 * @constructor
+	 * @param application - The application from which you fetched the backups
+	 * @param data - The data from this backup
+	 */
 	constructor(
 		public readonly application: BaseApplication,
 		data: APIApplicationBackup,
@@ -30,7 +37,6 @@ export class Backup {
 		const { name, size, modified, key } = data;
 		const { userId } = application.client.api;
 
-		this.applicationId = name;
 		this.size = size;
 		this.modifiedAt = new Date(modified);
 		this.modifiedTimestamp = this.modifiedAt.getTime();
@@ -38,7 +44,10 @@ export class Backup {
 		this.url = `https://backups.squarecloud.app/${userId}_${name}.zip?${key}`;
 	}
 
-	/** @returns The downloaded backup buffer */
+	/**
+	 * Downloads this backup
+	 * @returns The downloaded backup bufer
+	 */
 	async download(): Promise<Buffer> {
 		const res = await fetch(this.url)
 			.then((res) => res.arrayBuffer())

@@ -9,6 +9,9 @@ import { Routes } from "@/lib/routes";
 import type { ApplicationStatusUsage } from "@/types/application";
 import type { SquareCloudAPI } from "..";
 
+/**
+ * Represents an application status fetched from status all endpoint
+ */
 export class SimpleApplicationStatus<R extends boolean = boolean> {
 	/** The application's ID this status came from */
 	applicationId: string;
@@ -19,6 +22,13 @@ export class SimpleApplicationStatus<R extends boolean = boolean> {
 	/** Whether the application is running or not */
 	running: R;
 
+	/**
+	 * Represents an application status fetched from status all endpoint
+	 *
+	 * @constructor
+	 * @param client - The client for this status
+	 * @param data - The data from this status
+	 */
 	constructor(
 		public readonly client: SquareCloudAPI,
 		data: APIApplicationStatusAll,
@@ -39,6 +49,9 @@ export class SimpleApplicationStatus<R extends boolean = boolean> {
 		}
 	}
 
+	/**
+	 * Fetches the full application status
+	 */
 	async fetch() {
 		const data = await this.client.api.request(
 			Routes.apps.status(this.applicationId),
@@ -52,6 +65,9 @@ export class SimpleApplicationStatus<R extends boolean = boolean> {
 	}
 }
 
+/**
+ * Represents an application status
+ */
 export class ApplicationStatus {
 	/** The application's ID this status came from */
 	applicationId: string;
@@ -77,6 +93,14 @@ export class ApplicationStatus {
 	/** For how long the app is running */
 	uptime?: Date;
 
+	/**
+	 * Represents an application status
+	 *
+	 * @constructor
+	 * @param client - The client for this status
+	 * @param data - The data from this status
+	 * @param applicationId - The application ID this status came from
+	 */
 	constructor(
 		public readonly client: SquareCloudAPI,
 		data: APIApplicationStatus,

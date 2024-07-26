@@ -7,10 +7,6 @@ import { Application } from "./application";
 
 /**
  * Represents a Square Cloud application
- *
- * @constructor
- * @param client - The client for this application
- * @param data - The data from this application
  */
 export class WebsiteApplication extends Application {
 	/** The application default domain (e.g. example.squareweb.app) */
@@ -20,6 +16,13 @@ export class WebsiteApplication extends Application {
 	/** Network module for this application */
 	network = new NetworkModule(this);
 
+	/**
+	 * Represents a Square Cloud application
+	 *
+	 * @constructor
+	 * @param client - The client for this application
+	 * @param data - The data from this application
+	 */
 	constructor(
 		public readonly client: SquareCloudAPI,
 		data: APIWebsiteApplication,

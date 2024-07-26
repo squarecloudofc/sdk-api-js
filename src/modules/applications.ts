@@ -52,6 +52,7 @@ export class ApplicationsModule {
 	 * Uploads an application
 	 *
 	 * @param file - The zip file path or Buffer
+	 *
 	 * @returns The uploaded application data
 	 */
 	async create(
@@ -76,7 +77,7 @@ export class ApplicationsModule {
 	}
 
 	/**
-	 * Returns the status for all your applications
+	 * Gets the summary status for all your applications
 	 */
 	async statusAll(): Promise<SimpleApplicationStatus[]> {
 		const data = await this.client.api.request(Routes.apps.statusAll());

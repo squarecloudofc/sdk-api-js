@@ -9,7 +9,7 @@ export class NetworkModule {
 	 * Integrates your website with a custom domain
 	 * - Requires [Senior plan](https://squarecloud.app/plans) or higher
 	 *
-	 * @param domain - The custom domain you want to use (e.g. yoursite.com)
+	 * @param custom - The custom domain you want to use (e.g. yoursite.com)
 	 */
 	async setCustomDomain(custom: string) {
 		assertString(custom, "CUSTOM_DOMAIN");
