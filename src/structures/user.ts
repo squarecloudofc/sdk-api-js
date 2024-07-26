@@ -11,15 +11,15 @@ import { Collection } from "./collection";
  */
 export class User {
 	/** The user's id */
-	id: string;
+	public readonly id: string;
 	/** The user's display name */
-	name: string;
+	public name: string;
 	/** The user's current plan */
-	plan: UserPlan;
+	public plan: UserPlan;
 	/** The user's registered email */
-	email: string;
+	public email: string;
 	/** The user's registered applications Collection */
-	applications: Collection<string, BaseApplication>;
+	public applications: Collection<string, BaseApplication>;
 
 	/**
 	 * Represents a Square Cloud user

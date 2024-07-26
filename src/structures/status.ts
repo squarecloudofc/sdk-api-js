@@ -14,13 +14,13 @@ import type { SquareCloudAPI } from "..";
  */
 export class SimpleApplicationStatus<R extends boolean = boolean> {
 	/** The application's ID this status came from */
-	applicationId: string;
+	public readonly applicationId: string;
 	/** Usage statuses for this application */
-	usage: R extends true
+	public usage: R extends true
 		? Pick<ApplicationStatusUsage, "cpu" | "ram">
 		: undefined;
 	/** Whether the application is running or not */
-	running: R;
+	public running: R;
 
 	/**
 	 * Represents an application status fetched from status all endpoint
@@ -70,11 +70,11 @@ export class SimpleApplicationStatus<R extends boolean = boolean> {
  */
 export class ApplicationStatus {
 	/** The application's ID this status came from */
-	applicationId: string;
+	public readonly applicationId: string;
 	/** Usage statuses for this application */
-	usage: ApplicationStatusUsage;
+	public usage: ApplicationStatusUsage;
 	/** Whether the application is running or not */
-	running: boolean;
+	public running: boolean;
 	/**
 	 * The status of the application
 	 *
@@ -85,13 +85,13 @@ export class ApplicationStatus {
 	 * - 'restarting'
 	 * - 'deleting'
 	 */
-	status: ApplicationStatusType;
+	public status: ApplicationStatusType;
 	/** How many requests have been made since the last start up */
-	requests: number;
+	public requests: number;
 	/** For how long the app is running in millisseconds */
-	uptimeTimestamp?: number;
+	public uptimeTimestamp?: number;
 	/** For how long the app is running */
-	uptime?: Date;
+	public uptime?: Date;
 
 	/**
 	 * Represents an application status

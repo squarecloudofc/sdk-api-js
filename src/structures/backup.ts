@@ -8,19 +8,19 @@ import type { BaseApplication } from "./application/base";
  */
 export class Backup {
 	/** Size of the backup in bytes. */
-	size: number;
+	public size: number;
 
 	/** Date of the last modification of the backup. */
-	modifiedAt: Date;
+	public modifiedAt: Date;
 
 	/** Date of the last modification of the backup in millisseconds. */
-	modifiedTimestamp: number;
+	public modifiedTimestamp: number;
 
 	/** AWS access key for the backup. */
-	key: string;
+	public readonly key: string;
 
 	/** The URL for downloading this backup */
-	url: string;
+	public readonly url: string;
 
 	/**
 	 * Represents an application backup (snapshot)

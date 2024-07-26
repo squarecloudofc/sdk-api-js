@@ -18,17 +18,17 @@ import type { Application } from "./application";
  */
 export class BaseApplication {
 	/** The application ID */
-	id: string;
+	public readonly id: string;
 	/** The application display name */
-	name: string;
+	public name: string;
 	/** The application description */
-	description?: string;
+	public description?: string;
 	/** The url to manage the application via web */
-	url: string;
+	public url: string;
 	/** The application total ram */
-	ram: number;
+	public ram: number;
 	/** The application current cluster */
-	cluster: string;
+	public cluster: string;
 	/**
 	 * The application programming language
 	 *
@@ -43,15 +43,16 @@ export class BaseApplication {
 	 * - `dotnet`
 	 * - `static`
 	 */
-	language: ApplicationLanguage;
+	public language: ApplicationLanguage;
+
 	/** Cache service for this application */
-	cache = new ApplicationCacheService();
+	public readonly cache = new ApplicationCacheService();
 	/** Files module for this application */
-	files = new FilesModule(this);
+	public readonly files = new FilesModule(this);
 	/** Backup module for this application */
-	backups = new BackupsModule(this);
+	public readonly backups = new BackupsModule(this);
 	/** Deploys module for this application */
-	deploys = new DeploysModule(this);
+	public readonly deploys = new DeploysModule(this);
 
 	/**
 	 * Represents the base application from the user endpoint

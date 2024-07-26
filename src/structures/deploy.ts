@@ -8,16 +8,16 @@ import type { BaseApplication } from "./application/base";
  */
 export class Deployment {
 	/** The ID of the deploy. */
-	id: `git-${string}`;
+	public readonly id: `git-${string}`;
 
 	/** The current state of the deploy. */
-	state: DeploymentState;
+	public state: DeploymentState;
 
 	/** The date the deploy was created. */
-	createdAt: Date;
+	public createdAt: Date;
 
 	/** The date the deploy was created in millisseconds. */
-	createdTimestamp: number;
+	public createdTimestamp: number;
 
 	/**
 	 * Represents an application deployment

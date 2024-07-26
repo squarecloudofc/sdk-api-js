@@ -10,11 +10,12 @@ import { Application } from "./application";
  */
 export class WebsiteApplication extends Application {
 	/** The application default domain (e.g. example.squareweb.app) */
-	domain: string;
+	public domain: string;
 	/** The custom configured domain (e.g. yoursite.com) */
-	custom?: string;
+	public custom?: string;
+
 	/** Network module for this application */
-	network = new NetworkModule(this);
+	public readonly network = new NetworkModule(this);
 
 	/**
 	 * Represents a Square Cloud application
