@@ -1,3 +1,5 @@
+import type { APIVersion } from "@squarecloud/api-types/v2";
+
 import { SquareCloudAPIError } from "@/structures";
 import type {
 	APIEndpoint,
@@ -5,7 +7,6 @@ import type {
 	APIRequestOptions,
 	APIResponse,
 } from "@/types";
-import type { APIVersion } from "@squarecloud/api-types/v2";
 
 export class APIService {
 	public readonly baseUrl = "https://api.squarecloud.app";

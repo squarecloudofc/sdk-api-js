@@ -1,3 +1,7 @@
+import type { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
+import FormData from "form-data";
+import { readFile } from "fs/promises";
+
 import { assertPathLike, assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
 import {
@@ -8,12 +12,9 @@ import {
 	SquareCloudAPIError,
 	User,
 } from "@/structures";
-import type { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
-import FormData from "form-data";
-import { readFile } from "fs/promises";
 import type { SquareCloudAPI } from "..";
 
-export class ApplicationModule {
+export class ApplicationsModule {
 	constructor(public readonly client: SquareCloudAPI) {}
 
 	/**

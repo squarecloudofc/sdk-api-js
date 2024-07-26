@@ -1,5 +1,6 @@
-import type { ApplicationStatus } from "@/structures";
 import type { APIApplicationBackup } from "@squarecloud/api-types/v2";
+
+import type { ApplicationStatus } from "@/structures";
 import { BaseCacheService } from "./base";
 
 export interface ApplicationCache {

@@ -1,5 +1,6 @@
 import { ApplicationLanguage } from "@squarecloud/api-types/v2";
 import * as z from "zod";
+
 import { handleAPIObjectAssertion } from "./common";
 
 const applicationSchema = z

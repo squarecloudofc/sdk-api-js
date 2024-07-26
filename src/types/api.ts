@@ -1,4 +1,3 @@
-import type { Route } from "@/lib/routes";
 import type {
 	APIApplication,
 	APIApplicationBackup,
@@ -27,6 +26,8 @@ import type {
 	RESTPostAPINetworkCustomDomainJSONBody,
 	RESTPutAPIFileUpsertJSONBody,
 } from "@squarecloud/api-types/v2";
+
+import type { Route } from "@/lib/routes";
 
 export interface APIApplicationEndpoints {
 	"": APIApplication | APIWebsiteApplication;

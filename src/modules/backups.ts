@@ -1,9 +1,10 @@
-import { Routes } from "@/lib/routes";
-import { type BaseApplication, SquareCloudAPIError } from "@/structures";
 import type {
 	APIApplicationBackup,
 	RESTPostAPIApplicationBackupResult,
 } from "@squarecloud/api-types/v2";
+
+import { Routes } from "@/lib/routes";
+import { type BaseApplication, SquareCloudAPIError } from "@/structures";
 
 export class BackupsModule {
 	constructor(public readonly application: BaseApplication) {}

@@ -1,7 +1,8 @@
+import type { APIWebsiteApplication } from "@squarecloud/api-types/v2";
+
 import { assertWebsiteApplication } from "@/assertions/application";
 import type { SquareCloudAPI } from "@/index";
 import { NetworkModule } from "@/modules";
-import type { APIWebsiteApplication } from "@squarecloud/api-types/v2";
 import { Application } from "./application";
 
 /**

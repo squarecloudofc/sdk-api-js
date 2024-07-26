@@ -1,8 +1,9 @@
+import type * as z from "zod";
+
 import type {
 	APIObjectAssertionProps,
 	LiteralAssertionProps,
 } from "@/types/assertions";
-import type * as z from "zod";
 import { SquareCloudAPIError } from "../structures";
 
 export function handleLiteralAssertion({

@@ -1,16 +1,16 @@
-import { assertPathLike, assertString } from "@/assertions/literal";
-
-import type { SquareCloudAPI } from "@/index";
-import { Routes } from "@/lib/routes";
-import { BackupsModule, DeploysModule, FilesModule } from "@/modules";
-import { ApplicationCacheService } from "@/services";
-import { ApplicationStatus } from "@/structures";
 import type {
 	APIUserApplication,
 	ApplicationLanguage,
 } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
+
+import { assertPathLike, assertString } from "@/assertions/literal";
+import type { SquareCloudAPI } from "@/index";
+import { Routes } from "@/lib/routes";
+import { BackupsModule, DeploysModule, FilesModule } from "@/modules";
+import { ApplicationCacheService } from "@/services";
+import { ApplicationStatus } from "@/structures";
 import type { Application } from "./application";
 
 /**

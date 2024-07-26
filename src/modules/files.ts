@@ -1,8 +1,9 @@
 import { join } from "path";
+import { readFile } from "fs/promises";
+
 import { assertPathLike, assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
 import type { BaseApplication } from "@/structures";
-import { readFile } from "fs/promises";
 
 export class FilesModule {
 	constructor(public readonly application: BaseApplication) {}
