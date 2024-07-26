@@ -6,7 +6,7 @@ import type {
 } from "@/types/assertions";
 import { SquareCloudAPIError } from "../structures";
 
-export function handleLiteralAssertion({
+export function assertLiteral({
 	schema,
 	value,
 	expect,
@@ -22,7 +22,7 @@ export function handleLiteralAssertion({
 	}
 }
 
-export function handleAPIObjectAssertion({
+export function assertAPIObject({
 	schema,
 	value,
 	code,

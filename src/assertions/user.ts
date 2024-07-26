@@ -1,9 +1,9 @@
 import { ApplicationLanguage, UserPlanName } from "@squarecloud/api-types/v2";
 import * as z from "zod";
 
-import { handleAPIObjectAssertion } from "./common";
+import { assertAPIObject } from "./common";
 
-const userSchema = z
+const UserSchema = z
 	.object({
 		id: z.string(),
 		name: z.string(),
@@ -15,32 +15,32 @@ const userSchema = z
 				available: z.number(),
 				used: z.number(),
 			}),
-			duration: z.number().nullable().optional(),
+			duration: z.number().nullish(),
 		}),
 	})
 	.passthrough();
 
-const userApplicationSchema = z
+const UserApplicationSchema = z
 	.object({
 		id: z.string(),
 		name: z.string(),
-		desc: z.string().optional(),
+		desc: z.string().nullish(),
 		ram: z.number(),
 		lang: z.nativeEnum(ApplicationLanguage),
 		cluster: z.string(),
 	})
 	.passthrough();
 
-const userInfoSchema = z.object({
-	user: userSchema,
-	applications: z.array(userApplicationSchema),
+const UserInfoSchema = z.object({
+	user: UserSchema,
+	applications: z.array(UserApplicationSchema),
 });
 
 export function assertUserInfo(
 	value: unknown,
-): asserts value is z.infer<typeof userInfoSchema> {
-	handleAPIObjectAssertion({
-		schema: userInfoSchema,
+): asserts value is z.infer<typeof UserInfoSchema> {
+	assertAPIObject({
+		schema: UserInfoSchema,
 		value,
 		code: "USER_INFO",
 		route: "/user",
