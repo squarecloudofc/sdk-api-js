@@ -1,12 +1,7 @@
 import { assertApplication } from "@/assertions/application";
-import { ApplicationStatus, type SquareCloudAPI } from "@/index";
-import { Routes } from "@/lib/routes";
-import type {
-	APIApplication,
-	ApplicationLanguage,
-} from "@squarecloud/api-types/v2";
+import type { SquareCloudAPI, WebsiteApplication } from "@/index";
+import type { APIApplication } from "@squarecloud/api-types/v2";
 import { BaseApplication } from "./base";
-import type { WebsiteApplication } from "./website";
 
 /**
  * Represents a Square Cloud application
@@ -16,72 +11,12 @@ import type { WebsiteApplication } from "./website";
  * @param data - The data from this application
  */
 export class Application extends BaseApplication {
-	/** The application ID */
-	id: string;
-	/** The application display name */
-	name: string;
-	/** The application description */
-	description?: string;
-	/** The url to manage the application via web */
-	url: string;
-	/** The application current cluster */
-	cluster: string;
-	/** The application total ram */
-	ram: number;
-	/**
-	 * The application programming language
-	 *
-	 * - `javascript`
-	 * - `typescript`
-	 * - `python`
-	 * - `java`
-	 * - `elixir`
-	 * - `rust`
-	 * - `go`
-	 * - `php`
-	 * - `dotnet`
-	 * - `static`
-	 */
-	language: ApplicationLanguage;
-
 	constructor(
 		public readonly client: SquareCloudAPI,
 		data: APIApplication,
 	) {
 		assertApplication(data);
 		super(client, { ...data, lang: data.language });
-
-		const { id, name, desc, cluster, ram, language } = data;
-
-		this.id = id;
-		this.name = name;
-		this.description = desc;
-		this.cluster = cluster;
-		this.ram = ram;
-		this.language = language;
-		this.url = `https://squarecloud.app/dashboard/app/${id}`;
-	}
-
-	/** @returns The application current status information */
-	async getStatus(): Promise<ApplicationStatus> {
-		const data = await this.client.api.request(Routes.apps.status(this.id));
-		const status = new ApplicationStatus(this.client, data.response, this.id);
-
-		this.client.emit("statusUpdate", this, this.cache.status, status);
-		this.cache.set("status", status);
-
-		return status;
-	}
-
-	/** @returns The application logs */
-	async getLogs(): Promise<string> {
-		const data = await this.client.api.request(Routes.apps.logs(this.id));
-		const { logs } = data.response;
-
-		this.client.emit("logsUpdate", this, this.cache.logs, logs);
-		this.cache.set("logs", logs);
-
-		return logs;
 	}
 
 	isWebsite(): this is WebsiteApplication {

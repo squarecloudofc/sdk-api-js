@@ -84,6 +84,9 @@ export class BaseApplication {
 		const data = await this.client.api.request(Routes.apps.status(this.id));
 		const status = new ApplicationStatus(this.client, data.response, this.id);
 
+		this.client.emit("statusUpdate", this, this.cache.status, status);
+		this.cache.set("status", status);
+
 		return status;
 	}
 
@@ -91,6 +94,9 @@ export class BaseApplication {
 	async getLogs(): Promise<string> {
 		const data = await this.client.api.request(Routes.apps.logs(this.id));
 		const { logs } = data.response;
+
+		this.client.emit("logsUpdate", this, this.cache.logs, logs);
+		this.cache.set("logs", logs);
 
 		return logs;
 	}

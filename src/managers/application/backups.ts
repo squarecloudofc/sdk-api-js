@@ -1,8 +1,4 @@
-import {
-	Application,
-	type BaseApplication,
-	SquareCloudAPIError,
-} from "@/index";
+import { type BaseApplication, SquareCloudAPIError } from "@/index";
 import { Routes } from "@/lib/routes";
 import type {
 	APIApplicationBackup,

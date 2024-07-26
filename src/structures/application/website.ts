@@ -23,8 +23,8 @@ export class WebsiteApplication extends Application {
 		public readonly client: SquareCloudAPI,
 		data: APIWebsiteApplication,
 	) {
-		super(client, data);
 		assertWebsiteApplication(data);
+		super(client, data);
 
 		const { domain, custom } = data;
 
