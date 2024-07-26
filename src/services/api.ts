@@ -11,8 +11,11 @@ import type {
 export class APIService {
 	public readonly baseUrl = "https://api.squarecloud.app";
 	public readonly version: APIVersion<1 | 2> = "v2";
+	public readonly userId: string;
 
-	constructor(protected readonly apiKey: string) {}
+	constructor(protected readonly apiKey: string) {
+		this.userId = apiKey.split("-")[0];
+	}
 
 	async request<T extends APIEndpoint>(
 		...[path, options]: APIRequestArgs<T>

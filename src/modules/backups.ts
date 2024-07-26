@@ -1,15 +1,14 @@
-import type {
-	APIApplicationBackup,
-	RESTPostAPIApplicationBackupResult,
-} from "@squarecloud/api-types/v2";
+import type { RESTPostAPIApplicationBackupResult } from "@squarecloud/api-types/v2";
 
 import { Routes } from "@/lib/routes";
 import { type BaseApplication, SquareCloudAPIError } from "@/structures";
+import { Backup } from "@/structures/backup";
 
 export class BackupsModule {
 	constructor(public readonly application: BaseApplication) {}
 
-	async list(): Promise<APIApplicationBackup[]> {
+	/** @returns The list of backups (snapshots) */
+	async list(): Promise<Backup[]> {
 		const data = await this.application.client.api.request(
 			Routes.apps.backups(this.application.id),
 		);
@@ -24,10 +23,10 @@ export class BackupsModule {
 		);
 		this.application.cache.set("backups", backups);
 
-		return backups;
+		return backups.map((backup) => new Backup(this.application, backup));
 	}
 
-	/** @returns The generated backup URL */
+	/** @returns The generated backup URL and key */
 	async create(): Promise<RESTPostAPIApplicationBackupResult> {
 		const data = await this.application.client.api.request(
 			Routes.apps.generateBackup(this.application.id),
