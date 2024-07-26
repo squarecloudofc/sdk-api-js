@@ -1,8 +1,8 @@
 import { assertString } from "@/assertions/literal";
-import type { BaseApplication } from "@/index";
 import { Routes } from "@/lib/routes";
+import type { BaseApplication } from "@/structures";
 
-export class ApplicationDeploysManager {
+export class DeploysModule {
 	constructor(public readonly application: BaseApplication) {}
 
 	/**

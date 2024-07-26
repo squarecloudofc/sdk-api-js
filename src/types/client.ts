@@ -1,12 +1,12 @@
 import EventEmitter from "events";
-import type { APIApplicationBackup } from "@squarecloud/api-types/v2";
 import type {
 	Application,
 	ApplicationStatus,
 	BaseApplication,
 	User,
 	WebsiteApplication,
-} from "..";
+} from "@/structures";
+import type { APIApplicationBackup } from "@squarecloud/api-types/v2";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
 	private emitter = new EventEmitter();

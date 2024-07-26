@@ -1,8 +1,8 @@
 import { assertString } from "@/assertions/literal";
-import type { WebsiteApplication } from "@/index";
 import { Routes } from "@/lib/routes";
+import type { WebsiteApplication } from "@/structures";
 
-export class ApplicationNetworkManager {
+export class NetworkModule {
 	constructor(public readonly application: WebsiteApplication) {}
 
 	/**

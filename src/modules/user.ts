@@ -1,7 +1,8 @@
 import { Routes } from "@/lib/routes";
-import { type SquareCloudAPI, User } from "..";
+import { User } from "@/structures";
+import type { SquareCloudAPI } from "..";
 
-export class UserManager {
+export class UserModule {
 	constructor(public readonly client: SquareCloudAPI) {}
 
 	/**

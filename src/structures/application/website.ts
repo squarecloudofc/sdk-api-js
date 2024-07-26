@@ -1,6 +1,6 @@
 import { assertWebsiteApplication } from "@/assertions/application";
 import type { SquareCloudAPI } from "@/index";
-import { ApplicationNetworkManager } from "@/managers";
+import { NetworkModule } from "@/modules";
 import type { APIWebsiteApplication } from "@squarecloud/api-types/v2";
 import { Application } from "./application";
 
@@ -16,8 +16,8 @@ export class WebsiteApplication extends Application {
 	domain: string;
 	/** The custom configured domain (e.g. yoursite.com) */
 	custom?: string;
-	/** Network manager for this application */
-	network = new ApplicationNetworkManager(this);
+	/** Network module for this application */
+	network = new NetworkModule(this);
 
 	constructor(
 		public readonly client: SquareCloudAPI,

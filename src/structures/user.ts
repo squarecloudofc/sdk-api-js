@@ -1,8 +1,9 @@
 import { assertUserInfo } from "@/assertions/user";
 import type { UserPlan } from "@/types/user";
 import type { APIUserInfo } from "@squarecloud/api-types/v2";
-import { Collection, type SquareCloudAPI } from "..";
+import type { SquareCloudAPI } from "..";
 import { BaseApplication } from "./application/base";
+import { Collection } from "./collection";
 
 /**
  * Represents a Square Cloud user

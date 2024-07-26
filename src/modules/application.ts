@@ -1,19 +1,19 @@
 import { assertPathLike, assertString } from "@/assertions/literal";
+import { Routes } from "@/lib/routes";
 import {
 	Application,
 	type BaseApplication,
 	type Collection,
 	SimpleApplicationStatus,
-	type SquareCloudAPI,
 	SquareCloudAPIError,
 	User,
-} from "@/index";
-import { Routes } from "@/lib/routes";
+} from "@/structures";
 import type { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
 import FormData from "form-data";
 import { readFile } from "fs/promises";
+import type { SquareCloudAPI } from "..";
 
-export class ApplicationManager {
+export class ApplicationModule {
 	constructor(public readonly client: SquareCloudAPI) {}
 
 	/**
@@ -100,7 +100,7 @@ export class ApplicationManager {
 }
 
 export * from "./backups";
-export * from "./cache";
+export * from "../services/cache/application";
 export * from "./deploys";
 export * from "./files";
 export * from "./network";

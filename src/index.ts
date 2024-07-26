@@ -1,10 +1,6 @@
 import { assertString } from "./assertions/literal";
-import {
-	APIManager,
-	ApplicationManager,
-	CacheManager,
-	UserManager,
-} from "./managers";
+import { ApplicationModule, UserModule } from "./modules";
+import { APIService, GlobalCacheService } from "./services";
 import { type ClientEvents, TypedEventEmitter } from "./types";
 
 export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
@@ -13,14 +9,15 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 		baseUrl: "https://api.squarecloud.app/",
 	};
 
-	public readonly api: APIManager;
+	/** The API service */
+	public readonly api: APIService;
 
-	/** The applications manager */
-	public applications = new ApplicationManager(this);
-	/** The users manager */
-	public users = new UserManager(this);
-	/** The global cache manager */
-	public cache = new CacheManager();
+	/** The applications module */
+	public applications = new ApplicationModule(this);
+	/** The users module */
+	public users = new UserModule(this);
+	/** The global cache service */
+	public cache = new GlobalCacheService();
 
 	/**
 	 * Creates an API instance
@@ -31,10 +28,10 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 		super();
 
 		assertString(apiKey, "API_KEY");
-		this.api = new APIManager(apiKey);
+		this.api = new APIService(apiKey);
 	}
 }
 
-export * from "./managers";
+export * from "./services";
 export * from "./structures";
 export * from "./types";

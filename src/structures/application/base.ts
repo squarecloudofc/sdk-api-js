@@ -1,13 +1,10 @@
 import { assertPathLike, assertString } from "@/assertions/literal";
-import {
-	ApplicationBackupsManager,
-	ApplicationCacheManager,
-	ApplicationDeploysManager,
-	ApplicationFilesManager,
-	ApplicationStatus,
-	type SquareCloudAPI,
-} from "@/index";
+
+import type { SquareCloudAPI } from "@/index";
 import { Routes } from "@/lib/routes";
+import { BackupsModule, DeploysModule, FilesModule } from "@/modules";
+import { ApplicationCacheService } from "@/services";
+import { ApplicationStatus } from "@/structures";
 import type {
 	APIUserApplication,
 	ApplicationLanguage,
@@ -51,14 +48,14 @@ export class BaseApplication {
 	 * - `static`
 	 */
 	language: ApplicationLanguage;
-	/** Cache manager for this application */
-	cache = new ApplicationCacheManager();
-	/** Files manager for this application */
-	files = new ApplicationFilesManager(this);
-	/** Backup manager for this application */
-	backups = new ApplicationBackupsManager(this);
-	/** Deploys manager for this application */
-	deploys = new ApplicationDeploysManager(this);
+	/** Cache service for this application */
+	cache = new ApplicationCacheService();
+	/** Files module for this application */
+	files = new FilesModule(this);
+	/** Backup module for this application */
+	backups = new BackupsModule(this);
+	/** Deploys module for this application */
+	deploys = new DeploysModule(this);
 
 	constructor(
 		public readonly client: SquareCloudAPI,

@@ -1,10 +1,10 @@
 import { join } from "path";
 import { assertPathLike, assertString } from "@/assertions/literal";
-import type { BaseApplication } from "@/index";
 import { Routes } from "@/lib/routes";
+import type { BaseApplication } from "@/structures";
 import { readFile } from "fs/promises";
 
-export class ApplicationFilesManager {
+export class FilesModule {
 	constructor(public readonly application: BaseApplication) {}
 
 	/**
