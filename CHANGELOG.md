@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.6.2
+
+### Patch Changes
+
+- d59f57f: Now `backups`, `deploys`, `files` and `cache` are available in the BaseApplication.
+
 ## 3.6.1
 
 ### Patch Changes
