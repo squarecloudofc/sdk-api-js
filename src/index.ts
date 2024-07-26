@@ -4,20 +4,20 @@ import { APIService, GlobalCacheService } from "./services";
 import { type ClientEvents, TypedEventEmitter } from "./types";
 
 export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
-	static apiInfo = {
-		latestVersion: "v2",
-		baseUrl: "https://api.squarecloud.app/",
+	public static apiInfo = {
+		baseUrl: "https://api.squarecloud.app",
+		version: "v2",
 	};
 
 	/** The API service */
 	public readonly api: APIService;
 
 	/** The applications module */
-	public applications = new ApplicationsModule(this);
+	public readonly applications = new ApplicationsModule(this);
 	/** The users module */
-	public users = new UserModule(this);
+	public readonly users = new UserModule(this);
 	/** The global cache service */
-	public cache = new GlobalCacheService();
+	public readonly cache = new GlobalCacheService();
 
 	/**
 	 * Creates an API instance
