@@ -72,6 +72,14 @@ export class BaseApplication {
 		this.url = `https://squarecloud.app/dashboard/app/${id}`;
 	}
 
+	/** @deprecated Use `Application#backups` instead */
+	get backup() {
+		console.warn(
+			"Application#backup is deprecated. Use Application#backups instead.",
+		);
+		return this.backups;
+	}
+
 	async fetch(): Promise<Application> {
 		return this.client.applications.fetch(this.id);
 	}
