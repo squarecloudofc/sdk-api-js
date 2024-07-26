@@ -29,20 +29,6 @@ import type {
 
 import type { Route } from "@/lib/routes";
 
-export interface APIApplicationEndpoints {
-	"": APIApplication | APIWebsiteApplication;
-	upload: RESTPostAPIApplicationUploadResult;
-	status: APIApplicationStatus;
-	logs: APIApplicationLogs;
-	backups: RESTPostAPIApplicationBackupResult;
-	"files/list": APIListedFile[];
-	"files/read": APIReadFile;
-	"all/status": APIApplicationStatusAll[];
-	"network/analytics": APINetworkAnalytics;
-	"deploys/list": APIDeployment[];
-	"deploy/git-webhook": RESTPostAPIGithubWebhookResult;
-}
-
 export interface APIEndpoints {
 	user: {
 		response: APIUserInfo;
