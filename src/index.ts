@@ -1,5 +1,5 @@
 import { assertString } from "./assertions/literal";
-import { ApplicationModule, UserModule } from "./modules";
+import { ApplicationsModule, UserModule } from "./modules";
 import { APIService, GlobalCacheService } from "./services";
 import { type ClientEvents, TypedEventEmitter } from "./types";
 
@@ -13,7 +13,7 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 	public readonly api: APIService;
 
 	/** The applications module */
-	public applications = new ApplicationModule(this);
+	public applications = new ApplicationsModule(this);
 	/** The users module */
 	public users = new UserModule(this);
 	/** The global cache service */
@@ -32,6 +32,5 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 	}
 }
 
-export * from "./services";
 export * from "./structures";
 export * from "./types";
