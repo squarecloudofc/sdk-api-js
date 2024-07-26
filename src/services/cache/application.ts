@@ -10,7 +10,7 @@ export interface ApplicationCache {
 }
 
 export class ApplicationCacheService extends BaseCacheService<ApplicationCache> {
-	protected defaults: ApplicationCache = {
+	protected cache: ApplicationCache = {
 		status: undefined,
 		backups: undefined,
 		logs: undefined,

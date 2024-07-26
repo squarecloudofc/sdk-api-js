@@ -6,7 +6,7 @@ export interface GlobalCache {
 }
 
 export class GlobalCacheService extends BaseCacheService<GlobalCache> {
-	protected defaults: GlobalCache = {
+	protected cache: GlobalCache = {
 		user: undefined,
 	};
 

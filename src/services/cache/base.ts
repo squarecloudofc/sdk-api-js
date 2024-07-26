@@ -3,7 +3,6 @@ export class BaseCacheService<
 	Keys extends keyof Struct = keyof Struct,
 > {
 	protected cache: Struct;
-	protected defaults: Struct;
 
 	set<T extends Keys>(key: T, value: Struct[T]) {
 		Reflect.set(this, key, value);
@@ -13,7 +12,7 @@ export class BaseCacheService<
 		return this.cache[key];
 	}
 
-	clear() {
-		Reflect.set(this, "cache", this.defaults);
+	remove<T extends Keys>(key: T) {
+		Reflect.set(this.cache, key, undefined);
 	}
 }
