@@ -1,5 +1,12 @@
 import { assertPathLike, assertString } from "@/assertions/literal";
-import { ApplicationStatus, type SquareCloudAPI } from "@/index";
+import {
+	ApplicationBackupsManager,
+	ApplicationCacheManager,
+	ApplicationDeploysManager,
+	ApplicationFilesManager,
+	ApplicationStatus,
+	type SquareCloudAPI,
+} from "@/index";
 import { Routes } from "@/lib/routes";
 import type {
 	APIUserApplication,
@@ -17,11 +24,18 @@ import type { Application } from "./application";
  * @param data - The data from this application
  */
 export class BaseApplication {
+	/** The application ID */
 	id: string;
+	/** The application display name */
 	name: string;
+	/** The application description */
 	description?: string;
+	/** The url to manage the application via web */
 	url: string;
+	/** The application total ram */
 	ram: number;
+	/** The application current cluster */
+	cluster: string;
 	/**
 	 * The application programming language
 	 *
@@ -33,9 +47,18 @@ export class BaseApplication {
 	 * - `rust`
 	 * - `go`
 	 * - `php`
+	 * - `dotnet`
+	 * - `static`
 	 */
 	language: ApplicationLanguage;
-	cluster: string;
+	/** Cache manager for this application */
+	cache = new ApplicationCacheManager();
+	/** Files manager for this application */
+	files = new ApplicationFilesManager(this);
+	/** Backup manager for this application */
+	backups = new ApplicationBackupsManager(this);
+	/** Deploys manager for this application */
+	deploys = new ApplicationDeploysManager(this);
 
 	constructor(
 		public readonly client: SquareCloudAPI,

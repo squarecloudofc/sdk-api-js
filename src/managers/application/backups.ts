@@ -1,12 +1,16 @@
-import { type Application, SquareCloudAPIError } from "@/index";
+import {
+	Application,
+	type BaseApplication,
+	SquareCloudAPIError,
+} from "@/index";
 import { Routes } from "@/lib/routes";
 import type {
 	APIApplicationBackup,
 	RESTPostAPIApplicationBackupResult,
 } from "@squarecloud/api-types/v2";
 
-export class ApplicationBackupManager {
-	constructor(public readonly application: Application) {}
+export class ApplicationBackupsManager {
+	constructor(public readonly application: BaseApplication) {}
 
 	async list(): Promise<APIApplicationBackup[]> {
 		const data = await this.application.client.api.request(

@@ -1,6 +1,12 @@
 import EventEmitter from "events";
 import type { APIApplicationBackup } from "@squarecloud/api-types/v2";
-import type { Application, ApplicationStatus, User } from "..";
+import type {
+	Application,
+	ApplicationStatus,
+	BaseApplication,
+	User,
+	WebsiteApplication,
+} from "..";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
 	private emitter = new EventEmitter();
@@ -29,17 +35,17 @@ export class TypedEventEmitter<TEvents extends Record<string, any>> {
 
 export interface ClientEvents {
 	logsUpdate: [
-		application: Application,
+		application: BaseApplication | Application | WebsiteApplication,
 		before: string | undefined,
 		after: string,
 	];
 	backupsUpdate: [
-		application: Application,
+		application: BaseApplication | Application | WebsiteApplication,
 		before: APIApplicationBackup[] | undefined,
 		after: APIApplicationBackup[],
 	];
 	statusUpdate: [
-		application: Application,
+		application: BaseApplication | Application | WebsiteApplication,
 		before: ApplicationStatus | undefined,
 		after: ApplicationStatus,
 	];

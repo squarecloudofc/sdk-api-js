@@ -1,9 +1,9 @@
 import { assertString } from "@/assertions/literal";
-import type { Application } from "@/index";
+import type { BaseApplication } from "@/index";
 import { Routes } from "@/lib/routes";
 
 export class ApplicationDeploysManager {
-	constructor(public readonly application: Application) {}
+	constructor(public readonly application: BaseApplication) {}
 
 	/**
 	 * Integrates Square Cloud with GitHub webhooks

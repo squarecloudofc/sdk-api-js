@@ -99,7 +99,7 @@ export class ApplicationManager {
 	}
 }
 
-export * from "./backup";
+export * from "./backups";
 export * from "./cache";
 export * from "./deploys";
 export * from "./files";

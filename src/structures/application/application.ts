@@ -1,12 +1,6 @@
 import { assertApplication } from "@/assertions/application";
 import { ApplicationStatus, type SquareCloudAPI } from "@/index";
 import { Routes } from "@/lib/routes";
-import {
-	ApplicationBackupManager,
-	ApplicationCacheManager,
-	ApplicationDeploysManager,
-	ApplicationFilesManager,
-} from "@/managers";
 import type {
 	APIApplication,
 	ApplicationLanguage,
@@ -45,16 +39,10 @@ export class Application extends BaseApplication {
 	 * - `rust`
 	 * - `go`
 	 * - `php`
+	 * - `dotnet`
+	 * - `static`
 	 */
 	language: ApplicationLanguage;
-	/** Files manager for this application */
-	files = new ApplicationFilesManager(this);
-	/** Backup manager for this application */
-	backup = new ApplicationBackupManager(this);
-	/** Deploys manager for this application */
-	deploys = new ApplicationDeploysManager(this);
-	/** Cache manager for this application */
-	cache = new ApplicationCacheManager();
 
 	constructor(
 		public readonly client: SquareCloudAPI,

@@ -1,11 +1,11 @@
 import { join } from "path";
 import { assertPathLike, assertString } from "@/assertions/literal";
-import type { Application } from "@/index";
+import type { BaseApplication } from "@/index";
 import { Routes } from "@/lib/routes";
 import { readFile } from "fs/promises";
 
 export class ApplicationFilesManager {
-	constructor(public readonly application: Application) {}
+	constructor(public readonly application: BaseApplication) {}
 
 	/**
 	 * Lists the files inside a directory
