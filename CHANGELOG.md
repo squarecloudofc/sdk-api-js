@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.6.4
+
+### Patch Changes
+
+- 47ac220: Fix cache defaults not working.
+
 ## 3.6.3
 
 ### Patch Changes
