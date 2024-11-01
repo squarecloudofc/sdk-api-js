@@ -1,5 +1,7 @@
 import type { APIVersion } from "@squarecloud/api-types/v2";
 
+import { existsSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { SquareCloudAPIError } from "@/structures";
 import type {
 	APIEndpoint,
@@ -25,7 +27,9 @@ export class APIService {
 		const response = await fetch(url, init).catch((err) => {
 			throw new SquareCloudAPIError(err.code, err.message);
 		});
-		const data = await response.json();
+		const data = await response
+			.json()
+			.catch(() => this.handleParseError(response));
 
 		if (!data || data.status === "error" || !response.ok) {
 			throw new SquareCloudAPIError(data?.code || "COMMON_ERROR");
@@ -64,5 +68,21 @@ export class APIService {
 		}
 
 		return { url, init };
+	}
+
+	private async handleParseError(response: Response) {
+		const text = await response.text();
+		const dir = ".squarecloud/logs/";
+		const path = `${dir}${this.userId}-${Date.now()}.log`;
+
+		if (!existsSync(dir)) {
+			await mkdir(dir);
+		}
+		await writeFile(path, text);
+
+		throw new SquareCloudAPIError(
+			"CANNOT_PARSE_JSON",
+			`Saved request text content to ${path}`,
+		);
 	}
 }
