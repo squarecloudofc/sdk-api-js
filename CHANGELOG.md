@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.6.6
+
+### Patch Changes
+
+- fa15164: Improve API error handling to avoid HTML parse error.
+
 ## 3.6.5
 
 ### Patch Changes
