@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.6.5
+
+### Patch Changes
+
+- b560485: Better request JSON parse error debugging.
+
 ## 3.6.4
 
 ### Patch Changes
