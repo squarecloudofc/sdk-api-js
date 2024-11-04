@@ -13,13 +13,11 @@ import type {
 	APIReadFile,
 	APIServiceStatus,
 	APIUserInfo,
-	APIWebsiteApplication,
 	RESTDeleteAPIFileDeleteQuery,
 	RESTGetAPIFileContentQuery,
 	RESTGetAPIFilesListQuery,
 	RESTPatchAPIFileMoveJSONBody,
 	RESTPostAPIApplicationBackupResult,
-	RESTPostAPIApplicationCommitQuery,
 	RESTPostAPIApplicationUploadResult,
 	RESTPostAPIGithubWebhookJSONBody,
 	RESTPostAPIGithubWebhookResult,
@@ -78,7 +76,6 @@ export interface APIEndpoints {
 	};
 	"apps/commit": {
 		method: "POST";
-		query: RESTPostAPIApplicationCommitQuery;
 		body: Buffer;
 		response: undefined;
 	};

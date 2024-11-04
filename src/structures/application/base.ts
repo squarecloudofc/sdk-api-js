@@ -183,11 +183,7 @@ export class BaseApplication {
 	 * @param restart - Whether the application should be restarted after the commit
 	 * @returns `true` for success or `false` for fail
 	 */
-	async commit(
-		file: string | Buffer,
-		fileName?: string,
-		restart?: boolean,
-	): Promise<boolean> {
+	async commit(file: string | Buffer, fileName?: string): Promise<boolean> {
 		assertPathLike(file, "COMMIT_DATA");
 
 		if (fileName) {
@@ -203,7 +199,6 @@ export class BaseApplication {
 
 		const data = await this.client.api.request(Routes.apps.commit(this.id), {
 			method: "POST",
-			query: { restart: Boolean(restart) },
 			body: formData.getBuffer(),
 			headers: formData.getHeaders(),
 		});
