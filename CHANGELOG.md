@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.7.0
+
+### Minor Changes
+
+- cbe5512: Remove commit `restart` option. Instead call `application.restart()` manually.
+
 ## 3.6.6
 
 ### Patch Changes
