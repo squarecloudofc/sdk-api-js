@@ -1,6 +1,6 @@
 {
 	"name": "@squarecloud/api",
-	"version": "3.7.1",
+	"version": "3.7.2",
 	"description": "A NodeJS wrapper for Square Cloud API",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
@@ -17,7 +17,7 @@
 		"node": ">=18.0.0"
 	},
 	"dependencies": {
-		"@squarecloud/api-types": "^0.3.4",
+		"@squarecloud/api-types": "^0.4.0",
 		"form-data": "^4.0.1",
 		"zod": "^3.23.8"
 	},
