@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.7.5
+
+### Patch Changes
+
+- b791055: Remove `requests` prop from `ApplicationStatus`
+
 ## 3.7.4
 
 ### Patch Changes
