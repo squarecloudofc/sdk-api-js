@@ -4,7 +4,6 @@ import type {
 	ApplicationStatus as ApplicationStatusType,
 } from "@squarecloud/api-types/v2";
 
-import { assertSimpleStatus, assertStatus } from "@/assertions/status";
 import { Routes } from "@/lib/routes";
 import type { ApplicationStatusUsage } from "@/types/application";
 import type { SquareCloudAPI } from "..";
@@ -33,8 +32,6 @@ export class SimpleApplicationStatus<R extends boolean = boolean> {
 		public readonly client: SquareCloudAPI,
 		data: APIApplicationStatusAll,
 	) {
-		assertSimpleStatus(data);
-
 		const { id, running } = data;
 
 		this.applicationId = id;
@@ -106,16 +103,12 @@ export class ApplicationStatus {
 		data: APIApplicationStatus,
 		applicationId: string,
 	) {
-		assertStatus(data);
-
-		const { cpu, ram, network, storage, running, status, requests, uptime } =
-			data;
+		const { cpu, ram, network, storage, running, status, uptime } = data;
 
 		this.applicationId = applicationId;
 		this.usage = { cpu, ram, network, storage };
 		this.running = running;
 		this.status = status;
-		this.requests = requests;
 		this.uptime = uptime ? new Date(uptime) : undefined;
 		this.uptimeTimestamp = uptime ?? undefined;
 	}

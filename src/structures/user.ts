@@ -1,6 +1,5 @@
 import type { APIUserInfo } from "@squarecloud/api-types/v2";
 
-import { assertUserInfo } from "@/assertions/user";
 import type { UserPlan } from "@/types/user";
 import type { SquareCloudAPI } from "..";
 import { BaseApplication } from "./application/base";
@@ -29,8 +28,6 @@ export class User {
 	 * @param data - The data from this user
 	 */
 	constructor(client: SquareCloudAPI, data: APIUserInfo) {
-		assertUserInfo(data);
-
 		const { user, applications } = data;
 		const { id, name, plan, email } = user;
 		const { duration } = plan;

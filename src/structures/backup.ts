@@ -1,6 +1,5 @@
 import type { APIApplicationBackup } from "@squarecloud/api-types/v2";
 
-import { assertBackup } from "@/assertions/backup";
 import type { BaseApplication } from "./application/base";
 
 /**
@@ -33,7 +32,6 @@ export class Backup {
 		public readonly application: BaseApplication,
 		data: APIApplicationBackup,
 	) {
-		assertBackup(data);
 		const { name, size, modified, key } = data;
 		const { userId } = application.client.api;
 

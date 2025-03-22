@@ -1,6 +1,5 @@
 import type { APIApplication } from "@squarecloud/api-types/v2";
 
-import { assertApplication } from "@/assertions/application";
 import type { SquareCloudAPI } from "@/index";
 import { BaseApplication } from "./base";
 import type { WebsiteApplication } from "./website";
@@ -20,7 +19,6 @@ export class Application extends BaseApplication {
 		public readonly client: SquareCloudAPI,
 		data: APIApplication,
 	) {
-		assertApplication(data);
 		super(client, { ...data, lang: data.language });
 	}
 

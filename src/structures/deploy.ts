@@ -1,6 +1,5 @@
 import type { APIDeployment, DeploymentState } from "@squarecloud/api-types/v2";
 
-import { assertDeployment } from "@/assertions/deploy";
 import type { BaseApplication } from "./application/base";
 
 /**
@@ -30,7 +29,6 @@ export class Deployment {
 		public readonly application: BaseApplication,
 		data: APIDeployment,
 	) {
-		assertDeployment(data);
 		const { id, state, date } = data;
 
 		this.id = id;

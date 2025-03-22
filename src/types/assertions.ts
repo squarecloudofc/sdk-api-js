@@ -9,8 +9,3 @@ export interface BaseAssertionProps {
 export interface LiteralAssertionProps extends BaseAssertionProps {
 	expect: string;
 }
-
-export interface APIObjectAssertionProps extends BaseAssertionProps {
-	code: string;
-	route: string;
-}
