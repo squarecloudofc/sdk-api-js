@@ -83,8 +83,6 @@ export class ApplicationStatus {
 	 * - 'deleting'
 	 */
 	public status: ApplicationStatusType;
-	/** How many requests have been made since the last start up */
-	public requests: number;
 	/** For how long the app is running in millisseconds */
 	public uptimeTimestamp?: number;
 	/** For how long the app is running */
