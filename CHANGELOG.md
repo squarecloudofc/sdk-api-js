@@ -1,5 +1,13 @@
 # @squarecloud/api
 
+## 3.7.4
+
+### Patch Changes
+
+- 4df5b0a: Removed `student` and `enterprise-16` from plans.
+- 589db60: Removed all API request validations.
+- 4df5b0a: Added `advanced` and `enterprise-24` to plans.
+
 ## 3.7.0
 
 ### Minor Changes
