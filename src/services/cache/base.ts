@@ -1,11 +1,11 @@
-export class BaseCacheService<
+export abstract class BaseCacheService<
 	Struct extends object,
 	Keys extends keyof Struct = keyof Struct,
 > {
 	protected cache: Struct;
 
 	set<T extends Keys>(key: T, value: Struct[T]) {
-		Reflect.set(this, key, value);
+		Reflect.set(this.cache, key, value);
 	}
 
 	get<T extends Keys>(key: T): Struct[T] {
