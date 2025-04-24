@@ -1,45 +1,16 @@
-import * as z from "zod";
+import { makeAssertion } from "./common";
 
-import { assertLiteral } from "./common";
+export const assertString = makeAssertion<string>(
+	"string",
+	(value) => typeof value === "string",
+);
 
-const StringSchema = z.coerce.string();
+export const assertBoolean = makeAssertion<boolean>(
+	"boolean",
+	(value) => typeof value === "boolean",
+);
 
-const BooleanSchema = z.coerce.boolean();
-
-const PathLikeSchema = z.string().or(z.instanceof(Buffer));
-
-export function assertString(
-	value: unknown,
-	code?: string,
-): asserts value is string {
-	assertLiteral({
-		schema: StringSchema,
-		expect: "string",
-		value,
-		code,
-	});
-}
-
-export function assertBoolean(
-	value: unknown,
-	code?: string,
-): asserts value is boolean {
-	assertLiteral({
-		schema: BooleanSchema,
-		expect: "boolean",
-		value,
-		code,
-	});
-}
-
-export function assertPathLike(
-	value: unknown,
-	code?: string,
-): asserts value is string | Buffer {
-	assertLiteral({
-		schema: PathLikeSchema,
-		expect: "string or Buffer",
-		value,
-		code,
-	});
-}
+export const assertPathLike = makeAssertion<string | Buffer>(
+	"string or Buffer",
+	(value) => typeof value === "string" || value instanceof Buffer,
+);
