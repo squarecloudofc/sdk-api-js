@@ -6,11 +6,13 @@
 	"types": "lib/index.d.ts",
 	"module": "lib/index.mjs",
 	"packageManager": "pnpm@10.9.0",
+	"type": "module",
 	"scripts": {
 		"release": "pnpm lint && pnpm build && changeset publish",
 		"build": "tsup ./src",
 		"check-types": "tsc --noEmit",
-		"lint": "biome check --write ."
+		"lint": "biome check --write .",
+		"test": "node --test test/*.test.js"
 	},
 	"engines": {
 		"node": ">=18.0.0"
