@@ -15,7 +15,9 @@ export class BackupsModule {
 			Routes.apps.backups(this.application.id),
 		);
 
-		const backups = data.response;
+		const backups = data.response.map(
+			(backup) => new Backup(this.application, backup),
+		);
 
 		this.application.client.emit(
 			"backupsUpdate",
@@ -25,7 +27,7 @@ export class BackupsModule {
 		);
 		this.application.cache.set("backups", backups);
 
-		return backups.map((backup) => new Backup(this.application, backup));
+		return backups;
 	}
 
 	/**

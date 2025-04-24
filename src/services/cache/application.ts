@@ -1,11 +1,10 @@
-import type { APIApplicationBackup } from "@squarecloud/api-types/v2";
-
 import type { ApplicationStatus } from "@/structures";
+import type { Backup } from "@/structures/backup";
 import { BaseCacheService } from "./base";
 
 export interface ApplicationCache {
 	readonly status?: ApplicationStatus;
-	readonly backups?: APIApplicationBackup[];
+	readonly backups?: Backup[];
 	readonly logs?: string;
 }
 
