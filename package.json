@@ -8,10 +8,11 @@
 	"packageManager": "pnpm@10.9.0",
 	"type": "module",
 	"scripts": {
-		"release": "pnpm lint && pnpm build && pnpm test && changeset publish",
+		"release": "pnpm build && changeset publish",
 		"build": "tsup ./src",
 		"check-types": "tsc --noEmit",
 		"lint": "biome check --write .",
+		"lint:ci": "biome check .",
 		"test": "node --test test/*.test.js"
 	},
 	"engines": {
