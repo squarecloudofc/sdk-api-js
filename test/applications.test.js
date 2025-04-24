@@ -44,15 +44,18 @@ test("ApplicationsModule", async (t) => {
 			assert.ok(typeof logs === "string");
 		});
 
-		await t.test("should commit files to application", async () => {
-			const testFilePath = path.join(__dirname, "fixtures/test-file.txt");
+		const testFilePath = path.join(__dirname, "fixtures/test-file.txt");
+
+		await t.test("should commit files as buffer to application", async () => {
 			const fileContent = await readFile(testFilePath);
 
 			const bufferResult = await app.commit(fileContent, "test-file.txt");
 			assert.strictEqual(bufferResult, true);
+		});
 
-			await setTimeout(10000);
+		await setTimeout(10000);
 
+		await t.test("should commit files as path to application", async () => {
 			const pathResult = await app.commit(testFilePath, "test-file2.txt");
 			assert.strictEqual(pathResult, true);
 		});
