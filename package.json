@@ -17,8 +17,7 @@
 		"node": ">=18.0.0"
 	},
 	"dependencies": {
-		"@squarecloud/api-types": "^0.5.0",
-		"form-data": "^4.0.2"
+		"@squarecloud/api-types": "^0.5.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",

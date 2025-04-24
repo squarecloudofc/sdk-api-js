@@ -2,7 +2,6 @@ import type {
 	APIUserApplication,
 	ApplicationLanguage,
 } from "@squarecloud/api-types/v2";
-import FormData from "form-data";
 import { readFile } from "fs/promises";
 
 import { assertPathLike, assertString } from "@/assertions/literal";
@@ -184,7 +183,7 @@ export class BaseApplication {
 	 * @returns `true` for success or `false` for fail
 	 */
 	async commit(file: string | Buffer, fileName?: string): Promise<boolean> {
-		assertPathLike(file, "COMMIT_DATA");
+		assertPathLike(file, "COMMIT_FILE");
 
 		if (fileName) {
 			assertString(fileName, "FILE_NAME");
@@ -195,12 +194,12 @@ export class BaseApplication {
 		}
 
 		const formData = new FormData();
-		formData.append("file", file, { filename: fileName || "app.zip" });
+		const blob = new Blob([file]);
+		formData.append("file", blob, fileName || "commit.zip");
 
 		const data = await this.client.api.request(Routes.apps.commit(this.id), {
 			method: "POST",
-			body: formData.getBuffer(),
-			headers: formData.getHeaders(),
+			body: formData,
 		});
 
 		return data?.status === "success";
