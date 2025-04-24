@@ -15,19 +15,25 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js 20.x
-        uses: actions/setup-node@v3
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: 20.x
+          run_install: false
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
 
-      - name: Create Release Pull Request or Publish to npm
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Create PR or publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: npm run release
+          publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

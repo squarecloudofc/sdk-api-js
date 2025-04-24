@@ -5,8 +5,9 @@
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
 	"module": "lib/index.mjs",
+	"packageManager": "pnpm@10.9.0",
 	"scripts": {
-		"release": "npm run lint && npm run build && changeset publish",
+		"release": "pnpm lint && pnpm build && changeset publish",
 		"build": "tsup ./src",
 		"check-types": "tsc --noEmit",
 		"lint": "biome check --write ."
