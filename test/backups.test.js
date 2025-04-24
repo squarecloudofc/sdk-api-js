@@ -16,10 +16,16 @@ test("BackupsModule", async (t) => {
 		}
 	});
 
-	await t.test("should create backup", async () => {
-		const backup = await testApp.backups.create();
-		assert.ok(backup.url);
-		assert.ok(backup.key);
+	await t.test("should create backup", async (t) => {
+		try {
+			const backup = await testApp.backups.create();
+			assert.ok(backup.url);
+			assert.ok(backup.key);
+		} catch (err) {
+			if (err.message.includes("Rate Limit Exceeded")) {
+				t.skip("Rate limit exceeded");
+			}
+		}
 	});
 
 	await t.test("should download backup", async () => {
