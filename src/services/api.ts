@@ -73,7 +73,7 @@ export class APIService {
 			init.query = undefined;
 		}
 
-		if ("body" in init && init.body && !(init.body instanceof Buffer)) {
+		if ("body" in init && init.body && !(init.body instanceof FormData)) {
 			init.body = JSON.stringify(init.body);
 			init.headers = {
 				...init.headers,
