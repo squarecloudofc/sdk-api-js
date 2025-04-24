@@ -36,7 +36,7 @@ export interface APIEndpoints {
 	};
 	"apps/upload": {
 		method: "POST";
-		body: Buffer;
+		body: FormData;
 		response: RESTPostAPIApplicationUploadResult;
 	};
 	"apps/status-all": {
@@ -76,7 +76,7 @@ export interface APIEndpoints {
 	};
 	"apps/commit": {
 		method: "POST";
-		body: Buffer;
+		body: FormData;
 		response: undefined;
 	};
 	"apps/files/read": {

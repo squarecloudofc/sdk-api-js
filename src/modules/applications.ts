@@ -1,5 +1,4 @@
 import type { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
-import FormData from "form-data";
 import { readFile } from "fs/promises";
 
 import { assertPathLike, assertString } from "@/assertions/literal";
@@ -58,19 +57,22 @@ export class ApplicationsModule {
 	async create(
 		file: string | Buffer,
 	): Promise<RESTPostAPIApplicationUploadResult> {
-		assertPathLike(file, "COMMIT_DATA");
+		assertPathLike(file, "UPLOAD_FILE");
 
 		if (typeof file === "string") {
 			file = await readFile(file);
 		}
 
 		const formData = new FormData();
-		formData.append("file", file, { filename: "app.zip" });
+		formData.append(
+			"file",
+			new Blob([file], { type: "application/zip" }),
+			"app.zip",
+		);
 
 		const data = await this.client.api.request(Routes.apps.upload(), {
 			method: "POST",
-			body: formData.getBuffer(),
-			headers: formData.getHeaders(),
+			body: formData,
 		});
 
 		return data.response;
@@ -101,8 +103,8 @@ export class ApplicationsModule {
 	}
 }
 
-export * from "./backups";
 export * from "../services/cache/application";
+export * from "./backups";
 export * from "./deploys";
 export * from "./files";
 export * from "./network";
