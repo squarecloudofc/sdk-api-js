@@ -64,11 +64,8 @@ export class ApplicationsModule {
 		}
 
 		const formData = new FormData();
-		formData.append(
-			"file",
-			new Blob([file], { type: "application/zip" }),
-			"app.zip",
-		);
+		const blob = new Blob([file]);
+		formData.append("file", blob, "app.zip");
 
 		const data = await this.client.api.request(Routes.apps.upload(), {
 			method: "POST",
