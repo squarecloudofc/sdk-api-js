@@ -7,3 +7,6 @@ yarn.lock
 
 # test
 /test/
+
+# ds
+/.DS_Store
