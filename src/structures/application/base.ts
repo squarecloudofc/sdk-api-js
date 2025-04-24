@@ -78,7 +78,7 @@ export class BaseApplication {
 	/** @deprecated Use `Application#backups` instead */
 	get backup() {
 		console.warn(
-			"Application#backup is deprecated. Use Application#backups instead.",
+			"[SquareCloudAPI] The 'backup' property is deprecated and will be removed in the the next major version. Use Application#backups instead.",
 		);
 		return this.backups;
 	}

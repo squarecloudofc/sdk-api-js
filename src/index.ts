@@ -14,8 +14,8 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 
 	/** The applications module */
 	public readonly applications = new ApplicationsModule(this);
-	/** The users module */
-	public readonly users = new UserModule(this);
+	/** The user module */
+	public readonly user = new UserModule(this);
 	/** The global cache service */
 	public readonly cache = new GlobalCacheService();
 
@@ -29,6 +29,14 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 
 		assertString(apiKey, "API_KEY");
 		this.api = new APIService(apiKey);
+	}
+
+	/** @deprecated Use SquareCloudAPI#user instead. */
+	get users() {
+		console.warn(
+			"[SquareCloudAPI] The 'users' property is deprecated and will be removed in the next major version. Use SquareCloudAPI#user instead.",
+		);
+		return this.user;
 	}
 }
 

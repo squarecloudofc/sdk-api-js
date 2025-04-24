@@ -6,7 +6,7 @@ test("UserModule", async (t) => {
 	const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
 
 	await t.test("should get user information", async () => {
-		const user = await client.users.get();
+		const user = await client.user.get();
 
 		assert.ok(user);
 		assert.ok(user.id);
@@ -17,7 +17,7 @@ test("UserModule", async (t) => {
 	});
 
 	await t.test("should update cache on user fetch", async () => {
-		const firstUser = await client.users.get();
+		const firstUser = await client.user.get();
 		const cachedUser = client.cache.get("user");
 
 		assert.strictEqual(cachedUser?.id, firstUser.id);
@@ -34,7 +34,7 @@ test("UserModule", async (t) => {
 			emitted = true;
 		});
 
-		await client.users.get();
+		await client.user.get();
 		assert.ok(emitted, "userUpdate event should have been emitted");
 	});
 });
