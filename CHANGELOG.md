@@ -1,5 +1,15 @@
 # @squarecloud/api
 
+## 3.7.6
+
+### Patch Changes
+
+- 92c7eb6: Remove `zod` dependency.
+- cfd06d4: Deprecate `SquareCloudAPI#users` in favor of `SquareCloudAPI#user`. Deprecated property will be removed in the the next major version.
+- 775886d: Update backups cache to use `Backup` class instead of API object.
+- 3855207: Remove `form-data` dependency.
+- 2803f49: Fix cache not being updated.
+
 ## 3.7.5
 
 ### Patch Changes
