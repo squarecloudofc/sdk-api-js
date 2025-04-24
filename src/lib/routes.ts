@@ -10,92 +10,92 @@ interface IRoutes {
 
 export const Routes = {
 	user: () => {
-		return Route<"user">("/v2/users/me");
+		return Route<"user">("users/me");
 	},
 	service: {
 		status: () => {
-			return Route<"service/status">("/v2/service/status");
+			return Route<"service/status">("service/status");
 		},
 	},
 	apps: {
 		upload: () => {
-			return Route<"apps/upload">("/v2/apps");
+			return Route<"apps/upload">("apps");
 		},
 		statusAll: () => {
-			return Route<"apps/status-all">("/v2/apps/status");
+			return Route<"apps/status-all">("apps/status");
 		},
 		info: (appId: string) => {
-			return Route<"apps/info">(`/v2/apps/${appId}`);
+			return Route<"apps/info">(`apps/${appId}`);
 		},
 		status: (appId: string) => {
-			return Route<"apps/status">(`/v2/apps/${appId}/status`);
+			return Route<"apps/status">(`apps/${appId}/status`);
 		},
 		logs: (appId: string) => {
-			return Route<"apps/logs">(`/v2/apps/${appId}/logs`);
+			return Route<"apps/logs">(`apps/${appId}/logs`);
 		},
 		delete: (appId: string) => {
-			return Route<"apps/delete">(`/v2/apps/${appId}`);
+			return Route<"apps/delete">(`apps/${appId}`);
 		},
 		commit: (appId: string) => {
-			return Route<"apps/commit">(`/v2/apps/${appId}/commit`);
+			return Route<"apps/commit">(`apps/${appId}/commit`);
 		},
 		backups: (appId: string) => {
-			return Route<"apps/backups">(`/v2/apps/${appId}/backups`);
+			return Route<"apps/backups">(`apps/${appId}/backups`);
 		},
 		generateBackup: (appId: string) => {
-			return Route<"apps/generate-backup">(`/v2/apps/${appId}/backups`);
+			return Route<"apps/generate-backup">(`apps/${appId}/backups`);
 		},
 		start: (appId: string) => {
-			return Route<"apps/start">(`/v2/apps/${appId}/start`);
+			return Route<"apps/start">(`apps/${appId}/start`);
 		},
 		restart: (appId: string) => {
-			return Route<"apps/restart">(`/v2/apps/${appId}/restart`);
+			return Route<"apps/restart">(`apps/${appId}/restart`);
 		},
 		stop: (appId: string) => {
-			return Route<"apps/stop">(`/v2/apps/${appId}/stop`);
+			return Route<"apps/stop">(`apps/${appId}/stop`);
 		},
 		files: {
 			read: (appId: string) => {
-				return Route<"apps/files/read">(`/v2/apps/${appId}/files/content`);
+				return Route<"apps/files/read">(`apps/${appId}/files/content`);
 			},
 			list: (appId: string) => {
-				return Route<"apps/files/list">(`/v2/apps/${appId}/files`);
+				return Route<"apps/files/list">(`apps/${appId}/files`);
 			},
 			upsert: (appId: string) => {
-				return Route<"apps/files/upsert">(`/v2/apps/${appId}/files`);
+				return Route<"apps/files/upsert">(`apps/${appId}/files`);
 			},
 			move: (appId: string) => {
-				return Route<"apps/files/move">(`/v2/apps/${appId}/files`);
+				return Route<"apps/files/move">(`apps/${appId}/files`);
 			},
 			delete: (appId: string) => {
-				return Route<"apps/files/delete">(`/v2/apps/${appId}/files`);
+				return Route<"apps/files/delete">(`apps/${appId}/files`);
 			},
 		},
 		deployments: {
 			list: (appId: string) => {
-				return Route<"apps/deployments/list">(`/v2/apps/${appId}/deployments`);
+				return Route<"apps/deployments/list">(`apps/${appId}/deployments`);
 			},
 			current: (appId: string) => {
 				return Route<"apps/deployments/current">(
-					`/v2/apps/${appId}/deployments/current`,
+					`apps/${appId}/deployments/current`,
 				);
 			},
 			webhook: (appId: string) => {
 				return Route<"apps/deployments/webhook">(
-					`/v2/apps/${appId}/deploy/webhook`,
+					`apps/${appId}/deploy/webhook`,
 				);
 			},
 		},
 		network: {
 			dns: (appId: string) => {
-				return Route<"apps/network/dns">(`/v2/apps/${appId}/network/dns`);
+				return Route<"apps/network/dns">(`apps/${appId}/network/dns`);
 			},
 			custom: (appId: string) => {
-				return Route<"apps/network/custom">(`/v2/apps/${appId}/network/custom`);
+				return Route<"apps/network/custom">(`apps/${appId}/network/custom`);
 			},
 			analytics: (appId: string) => {
 				return Route<"apps/network/analytics">(
-					`/v2/apps/${appId}/network/analytics`,
+					`apps/${appId}/network/analytics`,
 				);
 			},
 		},

@@ -27,18 +27,15 @@ export class APIService {
 		});
 
 		if (response.status === 413) {
-			throw new SquareCloudAPIError("PAYLOAD_TOO_LARGE", "Payload too large");
+			throw new SquareCloudAPIError("PAYLOAD_TOO_LARGE");
 		}
 
 		if (response.status === 429) {
-			throw new SquareCloudAPIError(
-				"RATE_LIMIT_EXCEEDED",
-				"Rate limit exceeded",
-			);
+			throw new SquareCloudAPIError("RATE_LIMIT_EXCEEDED", "Try again later");
 		}
 
 		if (response.status === 502 || response.status === 504) {
-			throw new SquareCloudAPIError("SERVER_UNAVAILABLE", "Server unavailable");
+			throw new SquareCloudAPIError("SERVER_UNAVAILABLE", "Try again later");
 		}
 
 		const data = await response.json().catch(() => {
@@ -65,7 +62,7 @@ export class APIService {
 			Authorization: this.apiKey,
 		};
 
-		const url = new URL(path, `${this.baseUrl}/${this.version}`);
+		const url = new URL(path, `${this.baseUrl}/${this.version}/`);
 
 		if ("query" in init && init.query) {
 			const query = new URLSearchParams(init.query as Record<string, string>);
