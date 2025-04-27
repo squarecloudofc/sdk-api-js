@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.7.7
+
+### Patch Changes
+
+- 15d9dc5: Fix CommonJS require not working.
+
 ## 3.7.6
 
 ### Patch Changes
