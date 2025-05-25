@@ -38,8 +38,18 @@ export class APIService {
 			throw new SquareCloudAPIError("SERVER_UNAVAILABLE", "Try again later");
 		}
 
-		const data = await response.json().catch(() => {
-			throw new SquareCloudAPIError("CANNOT_PARSE_RESPONSE", "Try again later");
+		const data = await response.json().catch(async (parseError) => {
+			const responseText = await response
+				.clone()
+				.text()
+				.catch(() => "Failed to read raw response body.");
+			throw new SquareCloudAPIError(
+				"CANNOT_PARSE_RESPONSE",
+				`Raw API response: ${responseText}`,
+				{
+					cause: parseError,
+				},
+			);
 		});
 
 		if (!data || data.status === "error" || !response.ok) {
