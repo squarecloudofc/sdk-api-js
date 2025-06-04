@@ -11,6 +11,7 @@ import type {
 export class APIService {
 	public readonly baseUrl = "https://api.squarecloud.app";
 	public readonly version: APIVersion<1 | 2> = "v2";
+	public readonly sdkVersion: string = require("../../package.json").version;
 	public readonly userId: string;
 
 	constructor(protected readonly apiKey: string) {
@@ -63,6 +64,7 @@ export class APIService {
 			Accept: "application/json",
 			...(init.headers || {}),
 			Authorization: this.apiKey,
+			"User-Agent": `squarecloud-sdk-js/${this.sdkVersion}`,
 		};
 
 		const url = new URL(path, `${this.baseUrl}/${this.version}/`);
