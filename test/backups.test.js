@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { before, describe, it } from "node:test";
 import { SquareCloudAPI } from "../lib/index.js";
 
-test("BackupsModule", async (t) => {
+describe("BackupsModule", async () => {
 	const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
+
 	/** @type import("../lib").Application */
 	let testApp;
 
-	t.before(async () => {
+	before(async () => {
 		const apps = await client.applications.get();
 		testApp = apps.first();
 
@@ -16,7 +17,7 @@ test("BackupsModule", async (t) => {
 		}
 	});
 
-	await t.test("should create backup", async (t) => {
+	await it("should create backup", async (t) => {
 		try {
 			const backup = await testApp.backups.create();
 			assert.ok(backup.url);
@@ -28,14 +29,14 @@ test("BackupsModule", async (t) => {
 		}
 	});
 
-	await t.test("should download backup", async () => {
+	await it("should download backup", async () => {
 		const backups = await testApp.backups.list();
 		const buffer = await backups[0].download();
 		assert.ok(Buffer.isBuffer(buffer));
 		assert.ok(buffer.length > 0);
 	});
 
-	await t.test("should list backups", async () => {
+	await it("should list backups", async () => {
 		const backups = await testApp.backups.list();
 
 		assert.ok(Array.isArray(backups));
@@ -46,14 +47,14 @@ test("BackupsModule", async (t) => {
 		}
 	});
 
-	await t.test("should update cache on backups list", async () => {
+	await it("should update cache on backups list", async () => {
 		const backups = await testApp.backups.list();
 		const cachedBackups = testApp.cache.get("backups");
 
 		assert.deepStrictEqual(cachedBackups, backups);
 	});
 
-	await t.test("should emit backupsUpdate event", async () => {
+	await it("should emit backupsUpdate event", async () => {
 		let emitted = false;
 		const oldBackups = testApp.cache.get("backups");
 

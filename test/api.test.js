@@ -1,20 +1,20 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { describe, it } from "node:test";
 import { APIService } from "../lib/services/api.js";
 
-test("APIService", async (t) => {
+describe("APIService", async () => {
 	const service = new APIService("123-test-key");
 
-	await t.test("should initialize with correct properties", () => {
+	await it("should initialize with correct properties", () => {
 		assert.strictEqual(service.baseUrl, "https://api.squarecloud.app");
 		assert.strictEqual(service.version, "v2");
 		assert.strictEqual(service.userId, "123");
 	});
 
-	await t.test("should parse request options correctly", async (t) => {
+	await it("should parse request options correctly", async (t) => {
 		const originalFetch = global.fetch;
 
-		await t.test("should handle basic GET request", async () => {
+		await it("should handle basic GET request", async () => {
 			let requestUrl;
 			let requestInit;
 
@@ -35,7 +35,7 @@ test("APIService", async (t) => {
 			assert.strictEqual(requestInit.headers.Accept, "application/json");
 		});
 
-		await t.test("should handle query parameters", async () => {
+		await it("should handle query parameters", async () => {
 			let requestUrl;
 
 			global.fetch = async (url, init) => {
@@ -51,7 +51,7 @@ test("APIService", async (t) => {
 			assert.ok(requestUrl.toString().includes("param2=value2"));
 		});
 
-		await t.test("should handle JSON body", async () => {
+		await it("should handle JSON body", async () => {
 			let requestInit;
 
 			global.fetch = async (url, init) => {
@@ -72,7 +72,7 @@ test("APIService", async (t) => {
 			assert.strictEqual(requestInit.body, JSON.stringify(body));
 		});
 
-		await t.test("should handle FormData body", async () => {
+		await it("should handle FormData body", async () => {
 			let requestInit;
 
 			global.fetch = async (url, init) => {
@@ -90,7 +90,7 @@ test("APIService", async (t) => {
 			assert.ok(!requestInit.headers["Content-Type"]);
 		});
 
-		await t.test("should handle error responses", async () => {
+		await it("should handle error responses", async () => {
 			global.fetch = async () => {
 				return new Response(
 					JSON.stringify({ status: "error", code: "TEST_ERROR" }),
@@ -103,7 +103,7 @@ test("APIService", async (t) => {
 			});
 		});
 
-		await t.test("should handle network errors", async () => {
+		await it("should handle network errors", async () => {
 			global.fetch = async () => {
 				throw new Error("Network error");
 			};
@@ -113,7 +113,7 @@ test("APIService", async (t) => {
 			});
 		});
 
-		await t.test("should handle specific HTTP status codes", async () => {
+		await it("should handle specific HTTP status codes", async () => {
 			const statusTests = [
 				{ status: 413, code: "Payload Too Large" },
 				{ status: 429, code: "Rate Limit Exceeded" },

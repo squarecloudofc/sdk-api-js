@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { before, describe, it } from "node:test";
 import { SquareCloudAPI } from "../lib/index.js";
 
-test("FilesModule", async (t) => {
+describe("FilesModule", async () => {
 	const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
+
 	/** @type {import("../lib").Application} */
 	let testApp;
 
-	t.before(async () => {
+	before(async () => {
 		const apps = await client.applications.get();
 		testApp = apps.first();
 
@@ -16,7 +17,7 @@ test("FilesModule", async (t) => {
 		}
 	});
 
-	await t.test("should list files in root directory", async () => {
+	await it("should list files in root directory", async () => {
 		const files = await testApp.files.list();
 		assert.ok(Array.isArray(files));
 		if (files.length > 0) {
@@ -30,7 +31,7 @@ test("FilesModule", async (t) => {
 		}
 	});
 
-	await t.test("should create and read file", async () => {
+	await it("should create and read file", async () => {
 		const testContent = "test content";
 		const fileName = "test.txt";
 
@@ -45,7 +46,7 @@ test("FilesModule", async (t) => {
 		assert.strictEqual(fileContent?.toString(), testContent);
 	});
 
-	await t.test("should edit existing file", async () => {
+	await it("should edit existing file", async () => {
 		const newContent = "updated content";
 		const fileName = "test.txt";
 
@@ -59,7 +60,7 @@ test("FilesModule", async (t) => {
 		assert.strictEqual(fileContent?.toString(), newContent);
 	});
 
-	await t.test("should move/rename file", async () => {
+	await it("should move/rename file", async () => {
 		const oldPath = "/test.txt";
 		const newPath = "/test2.txt";
 
@@ -70,12 +71,12 @@ test("FilesModule", async (t) => {
 		assert.ok(files.some((file) => file.name === "test2.txt"));
 	});
 
-	await t.test("should handle non-existent file read", async () => {
+	await it("should handle non-existent file read", async () => {
 		const content = await testApp.files.read("/non-existent.txt");
 		assert.ok(content.byteLength === 0);
 	});
 
-	await t.test("should delete file", async () => {
+	await it("should delete file", async () => {
 		const deleteResult = await testApp.files.delete("/test2.txt");
 		assert.strictEqual(deleteResult, true);
 
@@ -83,7 +84,7 @@ test("FilesModule", async (t) => {
 		assert.ok(!files.some((file) => file.name === "test2.txt"));
 	});
 
-	await t.test("should handle directory operations", async () => {
+	await it("should handle directory operations", async () => {
 		await testApp.files.create(Buffer.from("file1"), "file1.txt", "/testdir");
 		await testApp.files.create(Buffer.from("file2"), "file2.txt", "/testdir");
 

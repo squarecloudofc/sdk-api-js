@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { describe, it } from "node:test";
 import { SquareCloudAPI } from "../lib/index.js";
 
-test("UserModule", async (t) => {
+describe("UserModule", async () => {
 	const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
 
-	await t.test("should get user information", async () => {
+	await it("should get user information", async () => {
 		const user = await client.user.get();
 
 		assert.ok(user);
@@ -16,7 +16,7 @@ test("UserModule", async (t) => {
 		assert.ok(user.applications.size >= 0);
 	});
 
-	await t.test("should update cache on user fetch", async () => {
+	await it("should update cache on user fetch", async () => {
 		const firstUser = await client.user.get();
 		const cachedUser = client.cache.get("user");
 
@@ -24,7 +24,7 @@ test("UserModule", async (t) => {
 		assert.strictEqual(cachedUser?.email, firstUser.email);
 	});
 
-	await t.test("should emit userUpdate event", async () => {
+	await it("should emit userUpdate event", async () => {
 		let emitted = false;
 		const oldUser = client.cache.get("user");
 
