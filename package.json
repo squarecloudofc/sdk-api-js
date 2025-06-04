@@ -15,7 +15,7 @@
 			"default": "./lib/index.js"
 		}
 	},
-	"packageManager": "pnpm@10.9.0",
+	"packageManager": "pnpm@10.11.1",
 	"type": "module",
 	"scripts": {
 		"release": "pnpm build && changeset publish",
@@ -30,13 +30,13 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
-		"@changesets/cli": "^2.29.2",
+		"@changesets/cli": "^2.29.4",
 		"@squarecloud/api-types": "^0.5.0",
-		"@types/node": "^22.14.1",
+		"@types/node": "^22.15.29",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
-		"tsc-alias": "^1.8.15",
-		"tsup": "^8.4.0",
+		"tsc-alias": "^1.8.16",
+		"tsup": "^8.5.0",
 		"typescript": "^5.8.3"
 	},
 	"keywords": [

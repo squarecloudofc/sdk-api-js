@@ -1,9 +1,9 @@
-import { readFile } from "fs/promises";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { setTimeout } from "node:timers/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { readFile } from "fs/promises";
 import { SquareCloudAPI } from "../lib/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
