@@ -1,5 +1,5 @@
-import { join } from "path";
 import { readFile } from "fs/promises";
+import { join } from "path";
 
 import { assertPathLike, assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
@@ -76,7 +76,6 @@ export class FilesModule {
 	 * Edits an existing file (same as create)
 	 *
 	 * @param file - The file content
-	 * @param fileName - The file name with extension
 	 * @param path - The absolute file path
 	 */
 	async edit(file: string | Buffer, path = "/") {
