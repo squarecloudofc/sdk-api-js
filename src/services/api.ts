@@ -39,7 +39,10 @@ export class APIService {
 		}
 
 		const data = await response.json().catch(() => {
-			throw new SquareCloudAPIError("CANNOT_PARSE_RESPONSE", "Try again later");
+			throw new SquareCloudAPIError(
+				"CANNOT_PARSE_RESPONSE",
+				`Failed with status ${response.status}`,
+			);
 		});
 
 		if (!data || data.status === "error" || !response.ok) {
