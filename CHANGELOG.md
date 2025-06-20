@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.7.8
+
+### Patch Changes
+
+- 80ce036: Fix deleting application files.
+
 ## 3.7.7
 
 ### Patch Changes
