@@ -1,5 +1,5 @@
-import { join } from "path";
 import { readFile } from "fs/promises";
+import { join } from "path";
 
 import { assertPathLike, assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
@@ -113,7 +113,7 @@ export class FilesModule {
 
 		const { status } = await this.application.client.api.request(
 			Routes.apps.files.delete(this.application.id),
-			{ method: "DELETE", query: { path } },
+			{ method: "DELETE", body: { path } },
 		);
 
 		return status === "success";

@@ -99,7 +99,7 @@ export interface APIEndpoints {
 	};
 	"apps/files/delete": {
 		method: "DELETE";
-		query: RESTDeleteAPIFileDeleteQuery;
+		body: RESTDeleteAPIFileDeleteQuery;
 		response: undefined;
 	};
 	"apps/deployments/list": {
