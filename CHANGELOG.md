@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 3.7.9
+
+### Patch Changes
+
+- afa7761: Update backups routes to snapshots
+
 ## 3.7.8
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@squarecloud/api",
-	"version": "3.7.8",
+	"version": "3.7.9",
 	"description": "A NodeJS wrapper for Square Cloud API",
 	"exports": {
 		".": {
