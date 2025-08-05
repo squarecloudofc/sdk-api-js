@@ -39,11 +39,11 @@ export const Routes = {
 		commit: (appId: string) => {
 			return Route<"apps/commit">(`apps/${appId}/commit`);
 		},
-		backups: (appId: string) => {
-			return Route<"apps/backups">(`apps/${appId}/backups`);
+		snapshots: (appId: string) => {
+			return Route<"apps/snapshots">(`apps/${appId}/snapshots`);
 		},
-		generateBackup: (appId: string) => {
-			return Route<"apps/generate-backup">(`apps/${appId}/backups`);
+		generateSnapshot: (appId: string) => {
+			return Route<"apps/generate-snapshot">(`apps/${appId}/snapshots`);
 		},
 		start: (appId: string) => {
 			return Route<"apps/start">(`apps/${appId}/start`);

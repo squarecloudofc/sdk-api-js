@@ -12,7 +12,7 @@ export class BackupsModule {
 	 */
 	async list(): Promise<Backup[]> {
 		const data = await this.application.client.api.request(
-			Routes.apps.backups(this.application.id),
+			Routes.apps.snapshots(this.application.id),
 		);
 
 		const backups = data.response.map(
@@ -36,7 +36,7 @@ export class BackupsModule {
 	 */
 	async create(): Promise<RESTPostAPIApplicationBackupResult> {
 		const data = await this.application.client.api.request(
-			Routes.apps.generateBackup(this.application.id),
+			Routes.apps.generateSnapshot(this.application.id),
 			{ method: "POST" },
 		);
 

@@ -51,10 +51,10 @@ export interface APIEndpoints {
 	"apps/logs": {
 		response: APIApplicationLogs;
 	};
-	"apps/backups": {
+	"apps/snapshots": {
 		response: APIApplicationBackup[];
 	};
-	"apps/generate-backup": {
+	"apps/generate-snapshot": {
 		method: "POST";
 		response: RESTPostAPIApplicationBackupResult;
 	};

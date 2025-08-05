@@ -39,7 +39,7 @@ export class Backup {
 		this.modifiedAt = new Date(modified);
 		this.modifiedTimestamp = this.modifiedAt.getTime();
 		this.key = key;
-		this.url = `https://backups.squarecloud.app/${userId}_${name}.zip?${key}`;
+		this.url = `https://snapshots.squarecloud.app/applications/${userId}/${name}.zip?${key}`;
 	}
 
 	/**
