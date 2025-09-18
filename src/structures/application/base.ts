@@ -7,7 +7,7 @@ import { readFile } from "fs/promises";
 import type { SquareCloudAPI } from "@/index";
 import { assertPathLike, assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
-import { BackupsModule, DeploysModule, FilesModule } from "@/modules";
+import { DeploysModule, FilesModule, SnapshotsModule } from "@/modules";
 import { ApplicationCacheService } from "@/services";
 import { ApplicationStatus } from "@/structures";
 
@@ -49,8 +49,8 @@ export class BaseApplication {
   public readonly cache = new ApplicationCacheService();
   /** Files module for this application */
   public readonly files = new FilesModule(this);
-  /** Backup module for this application */
-  public readonly backups = new BackupsModule(this);
+  /** Snapshots module for this application */
+  public readonly snapshots = new SnapshotsModule(this);
   /** Deploys module for this application */
   public readonly deploys = new DeploysModule(this);
 
@@ -76,12 +76,20 @@ export class BaseApplication {
     this.url = `https://squarecloud.app/dashboard/app/${id}`;
   }
 
-  /** @deprecated Use `Application#backups` instead */
+  /** @deprecated Use `Application#snapshots` instead */
   get backup() {
     console.warn(
-      "[SquareCloudAPI] The 'backup' property is deprecated and will be removed in the the next major version. Use Application#backups instead.",
+      "[SquareCloudAPI] The 'backup' property is deprecated and will be removed in the next major version. Use Application#snapshots instead.",
     );
-    return this.backups;
+    return this.snapshots;
+  }
+
+  /** @deprecated Use `Application#snapshots` instead */
+  get backups() {
+    console.warn(
+      "[SquareCloudAPI] The 'backups' property is deprecated and will be removed in the next major version. Use Application#snapshots instead.",
+    );
+    return this.snapshots;
   }
 
   /**

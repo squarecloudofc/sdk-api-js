@@ -7,7 +7,7 @@ import type {
   User,
   WebsiteApplication,
 } from "@/structures";
-import type { Backup } from "@/structures/backup";
+import type { Snapshot } from "@/structures/snapshot";
 
 export class TypedEventEmitter<TEvents extends Record<string, any>> {
   private emitter = new EventEmitter();
@@ -40,10 +40,10 @@ export interface ClientEvents {
     before: string | undefined,
     after: string,
   ];
-  backupsUpdate: [
+  snapshotsUpdate: [
     application: BaseApplication | Application | WebsiteApplication,
-    before: Backup[] | undefined,
-    after: Backup[],
+    before: Snapshot[] | undefined,
+    after: Snapshot[],
   ];
   statusUpdate: [
     application: BaseApplication | Application | WebsiteApplication,

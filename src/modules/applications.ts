@@ -102,7 +102,7 @@ export class ApplicationsModule {
 }
 
 export * from "../services/cache/application";
-export * from "./backups";
 export * from "./deploys";
 export * from "./files";
 export * from "./network";
+export * from "./snapshots";

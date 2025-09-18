@@ -2,37 +2,37 @@ import type { RESTPostAPISnapshotResult } from "@squarecloud/api-types/v2";
 
 import { Routes } from "@/lib/routes";
 import { type BaseApplication, SquareCloudAPIError } from "@/structures";
-import { Backup } from "@/structures/backup";
+import { Snapshot } from "@/structures/snapshot";
 
-export class BackupsModule {
+export class SnapshotsModule {
   constructor(public readonly application: BaseApplication) {}
 
   /**
-   * Gets the list of generated backups (snapshots) for this application
+   * Gets the list of generated snapshots for this application
    */
-  async list(): Promise<Backup[]> {
+  async list(): Promise<Snapshot[]> {
     const data = await this.application.client.api.request(
       Routes.apps.snapshots(this.application.id),
     );
 
-    const backups = data.response.map(
-      (backup) => new Backup(this.application, backup),
+    const snapshots = data.response.map(
+      (snapshot) => new Snapshot(this.application, snapshot),
     );
 
     this.application.client.emit(
-      "backupsUpdate",
+      "snapshotsUpdate",
       this.application,
-      this.application.cache.backups,
-      backups,
+      this.application.cache.snapshots,
+      snapshots,
     );
-    this.application.cache.set("backups", backups);
+    this.application.cache.set("snapshots", snapshots);
 
-    return backups;
+    return snapshots;
   }
 
   /**
-   * Generates a new backup
-   * @returns The generated backup URL and key
+   * Generates a new snapshot
+   * @returns The generated snapshot URL and key
    */
   async create(): Promise<RESTPostAPISnapshotResult> {
     const data = await this.application.client.api.request(
@@ -44,18 +44,18 @@ export class BackupsModule {
   }
 
   /**
-   * Generates a new backup and downloads it
-   * @returns The downloaded backup bufer
+   * Generates a new snapshot and downloads it
+   * @returns The downloaded snapshot buffer
    */
   async download(): Promise<Buffer> {
-    const backup = await this.create();
+    const snapshot = await this.create();
 
-    const res = await fetch(backup.url)
+    const res = await fetch(snapshot.url)
       .then((res) => res.arrayBuffer())
       .catch(() => undefined);
 
     if (!res) {
-      throw new SquareCloudAPIError("BACKUP_DOWNLOAD_FAILED");
+      throw new SquareCloudAPIError("SNAPSHOT_DOWNLOAD_FAILED");
     }
 
     return Buffer.from(res);

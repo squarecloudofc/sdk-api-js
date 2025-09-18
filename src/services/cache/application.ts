@@ -1,18 +1,18 @@
 import type { ApplicationStatus } from "@/structures";
-import type { Backup } from "@/structures/backup";
+import type { Snapshot } from "@/structures/snapshot";
 
 import { BaseCacheService } from "./base";
 
 export interface ApplicationCache {
   readonly status?: ApplicationStatus;
-  readonly backups?: Backup[];
+  readonly snapshots?: Snapshot[];
   readonly logs?: string;
 }
 
 export class ApplicationCacheService extends BaseCacheService<ApplicationCache> {
   protected cache: ApplicationCache = {
     status: undefined,
-    backups: undefined,
+    snapshots: undefined,
     logs: undefined,
   };
 
@@ -20,8 +20,8 @@ export class ApplicationCacheService extends BaseCacheService<ApplicationCache> 
     return this.cache.status;
   }
 
-  get backups() {
-    return this.cache.backups;
+  get snapshots() {
+    return this.cache.snapshots;
   }
 
   get logs() {

@@ -3,30 +3,30 @@ import type { APISnapshot } from "@squarecloud/api-types/v2";
 import type { BaseApplication } from "./application/base";
 
 /**
- * Represents an application backup (snapshot)
+ * Represents an application snapshot
  */
-export class Backup {
-  /** Size of the backup in bytes. */
+export class Snapshot {
+  /** Size of the snapshot in bytes. */
   public size: number;
 
-  /** Date of the last modification of the backup. */
+  /** Date of the last modification of the snapshot. */
   public modifiedAt: Date;
 
-  /** Date of the last modification of the backup in millisseconds. */
+  /** Date of the last modification of the snapshot in millisseconds. */
   public modifiedTimestamp: number;
 
-  /** AWS access key for the backup. */
+  /** AWS access key for the snapshot. */
   public readonly key: string;
 
-  /** The URL for downloading this backup */
+  /** The URL for downloading this snapshot */
   public readonly url: string;
 
   /**
-   * Represents an application backup (snapshot)
+   * Represents an application snapshot
    *
    * @constructor
-   * @param application - The application from which you fetched the backups
-   * @param data - The data from this backup
+   * @param application - The application from which you fetched the snapshots
+   * @param data - The data from this snapshot
    */
   constructor(
     public readonly application: BaseApplication,
@@ -43,8 +43,8 @@ export class Backup {
   }
 
   /**
-   * Downloads this backup
-   * @returns The downloaded backup bufer
+   * Downloads this snapshot
+   * @returns The downloaded snapshot bufer
    */
   async download(): Promise<Buffer> {
     const res = await fetch(this.url)
@@ -52,9 +52,14 @@ export class Backup {
       .catch(() => undefined);
 
     if (!res) {
-      throw new Error("BACKUP_DOWNLOAD_FAILED");
+      throw new Error("SNAPSHOT_DOWNLOAD_FAILED");
     }
 
     return Buffer.from(res);
   }
 }
+
+/**
+ * @deprecated Use Snapshot instead.
+ */
+export class Backup extends Snapshot {}
