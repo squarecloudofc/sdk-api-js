@@ -4,8 +4,9 @@ export default {
   target: "es2020",
   format: ["cjs", "esm"],
   outDir: "lib",
-  splitting: false,
-  sourcemap: true,
-  clean: true,
   dts: true,
+  minify: false,
+  clean: true,
+  sourcemap: true,
+  splitting: false,
 } satisfies Options;

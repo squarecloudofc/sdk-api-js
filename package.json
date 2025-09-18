@@ -2,18 +2,24 @@
   "name": "@squarecloud/api",
   "version": "3.7.9",
   "description": "A NodeJS wrapper for Square Cloud API",
+  "main": "./lib/index.cjs",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "exports": {
-    "import": {
-      "types": "./lib/index.d.ts",
-      "default": "./lib/index.js"
-    },
-    "require": {
-      "types": "./lib/index.d.cts",
-      "default": "./lib/index.cjs"
-    },
-    "types": "./lib/index.d.ts",
-    "default": "./lib/index.js"
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      }
+    }
   },
+  "files": [
+    "lib"
+  ],
   "packageManager": "pnpm@10.11.1",
   "type": "module",
   "scripts": {
