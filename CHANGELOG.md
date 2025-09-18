@@ -1,5 +1,15 @@
 # @squarecloud/api
 
+## 3.8.0
+
+### Minor Changes
+
+- dd583f8: Rename `backups` to `snapshots`. The old `backups` property will be removed in the next major release.
+
+### Patch Changes
+
+- bd3ea4e: Show response status at unknown API errors
+
 ## 3.7.9
 
 ### Patch Changes
