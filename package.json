@@ -1,66 +1,67 @@
 {
-	"name": "@squarecloud/api",
-	"version": "3.7.9",
-	"description": "A NodeJS wrapper for Square Cloud API",
-	"exports": {
-		".": {
-			"import": {
-				"types": "./lib/index.d.ts",
-				"default": "./lib/index.js"
-			},
-			"require": {
-				"types": "./lib/index.d.cts",
-				"default": "./lib/index.cjs"
-			},
-			"default": "./lib/index.js"
-		}
-	},
-	"packageManager": "pnpm@10.11.1",
-	"type": "module",
-	"scripts": {
-		"release": "pnpm build && changeset publish",
-		"build": "tsup ./src",
-		"check-types": "tsc --noEmit",
-		"lint": "biome check --write .",
-		"lint:ci": "biome check .",
-		"test": "node --test test/*.test.js"
-	},
-	"engines": {
-		"node": ">=18.0.0"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@changesets/cli": "^2.29.4",
-		"@squarecloud/api-types": "^0.5.0",
-		"@types/node": "^22.15.29",
-		"ts-node": "^10.9.2",
-		"ts-node-dev": "^2.0.0",
-		"tsc-alias": "^1.8.16",
-		"tsup": "^8.5.0",
-		"typescript": "^5.8.3"
-	},
-	"keywords": [
-		"wrapper",
-		"square",
-		"squarecloud",
-		"api",
-		"typescript",
-		"app",
-		"bot",
-		"website",
-		"host"
-	],
-	"author": {
-		"name": "joaotonaco",
-		"url": "https://github.com/joaotonaco"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/squarecloudofc/sdk-api-js.git"
-	},
-	"bugs": {
-		"url": "https://github.com/squarecloudofc/sdk-api-js/issues"
-	},
-	"homepage": "https://docs.squarecloud.app/sdks/js/client",
-	"license": "MIT"
+  "name": "@squarecloud/api",
+  "version": "3.7.9",
+  "description": "A NodeJS wrapper for Square Cloud API",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      },
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "packageManager": "pnpm@10.11.1",
+  "type": "module",
+  "scripts": {
+    "release": "pnpm build && changeset publish",
+    "build": "tsup ./src",
+    "check-types": "tsc --noEmit",
+    "lint": "biome check --write .",
+    "lint:ci": "biome check .",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@changesets/cli": "^2.29.7",
+    "@squarecloud/api-types": "^0.6.0",
+    "@types/node": "^24.5.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.16",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  },
+  "keywords": [
+    "wrapper",
+    "square",
+    "squarecloud",
+    "api",
+    "typescript",
+    "app",
+    "bot",
+    "website",
+    "host"
+  ],
+  "author": {
+    "name": "joaotonaco",
+    "url": "https://github.com/joaotonaco"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/squarecloudofc/sdk-api-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/squarecloudofc/sdk-api-js/issues"
+  },
+  "homepage": "https://docs.squarecloud.app/sdks/js/client",
+  "license": "MIT"
 }
