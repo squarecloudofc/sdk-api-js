@@ -7,6 +7,6 @@ export default {
   dts: true,
   minify: false,
   clean: true,
-  sourcemap: true,
+  sourcemap: false,
   splitting: false,
 } satisfies Options;
