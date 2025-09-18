@@ -47,7 +47,9 @@ export class APIService {
 		});
 
 		if (!data || data.status === "error" || !response.ok) {
-			throw new SquareCloudAPIError(data?.code || "COMMON_ERROR");
+			throw new SquareCloudAPIError(
+				data?.code || `UNKNOWN_ERROR_${response.status}`,
+			);
 		}
 
 		return data;
