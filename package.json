@@ -2,6 +2,7 @@
   "name": "@squarecloud/api",
   "version": "3.7.9",
   "description": "A NodeJS wrapper for Square Cloud API",
+  "type": "module",
   "main": "./lib/index.cjs",
   "module": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -20,8 +21,7 @@
   "files": [
     "lib"
   ],
-  "packageManager": "pnpm@10.11.1",
-  "type": "module",
+  "packageManager": "pnpm@10.17.0",
   "scripts": {
     "release": "pnpm build && changeset publish",
     "build": "tsup ./src",
