@@ -4,13 +4,13 @@
   "description": "A NodeJS wrapper for Square Cloud API",
   "type": "module",
   "main": "./lib/index.cjs",
-  "module": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "module": "./lib/index.mjs",
+  "types": "./lib/index.d.mts",
   "exports": {
     ".": {
       "import": {
-        "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
+        "types": "./lib/index.d.mts",
+        "default": "./lib/index.mjs"
       },
       "require": {
         "types": "./lib/index.d.cts",
@@ -24,7 +24,7 @@
   "packageManager": "pnpm@10.17.0",
   "scripts": {
     "release": "pnpm build && changeset publish",
-    "build": "tsup ./src",
+    "build": "tsdown ./src",
     "check-types": "tsc --noEmit",
     "lint": "biome check --write .",
     "lint:ci": "biome check .",
@@ -41,7 +41,7 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.16",
-    "tsup": "^8.5.0",
+    "tsdown": "^0.17.2",
     "typescript": "^5.9.2"
   },
   "keywords": [

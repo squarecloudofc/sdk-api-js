@@ -1,4 +1,4 @@
-import type { Options } from "tsup";
+import type { UserConfig } from "tsdown";
 
 export default {
   target: "es2020",
@@ -8,5 +8,4 @@ export default {
   minify: false,
   clean: true,
   sourcemap: false,
-  splitting: false,
-} satisfies Options;
+} satisfies UserConfig;
