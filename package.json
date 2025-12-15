@@ -37,7 +37,7 @@
     "@biomejs/biome": "^2.3.8",
     "@changesets/cli": "^2.29.8",
     "@squarecloud/api-types": "^0.6.0",
-    "@types/node": "^24.10.2",
+    "@types/node": "^25.0.2",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.16",
