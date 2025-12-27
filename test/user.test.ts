@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { SquareCloudAPI } from "../lib/index.mjs";
+import { SquareCloudAPI } from "../lib/src.mjs";
 
 describe("UserModule", async () => {
-  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
+  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
 
   await it("should get user information", async () => {
     const user = await client.user.get();

@@ -1,15 +1,16 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { setTimeout } from "node:timers/promises";
 import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { SquareCloudAPI } from "../lib/index.mjs";
+import { SquareCloudAPI } from "../lib/src.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe("ApplicationsModule", async () => {
-  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
+  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
 
   await it("should list all applications", async () => {
     const applications = await client.applications.get();
@@ -40,6 +41,7 @@ describe("ApplicationsModule", async () => {
     });
 
     await it("should get application logs", async () => {
+      await setTimeout(5000);
       const logs = await app.getLogs();
       assert.ok(typeof logs === "string");
     });

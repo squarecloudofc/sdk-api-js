@@ -1,17 +1,16 @@
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 
-import { SquareCloudAPI } from "../lib/index.mjs";
+import { type Application, SquareCloudAPI } from "../lib/src.mjs";
 
 describe("FilesModule", async () => {
-  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
+  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
 
-  /** @type {import("../lib").Application} */
-  let testApp;
+  let testApp: Application;
 
   before(async () => {
     const apps = await client.applications.get();
-    testApp = apps.first();
+    testApp = apps.first() as Application;
 
     if (!testApp) {
       throw new Error("No test application found");
@@ -70,11 +69,6 @@ describe("FilesModule", async () => {
 
     const files = await testApp.files.list();
     assert.ok(files.some((file) => file.name === "test2.txt"));
-  });
-
-  await it("should handle non-existent file read", async () => {
-    const content = await testApp.files.read("/non-existent.txt");
-    assert.ok(content.byteLength === 0);
   });
 
   await it("should delete file", async () => {

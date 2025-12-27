@@ -3,18 +3,18 @@
   "version": "3.8.0",
   "description": "A NodeJS wrapper for Square Cloud API",
   "type": "module",
-  "main": "./lib/index.cjs",
-  "module": "./lib/index.mjs",
-  "types": "./lib/index.d.mts",
+  "main": "./lib/src.cjs",
+  "module": "./lib/src.mjs",
+  "types": "./lib/src.d.mts",
   "exports": {
     ".": {
       "import": {
-        "types": "./lib/index.d.mts",
-        "default": "./lib/index.mjs"
+        "types": "./lib/src.d.mts",
+        "default": "./lib/src.mjs"
       },
       "require": {
-        "types": "./lib/index.d.cts",
-        "default": "./lib/index.cjs"
+        "types": "./lib/src.d.cts",
+        "default": "./lib/src.cjs"
       }
     }
   },
@@ -28,7 +28,7 @@
     "check-types": "tsc --noEmit",
     "lint": "biome check --write .",
     "lint:ci": "biome check .",
-    "test": "node --test test/*.test.js"
+    "test": "node --experimental-strip-types --test test/*.test.ts"
   },
   "engines": {
     "node": ">=18.0.0"

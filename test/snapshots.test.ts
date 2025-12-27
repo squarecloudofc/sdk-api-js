@@ -1,17 +1,16 @@
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 
-import { SquareCloudAPI } from "../lib/index.mjs";
+import { type Application, SquareCloudAPI } from "../lib/src.mjs";
 
 describe("SnapshotsModule", async () => {
-  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);
+  const client = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
 
-  /** @type {import("../lib/index.js").Application} */
-  let testApp;
+  let testApp: Application;
 
   before(async () => {
     const apps = await client.applications.get();
-    testApp = apps.first();
+    testApp = apps.first() as Application;
 
     if (!testApp) {
       throw new Error("No test application found");
@@ -24,7 +23,7 @@ describe("SnapshotsModule", async () => {
       assert.ok(snapshot.url);
       assert.ok(snapshot.key);
     } catch (err) {
-      if (err.message.includes("Rate Limit Exceeded")) {
+      if (err instanceof Error && err.message.includes("Rate Limit Exceeded")) {
         t.skip("Rate limit exceeded");
       }
     }
