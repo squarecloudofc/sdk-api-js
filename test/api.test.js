@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { APIService } from "../lib/services/api.js";
+import { APIService } from "../lib/services/api.mjs";
 
 describe("APIService", async () => {
   const service = new APIService("123-test-key");

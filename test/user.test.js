@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { SquareCloudAPI } from "../lib/index.js";
+import { SquareCloudAPI } from "../lib/index.mjs";
 
 describe("UserModule", async () => {
   const client = new SquareCloudAPI(process.env.SQUARE_API_KEY);

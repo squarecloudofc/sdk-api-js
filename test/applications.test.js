@@ -4,7 +4,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { SquareCloudAPI } from "../lib/index.js";
+import { SquareCloudAPI } from "../lib/index.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
