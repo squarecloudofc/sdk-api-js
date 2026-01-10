@@ -29,6 +29,9 @@ export class BaseApplication {
   public ram: number;
   /** The application current cluster */
   public cluster: string;
+  /** Date the application was created */
+  public createdAt: Date;
+
   /**
    * The application programming language
    *
@@ -65,7 +68,7 @@ export class BaseApplication {
     public readonly client: SquareCloudAPI,
     data: APIUserApplication,
   ) {
-    const { id, name, desc, ram, lang, cluster } = data;
+    const { id, name, desc, ram, lang, cluster, created_at } = data;
 
     this.id = id;
     this.name = name;
@@ -73,6 +76,7 @@ export class BaseApplication {
     this.ram = ram;
     this.language = lang;
     this.cluster = cluster;
+    this.createdAt = new Date(created_at);
     this.url = `https://squarecloud.app/dashboard/app/${id}`;
   }
 
