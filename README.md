@@ -28,7 +28,7 @@ pnpm add @squarecloud/api
 
 ## Documentation
 
-Visit our [official documentation](https://docs.squarecloud.app/sdks/js/) for more information about how to use this library.
+Visit our [official documentation](https://docs.squarecloud.app/en/sdks/js/client) for more information about how to use this library.
 
 ## Getting Started
 
