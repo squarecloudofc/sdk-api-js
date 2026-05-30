@@ -1,5 +1,11 @@
 # @squarecloud/api
 
+## 4.0.1
+
+### Patch Changes
+
+- f88b29c: drop paths argument from purgeCache() and bump api-types to v2
+
 ## 4.0.0
 
 ### Major Changes
