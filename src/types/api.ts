@@ -52,7 +52,6 @@ import type {
   RESTPostAPIGithubWebhookJSONBody,
   RESTPostAPIGithubWebhookResult,
   RESTPostAPINetworkCustomDomainJSONBody,
-  RESTPostAPINetworkPurgeCacheJSONBody,
   RESTPostAPISnapshotRestoreJSONBody,
   RESTPostAPISnapshotResult,
   RESTPostAPIWorkspaceApplicationsJSONBody,
@@ -219,7 +218,6 @@ export interface APIEndpoints {
   };
   "apps/network/purge-cache": {
     method: "POST";
-    body: RESTPostAPINetworkPurgeCacheJSONBody;
     response: undefined;
   };
   "databases/create": {

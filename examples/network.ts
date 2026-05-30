@@ -75,5 +75,4 @@ if ("summary" in perf) {
 }
 
 // ─── Purge edge cache ──────────────────────────────────────────────────────
-await app.network.purgeCache(); // purge everything
-await app.network.purgeCache(["/index.html", "/assets/app.css"]); // selective
+await app.network.purgeCache();

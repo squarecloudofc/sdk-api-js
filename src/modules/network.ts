@@ -126,16 +126,14 @@ export class NetworkModule {
   }
 
   /**
-   * Purges the edge cache for the given paths on the application's domains.
-   * Pass an empty array `[]` to purge everything.
+   * Purges the entire edge cache for the application's domains.
    *
-   * @param paths - Specific paths to purge (e.g. `["/index.html", "/assets/app.css"]`)
    * @returns `true` for success
    */
-  async purgeCache(paths: string[] = []): Promise<boolean> {
+  async purgeCache(): Promise<boolean> {
     const data = await this.application.client.api.request(
       Routes.apps.network.purgeCache(this.application.id),
-      { method: "POST", body: { paths } },
+      { method: "POST" },
     );
 
     return data?.status === "success";

@@ -15,8 +15,8 @@ importers:
         specifier: ^2.31.0
         version: 2.31.0(@types/node@25.9.1)
       '@squarecloud/api-types':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^2.0.0
+        version: 2.0.0
       '@types/node':
         specifier: ^25.9.1
         version: 25.9.1
@@ -414,8 +414,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@squarecloud/api-types@1.0.0':
-    resolution: {integrity: sha512-XqfAaoRpcAlH7YwvWhSJBR2sIyrf/ly1tWvJSkOyRoGdjKTTI/+hMTBDyx3JQyHvAXkncY32vDsRnPWGQneNRg==}
+  '@squarecloud/api-types@2.0.0':
+    resolution: {integrity: sha512-MEqu2o3H/eLLVmScdUm5QzE4INYNjFU8LENqYsdLd5o2n9R27mEEqw/hPQu97q3SiYI1kuBafwgeItq0mw7xrA==}
 
   '@tsconfig/node10@1.0.12':
     resolution: {integrity: sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==}
@@ -1505,7 +1505,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@squarecloud/api-types@1.0.0': {}
+  '@squarecloud/api-types@2.0.0': {}
 
   '@tsconfig/node10@1.0.12': {}
 
