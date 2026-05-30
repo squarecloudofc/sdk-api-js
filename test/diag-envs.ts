@@ -1,7 +1,8 @@
 /**
- * Diagnostic script — captures raw HTTP responses from the 4 envs routes on
- * a freshly created application. Bypasses the SDK to rule it out as the
- * source of the observed `FILE_NOT_FOUND` error.
+ * Diagnostic script — captures raw HTTP responses from the 4 envs routes
+ * (GET, POST, PUT, DELETE) on a freshly created application. Bypasses the
+ * SDK so the responses can be compared against the OpenAPI contract when
+ * debugging unexpected error codes or shape regressions.
  *
  * Usage:
  *   node --env-file-if-exists=.env test/diag-envs.ts

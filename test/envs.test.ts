@@ -32,7 +32,7 @@ describe("EnvsModule", { skip }, async () => {
   const TEST_KEY = "__SDK_TEST_VAR__";
   const TEST_VALUE = "hello-world";
 
-  await it("list() on a fresh app should return {} (no FILE_NOT_FOUND leak)", async () => {
+  await it("list() on a fresh app should return {}", async () => {
     const envs = await testApp.envs.list();
 
     assert.ok(envs);
