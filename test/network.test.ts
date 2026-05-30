@@ -4,6 +4,7 @@ import { before, describe, it } from "node:test";
 import {
   type Application,
   SquareCloudAPI,
+  SquareCloudAPIError,
   type WebsiteApplication,
 } from "../lib/src.mjs";
 
@@ -41,7 +42,10 @@ describe("NetworkModule", { skip }, async () => {
       assert.ok(dns.ssl);
       assert.strictEqual(typeof dns.ssl.status, "string");
     } catch (err) {
-      if (err instanceof Error && err.message.includes("NO_CUSTOM_DOMAIN")) {
+      if (
+        err instanceof SquareCloudAPIError &&
+        err.code === "NO_CUSTOM_DOMAIN"
+      ) {
         t.skip("no custom domain attached");
       } else {
         throw err;
@@ -58,8 +62,9 @@ describe("NetworkModule", { skip }, async () => {
     const analytics = await website.network.analytics({ start, end });
 
     assert.ok(analytics);
+    assert.strictEqual(typeof analytics, "object");
 
-    // May be {} when window precedes app creation, or a populated object
+    // Empty {} is valid for windows that precede app creation
     if ("visits" in analytics) {
       assert.ok(Array.isArray(analytics.visits));
       assert.ok(Array.isArray(analytics.countries));
@@ -67,21 +72,24 @@ describe("NetworkModule", { skip }, async () => {
     }
   });
 
-  await it("errors() may return {} for windows before app creation", async (t) => {
+  await it("errors() should accept a valid range and return the expected shape", async (t) => {
     if (!website) return t.skip("no website application available");
 
-    const veryOldStart = new Date(0);
-    const slightlyOldEnd = new Date(1000);
+    const end = new Date();
+    const start = new Date(end.getTime() - 60 * 60 * 1000);
 
-    const errors = await website.network.errors({
-      start: veryOldStart,
-      end: slightlyOldEnd,
-    });
+    const errors = await website.network.errors({ start, end });
 
-    assert.ok(errors !== null && errors !== undefined);
-    // empty {} is a valid response — guard `'summary' in errors` if present
+    assert.ok(errors);
+    assert.strictEqual(typeof errors, "object");
+
+    // Empty {} is valid when no errors in the window or before app creation
     if ("summary" in errors) {
       assert.ok(typeof errors.summary.total === "number");
+      assert.ok(Array.isArray(errors.by_status));
+      assert.ok(Array.isArray(errors.timeseries));
+      assert.ok(Array.isArray(errors.top_paths));
+      assert.ok(Array.isArray(errors.by_method));
     }
   });
 });
