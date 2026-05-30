@@ -1,4 +1,5 @@
 import type {
+  APIMetrics,
   APIUserApplication,
   ApplicationLanguage,
 } from "@squarecloud/api-types/v2";
@@ -7,7 +8,12 @@ import { readFile } from "fs/promises";
 import type { SquareCloudAPI } from "@/index";
 import { assertPathLike, assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
-import { DeploysModule, FilesModule, SnapshotsModule } from "@/modules";
+import {
+  DeploysModule,
+  EnvsModule,
+  FilesModule,
+  SnapshotsModule,
+} from "@/modules";
 import { ApplicationCacheService } from "@/services";
 import { ApplicationStatus } from "@/structures";
 
@@ -44,6 +50,12 @@ export class BaseApplication {
    * - `static`
    */
   public language: ApplicationLanguage;
+  /** The application's default `<subdomain>.squareweb.app` hostname. `null` for non-web apps. */
+  public domain: string | null;
+  /** The custom domain bound to the application, if configured. */
+  public custom: string | null;
+  /** The date the application was created */
+  public createdAt: Date;
 
   /** Cache service for this application */
   public readonly cache = new ApplicationCacheService();
@@ -53,6 +65,8 @@ export class BaseApplication {
   public readonly snapshots = new SnapshotsModule(this);
   /** Deploys module for this application */
   public readonly deploys = new DeploysModule(this);
+  /** Environment variables module for this application */
+  public readonly envs = new EnvsModule(this);
 
   /**
    * Represents the base application from the user endpoint
@@ -65,7 +79,8 @@ export class BaseApplication {
     public readonly client: SquareCloudAPI,
     data: APIUserApplication,
   ) {
-    const { id, name, desc, ram, lang, cluster } = data;
+    const { id, name, desc, ram, lang, cluster, domain, custom, created_at } =
+      data;
 
     this.id = id;
     this.name = name;
@@ -73,6 +88,9 @@ export class BaseApplication {
     this.ram = ram;
     this.language = lang;
     this.cluster = cluster;
+    this.domain = domain;
+    this.custom = custom;
+    this.createdAt = new Date(created_at);
     this.url = `https://squarecloud.app/dashboard/app/${id}`;
   }
 
@@ -123,6 +141,37 @@ export class BaseApplication {
     this.cache.set("logs", logs);
 
     return logs;
+  }
+
+  /**
+   * Gets the last 24h of metrics (288 points, sampled every 5 minutes)
+   * - Available only for apps with at least 512 MB of RAM
+   */
+  async getMetrics(): Promise<APIMetrics> {
+    const { response } = await this.client.api.request(
+      Routes.apps.metrics(this.id),
+    );
+
+    return response;
+  }
+
+  /**
+   * Opens a Server-Sent Events stream of realtime events for this application.
+   * The stream emits up to 10 minutes per connection (max 10 concurrent per user).
+   *
+   * @returns The raw `Response` whose `body` is the SSE stream. Caller consumes it.
+   */
+  async realtime(): Promise<Response> {
+    const url = new URL(
+      `${this.client.api.baseUrl}/${this.client.api.version}/${Routes.apps.realtime(this.id)}`,
+    );
+
+    return fetch(url, {
+      headers: {
+        Accept: "text/event-stream",
+        Authorization: Reflect.get(this.client.api, "apiKey"),
+      },
+    });
   }
 
   /**

@@ -1,20 +1,32 @@
 import assert from "node:assert/strict";
-import { before, describe, it } from "node:test";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { after, before, describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { type Application, SquareCloudAPI } from "../lib/src.mjs";
+import { waitForRunning } from "./_helpers.ts";
 
-describe("FilesModule", async () => {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const skip = !process.env.SQUARE_API_KEY
+  ? "SQUARE_API_KEY is not set"
+  : undefined;
+
+describe("FilesModule", { skip }, async () => {
   const client = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
 
   let testApp: Application;
 
   before(async () => {
-    const apps = await client.applications.get();
-    testApp = apps.first() as Application;
+    const zip = await readFile(path.join(__dirname, "fixtures/test-app.zip"));
+    const created = await client.applications.create(zip);
+    testApp = await client.applications.fetch(created.id);
+    await waitForRunning(testApp);
+  });
 
-    if (!testApp) {
-      throw new Error("No test application found");
-    }
+  after(async () => {
+    if (testApp) await testApp.delete();
   });
 
   await it("should list files in root directory", async () => {

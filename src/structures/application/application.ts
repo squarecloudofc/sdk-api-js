@@ -1,4 +1,7 @@
-import type { APIApplication } from "@squarecloud/api-types/v2";
+import type {
+  APIApplication,
+  APIWebsiteApplication,
+} from "@squarecloud/api-types/v2";
 
 import type { SquareCloudAPI } from "@/index";
 
@@ -20,11 +23,17 @@ export class Application extends BaseApplication {
     public readonly client: SquareCloudAPI,
     data: APIApplication,
   ) {
-    super(client, { ...data, lang: data.language });
+    const website = data as Partial<APIWebsiteApplication>;
+
+    super(client, {
+      ...data,
+      lang: data.language,
+      domain: website.domain ?? null,
+      custom: website.custom ?? null,
+    });
   }
 
   isWebsite(): this is WebsiteApplication {
-    const domain = Reflect.get(this, "domain");
-    return Boolean(domain);
+    return this.domain !== null;
   }
 }

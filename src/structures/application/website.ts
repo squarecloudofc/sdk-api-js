@@ -6,19 +6,18 @@ import { NetworkModule } from "@/modules";
 import { Application } from "./application";
 
 /**
- * Represents a Square Cloud application
+ * Represents a Square Cloud website application — an `Application` with a
+ * non-null `domain`. Refined from {@link Application} via {@link Application.isWebsite}.
  */
 export class WebsiteApplication extends Application {
   /** The application default domain (e.g. example.squareweb.app) */
-  public domain: string;
-  /** The custom configured domain (e.g. yoursite.com) */
-  public custom?: string;
+  public override domain: string;
 
   /** Network module for this application */
   public readonly network = new NetworkModule(this);
 
   /**
-   * Represents a Square Cloud application
+   * Represents a Square Cloud website application
    *
    * @constructor
    * @param client - The client for this application
@@ -29,10 +28,6 @@ export class WebsiteApplication extends Application {
     data: APIWebsiteApplication,
   ) {
     super(client, data);
-
-    const { domain, custom } = data;
-
-    this.domain = domain;
-    this.custom = custom || undefined;
+    this.domain = data.domain;
   }
 }

@@ -1,6 +1,7 @@
 import type {
   APIApplicationStatus,
   APIApplicationStatusAll,
+  APIDatabaseStatusListItem,
   ApplicationStatus as ApplicationStatusType,
 } from "@squarecloud/api-types/v2";
 
@@ -60,6 +61,56 @@ export class SimpleApplicationStatus<R extends boolean = boolean> {
       data.response,
       this.applicationId,
     );
+  }
+}
+
+/**
+ * Represents a database status fetched from databases status all endpoint
+ */
+export class SimpleDatabaseStatus<R extends boolean = boolean> {
+  /** The database's ID this status came from */
+  public readonly databaseId: string;
+  /** Usage statuses for this database */
+  public usage: R extends true
+    ? Pick<ApplicationStatusUsage, "cpu" | "ram">
+    : undefined;
+  /** Whether the database is running or not */
+  public running: R;
+
+  /**
+   * Represents a database status fetched from databases status all endpoint
+   *
+   * @constructor
+   * @param client - The client for this status
+   * @param data - The data from this status
+   */
+  constructor(
+    public readonly client: SquareCloudAPI,
+    data: APIDatabaseStatusListItem,
+  ) {
+    const { id, running } = data;
+
+    this.databaseId = id;
+    this.running = running as R;
+
+    if (running) {
+      const { cpu, ram } = data;
+
+      this.usage = { cpu, ram } as R extends true
+        ? Pick<ApplicationStatusUsage, "cpu" | "ram">
+        : undefined;
+    }
+  }
+
+  /**
+   * Fetches the full database runtime status
+   */
+  async fetch() {
+    const data = await this.client.api.request(
+      Routes.databases.status(this.databaseId),
+    );
+
+    return new ApplicationStatus(this.client, data.response, this.databaseId);
   }
 }
 

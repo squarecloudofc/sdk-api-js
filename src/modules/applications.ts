@@ -1,4 +1,7 @@
-import type { RESTPostAPIApplicationUploadResult } from "@squarecloud/api-types/v2";
+import type {
+  APIWebsiteApplication,
+  RESTPostAPIApplicationUploadResult,
+} from "@squarecloud/api-types/v2";
 import { readFile } from "fs/promises";
 
 import { assertPathLike, assertString } from "@/assertions/literal";
@@ -10,6 +13,7 @@ import {
   SimpleApplicationStatus,
   SquareCloudAPIError,
   User,
+  WebsiteApplication,
 } from "@/structures";
 
 import type { SquareCloudAPI } from "..";
@@ -88,7 +92,10 @@ export class ApplicationsModule {
   }
 
   /**
-   * Returns an application that you can manage or get information
+   * Returns an application that you can manage or get information.
+   *
+   * When the application has a domain (website), a {@link WebsiteApplication}
+   * is returned — refinable to its narrower type via {@link Application.isWebsite}.
    *
    * @param applicationId - The application ID, you must own the application
    */
@@ -96,6 +103,13 @@ export class ApplicationsModule {
     const { response } = await this.client.api.request(
       Routes.apps.info(applicationId),
     );
+
+    if ("domain" in response && response.domain) {
+      return new WebsiteApplication(
+        this.client,
+        response as APIWebsiteApplication,
+      );
+    }
 
     return new Application(this.client, response);
   }

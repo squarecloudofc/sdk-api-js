@@ -1,3 +1,5 @@
+import type { SnapshotScope } from "@squarecloud/api-types/v2";
+
 import { Routes } from "@/lib/routes";
 import { User } from "@/structures";
 
@@ -17,5 +19,19 @@ export class UserModule {
     this.client.cache.set("user", user);
 
     return user;
+  }
+
+  /**
+   * Lists the authenticated user's snapshots
+   * - Requires a paid subscription
+   *
+   * @param scope - Snapshot domain (default: `applications`)
+   */
+  async snapshots(scope: SnapshotScope = "applications") {
+    const { response } = await this.client.api.request(Routes.userSnapshots(), {
+      query: { scope },
+    });
+
+    return response;
   }
 }

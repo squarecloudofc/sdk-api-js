@@ -3,7 +3,11 @@ import { before, describe, it } from "node:test";
 
 import { type Application, SquareCloudAPI } from "../lib/src.mjs";
 
-describe("SnapshotsModule", async () => {
+const skip = !process.env.SQUARE_API_KEY
+  ? "SQUARE_API_KEY is not set"
+  : undefined;
+
+describe("SnapshotsModule", { skip }, async () => {
   const client = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
 
   let testApp: Application;

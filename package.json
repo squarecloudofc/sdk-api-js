@@ -28,20 +28,21 @@
     "check-types": "tsc --noEmit",
     "lint": "biome check --write .",
     "lint:ci": "biome check .",
-    "test": "node --experimental-strip-types --test test/*.test.ts"
+    "pretest": "pnpm run build",
+    "test": "node --env-file-if-exists=.env --test --test-concurrency=1 test/*.test.ts"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.10",
-    "@changesets/cli": "^2.29.8",
-    "@squarecloud/api-types": "^0.6.0",
-    "@types/node": "^25.0.3",
+    "@biomejs/biome": "^2.4.16",
+    "@changesets/cli": "^2.31.0",
+    "@squarecloud/api-types": "^1.0.0",
+    "@types/node": "^25.9.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "tsc-alias": "^1.8.16",
-    "tsdown": "^0.18.3",
+    "tsc-alias": "^1.8.17",
+    "tsdown": "^0.22.1",
     "typescript": "^5.9.3"
   },
   "keywords": [
@@ -56,9 +57,14 @@
     "host"
   ],
   "author": {
-    "name": "joaotonaco",
-    "url": "https://github.com/joaotonaco"
+    "name": "joaotonaco"
   },
+  "contributors": [
+    {
+      "name": "João Otávio Stivi",
+      "email": "joao@squarecloud.app"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/squarecloudofc/sdk-api-js.git"

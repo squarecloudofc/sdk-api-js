@@ -12,5 +12,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "exclude": ["./test/", "./lib/", "tsdown.config.ts"]
+  "exclude": ["./test/", "./lib/", "./examples/", "tsdown.config.ts"]
 }

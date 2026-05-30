@@ -24,8 +24,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run lint
-        run: pnpm lint
+      - name: Lint
+        run: pnpm lint:ci
+
+      - name: Type check
+        run: pnpm check-types
 
       - name: Build
         run: pnpm build
@@ -60,6 +63,7 @@ jobs:
           publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 permissions:
   id-token: write

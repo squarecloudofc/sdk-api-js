@@ -1,5 +1,11 @@
 import { assertString } from "./assertions/literal";
-import { ApplicationsModule, UserModule } from "./modules";
+import {
+  ApplicationsModule,
+  DatabasesModule,
+  ServiceModule,
+  UserModule,
+  WorkspacesModule,
+} from "./modules";
 import { APIService, GlobalCacheService } from "./services";
 import { type ClientEvents, TypedEventEmitter } from "./types";
 
@@ -14,8 +20,14 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
 
   /** The applications module */
   public readonly applications = new ApplicationsModule(this);
+  /** The databases module */
+  public readonly databases = new DatabasesModule(this);
+  /** The platform service module */
+  public readonly service = new ServiceModule(this);
   /** The user module */
   public readonly user = new UserModule(this);
+  /** The workspaces module */
+  public readonly workspaces = new WorkspacesModule(this);
   /** The global cache service */
   public readonly cache = new GlobalCacheService();
 

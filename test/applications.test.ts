@@ -9,7 +9,11 @@ import { SquareCloudAPI } from "../lib/src.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-describe("ApplicationsModule", async () => {
+const skip = !process.env.SQUARE_API_KEY
+  ? "SQUARE_API_KEY is not set"
+  : undefined;
+
+describe("ApplicationsModule", { skip }, async () => {
   const client = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
 
   await it("should list all applications", async () => {

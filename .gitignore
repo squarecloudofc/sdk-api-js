@@ -5,5 +5,10 @@
 /node_modules/
 yarn.lock
 
+# env files
+.env
+.env.local
+.env.*.local
+
 # ds
 /.DS_Store

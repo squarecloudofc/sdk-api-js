@@ -1,8 +1,16 @@
 import type { RESTPostAPISnapshotResult } from "@squarecloud/api-types/v2";
 
+import { assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
 import { type BaseApplication, SquareCloudAPIError } from "@/structures";
 import { Snapshot } from "@/structures/snapshot";
+
+export interface RestoreSnapshotOptions {
+  /** Snapshot identifier (UUID v4) */
+  snapshotId: string;
+  /** Version identifier from the snapshot listing */
+  versionId: string;
+}
 
 export class SnapshotsModule {
   constructor(public readonly application: BaseApplication) {}
@@ -59,5 +67,23 @@ export class SnapshotsModule {
     }
 
     return Buffer.from(res);
+  }
+
+  /**
+   * Restores the application to a previous snapshot
+   *
+   * @param options - The snapshot identifiers
+   * @returns `true` for success
+   */
+  async restore(options: RestoreSnapshotOptions): Promise<boolean> {
+    assertString(options.snapshotId, "SNAPSHOT_ID");
+    assertString(options.versionId, "VERSION_ID");
+
+    const data = await this.application.client.api.request(
+      Routes.apps.restoreSnapshot(this.application.id),
+      { method: "POST", body: options },
+    );
+
+    return data?.status === "success";
   }
 }
