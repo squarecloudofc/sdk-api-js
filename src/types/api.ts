@@ -1,4 +1,5 @@
 import type {
+  APIAppDomain,
   APIApplication,
   APIApplicationLogs,
   APIApplicationStatus,
@@ -13,6 +14,7 @@ import type {
   APIEnvVars,
   APIGithubAppLinkResponse,
   APIListedFile,
+  APILoadBalancers,
   APIMetrics,
   APINetworkAnalytics,
   APINetworkDNS,
@@ -35,6 +37,7 @@ import type {
   RESTDeleteAPIWorkspaceLeaveJSONBody,
   RESTDeleteAPIWorkspaceMembersJSONBody,
   RESTGetAPIApplicationStatusAllQuery,
+  RESTGetAPIApplicationStatusQuery,
   RESTGetAPIFileContentQuery,
   RESTGetAPIFilesListQuery,
   RESTGetAPINetworkAnalyticsQuery,
@@ -44,6 +47,7 @@ import type {
   RESTPatchAPIDatabaseJSONBody,
   RESTPatchAPIFileMoveJSONBody,
   RESTPatchAPIWorkspaceMembersJSONBody,
+  RESTPostAPIApplicationCommitQuery,
   RESTPostAPIApplicationUploadResult,
   RESTPostAPIDatabaseCredentialsResetJSONBody,
   RESTPostAPIDatabaseJSONBody,
@@ -83,10 +87,17 @@ export interface APIEndpoints {
     query?: RESTGetAPIApplicationStatusAllQuery;
     response: APIApplicationStatusAll[];
   };
+  "apps/domains": {
+    response: APIAppDomain[];
+  };
+  "apps/load-balancers": {
+    response: APILoadBalancers;
+  };
   "apps/info": {
     response: APIApplication;
   };
   "apps/status": {
+    query?: RESTGetAPIApplicationStatusQuery;
     response: APIApplicationStatus;
   };
   "apps/logs": {
@@ -129,6 +140,7 @@ export interface APIEndpoints {
   "apps/commit": {
     method: "POST";
     body: FormData;
+    query?: RESTPostAPIApplicationCommitQuery;
     response: undefined;
   };
   "apps/envs/list": {
@@ -241,6 +253,7 @@ export interface APIEndpoints {
     response: undefined;
   };
   "databases/status": {
+    query?: RESTGetAPIApplicationStatusQuery;
     response: APIApplicationStatus;
   };
   "databases/metrics": {

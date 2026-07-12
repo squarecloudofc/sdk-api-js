@@ -42,15 +42,9 @@ export class SquareCloudAPI extends TypedEventEmitter<ClientEvents> {
     assertString(apiKey, "API_KEY");
     this.api = new APIService(apiKey);
   }
-
-  /** @deprecated Use SquareCloudAPI#user instead. */
-  get users() {
-    console.warn(
-      "[SquareCloudAPI] The 'users' property is deprecated and will be removed in the next major version. Use SquareCloudAPI#user instead.",
-    );
-    return this.user;
-  }
 }
+
+export { APIErrorCode } from "@squarecloud/api-types/v2";
 
 export * from "./structures";
 export * from "./types";

@@ -1,4 +1,5 @@
 import type { APISnapshot } from "@squarecloud/api-types/v2";
+import { Buffer } from "node:buffer";
 
 import type { SquareCloudAPI } from "@/index";
 
@@ -89,8 +90,3 @@ export class DatabaseSnapshot extends BaseSnapshot {
     super(database.client, data, "databases");
   }
 }
-
-/**
- * @deprecated Use Snapshot instead.
- */
-export class Backup extends Snapshot {}

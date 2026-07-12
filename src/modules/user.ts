@@ -23,7 +23,8 @@ export class UserModule {
 
   /**
    * Lists the authenticated user's snapshots
-   * - Requires a paid subscription
+   * - Requires a paid subscription — accounts without an active paid plan
+   *   get `402 UPGRADE_REQUIRED`
    *
    * @param scope - Snapshot domain (default: `applications`)
    */

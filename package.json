@@ -35,14 +35,11 @@
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16",
+    "@biomejs/biome": "^2.5.3",
     "@changesets/cli": "^2.31.0",
-    "@squarecloud/api-types": "^2.0.0",
-    "@types/node": "^25.9.1",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "tsc-alias": "^1.8.17",
-    "tsdown": "^0.22.1",
+    "@squarecloud/api-types": "^3.0.1",
+    "@types/node": "^26.1.1",
+    "tsdown": "^0.22.5",
     "typescript": "^5.9.3"
   },
   "keywords": [

@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 import { makeAssertion } from "./common";
 
 export const assertString = makeAssertion(

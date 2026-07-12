@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { readFile } from "fs/promises";
 import { join } from "path";
 

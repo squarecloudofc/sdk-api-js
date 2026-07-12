@@ -27,6 +27,12 @@ export const Routes = {
     statusAll: () => {
       return Route<"apps/status-all">("apps/status");
     },
+    domains: () => {
+      return Route<"apps/domains">("apps/domains");
+    },
+    loadBalancers: () => {
+      return Route<"apps/load-balancers">("apps/load-balancers");
+    },
     info: (appId: string) => {
       return Route<"apps/info">(`apps/${appId}`);
     },

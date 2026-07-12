@@ -1,4 +1,5 @@
 import type { RESTPostAPISnapshotResult } from "@squarecloud/api-types/v2";
+import { Buffer } from "node:buffer";
 
 import { assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";
@@ -17,6 +18,7 @@ export class SnapshotsModule {
 
   /**
    * Gets the list of generated snapshots for this application
+   * - Listings are cached server-side for 30 minutes
    */
   async list(): Promise<Snapshot[]> {
     const data = await this.application.client.api.request(
@@ -40,6 +42,9 @@ export class SnapshotsModule {
 
   /**
    * Generates a new snapshot
+   * - Rate limited to 1 request per 5s per user and 1 per 3min per resource
+   * - Each plan has a daily snapshot quota; exhausting it returns
+   *   `429 DAILY_SNAPSHOTS_LIMIT_REACHED`
    * @returns The generated snapshot URL and key
    */
   async create(): Promise<RESTPostAPISnapshotResult> {

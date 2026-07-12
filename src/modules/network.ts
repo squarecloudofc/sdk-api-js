@@ -20,6 +20,31 @@ export interface NetworkErrorsOptions extends NetworkRangeOptions {
   include4xx?: boolean;
 }
 
+export interface NetworkAnalyticsOptions extends NetworkRangeOptions {
+  /** Filter to one client country (2-character code, e.g. `BR`) */
+  country?: string;
+  /** Filter to one client IP (exact IPv4/IPv6 match) */
+  ip?: string;
+  /** Filter to request paths starting with this prefix (e.g. `/api`) */
+  path?: string;
+  /** Filter to one edge response status code (e.g. `404`) */
+  status?: string;
+  /** Filter to one client OS, as returned in the `os` breakdown */
+  os?: string;
+  /** Filter to one client browser, as returned in the `browsers` breakdown */
+  browser?: string;
+  /** Filter to one HTTP protocol, as returned in the `protocols` breakdown */
+  protocol?: string;
+  /** Filter to one referer host (`Direct` = no referer) */
+  referer?: string;
+  /** Filter to one client network (e.g. `GOOGLE (15169)`, a bare ASN, or `SQUARE-CLOUD-PLATFORM`) */
+  provider?: string;
+  /** Filter to one response content type (`Unknown` = unclassified) */
+  contentType?: string;
+  /** Filter to one verified-bot category (`Unverified` = regular traffic) */
+  bot?: string;
+}
+
 function toIso(value: string | Date): string {
   return value instanceof Date ? value.toISOString() : value;
 }
@@ -47,13 +72,27 @@ export class NetworkModule {
   /**
    * Gets aggregated edge analytics for the application's domains
    * - Maximum retention window is 7 days
+   * - Optional drill-down filters (country, ip, path, status, os, browser,
+   *   protocol, referer, provider, contentType, bot) apply to every breakdown
+   *   at once
    *
    * @param options - The time window (start/end as ISO 8601 strings or Date)
+   *                  and optional drill-down filters
    */
-  async analytics(options: NetworkRangeOptions) {
+  async analytics(options: NetworkAnalyticsOptions) {
+    const { start, end, contentType, ...filters } = options;
     const data = await this.application.client.api.request(
       Routes.apps.network.analytics(this.application.id),
-      { query: { start: toIso(options.start), end: toIso(options.end) } },
+      {
+        query: {
+          start: toIso(start),
+          end: toIso(end),
+          ...(contentType !== undefined ? { content_type: contentType } : {}),
+          ...Object.fromEntries(
+            Object.entries(filters).filter(([, v]) => v !== undefined),
+          ),
+        },
+      },
     );
 
     return data?.response;

@@ -1,5 +1,8 @@
 export class SquareCloudAPIError extends TypeError {
-  /** The raw API error code (e.g. `FILE_NOT_FOUND`, `RATE_LIMIT_EXCEEDED`). */
+  /**
+   * The raw API error code (e.g. `FILE_NOT_FOUND`, `RATE_LIMIT_EXCEEDED`).
+   * Canonical values are listed in the `APIErrorCode` constant.
+   */
   public readonly code: string;
 
   constructor(

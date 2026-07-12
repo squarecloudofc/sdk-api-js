@@ -1,3 +1,4 @@
+import type { Buffer } from "node:buffer";
 import type {
   APIMetrics,
   APIUserApplication,
@@ -94,22 +95,6 @@ export class BaseApplication {
     this.url = `https://squarecloud.app/dashboard/app/${id}`;
   }
 
-  /** @deprecated Use `Application#snapshots` instead */
-  get backup() {
-    console.warn(
-      "[SquareCloudAPI] The 'backup' property is deprecated and will be removed in the next major version. Use Application#snapshots instead.",
-    );
-    return this.snapshots;
-  }
-
-  /** @deprecated Use `Application#snapshots` instead */
-  get backups() {
-    console.warn(
-      "[SquareCloudAPI] The 'backups' property is deprecated and will be removed in the next major version. Use Application#snapshots instead.",
-    );
-    return this.snapshots;
-  }
-
   /**
    * Fetches this application for full information
    */
@@ -132,6 +117,8 @@ export class BaseApplication {
 
   /**
    * Gets the application current logs
+   * - Rate limited to 1 request per application every 5s, with a per-user
+   *   burst allowance of 20 requests per 10s
    */
   async getLogs(): Promise<string> {
     const data = await this.client.api.request(Routes.apps.logs(this.id));
@@ -157,7 +144,10 @@ export class BaseApplication {
 
   /**
    * Opens a Server-Sent Events stream of realtime events for this application.
-   * The stream emits up to 10 minutes per connection (max 10 concurrent per user).
+   * - Max 5 concurrent connections per user (plus a per-application cap) —
+   *   exceeding it returns `REALTIME_MAX_CONNECTIONS`
+   * - Each connection lives up to 10 minutes (one transparent internal
+   *   reconnection included) — reconnect when the TTL expires
    *
    * @returns The raw `Response` whose `body` is the SSE stream. Caller consumes it.
    */

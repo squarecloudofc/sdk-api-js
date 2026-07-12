@@ -4,6 +4,7 @@ import type {
   RESTPostAPIDatabaseJSONBody,
   RESTPostAPISnapshotResult,
 } from "@squarecloud/api-types/v2";
+import { Buffer } from "node:buffer";
 
 import { assertNumber, assertString } from "@/assertions/literal";
 import { Routes } from "@/lib/routes";

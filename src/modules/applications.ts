@@ -1,4 +1,7 @@
+import type { Buffer } from "node:buffer";
 import type {
+  APIAppDomain,
+  APILoadBalancers,
   APIWebsiteApplication,
   RESTPostAPIApplicationUploadResult,
 } from "@squarecloud/api-types/v2";
@@ -76,6 +79,33 @@ export class ApplicationsModule {
       method: "POST",
       body: formData,
     });
+
+    return data.response;
+  }
+
+  /**
+   * Lists every domain configured across your applications — the default
+   * `<subdomain>.squareweb.app` hostname and any attached custom domain.
+   * Custom domains are listed first; applications without a web domain are
+   * omitted.
+   * - Rate limited to 20 requests per 60s
+   */
+  async domains(): Promise<APIAppDomain[]> {
+    const data = await this.client.api.request(Routes.apps.domains());
+
+    return data.response;
+  }
+
+  /**
+   * Lists your custom-domain load balancers — applications grouped by
+   * attached custom domain. A group with two or more applications is an
+   * active load balancer, with edge balancing and automatic failover.
+   * `limit` is how many applications may share one domain on your plan
+   * (2 on Standard, 5 on Pro, 10 on Enterprise).
+   * - Rate limited to 20 requests per 60s
+   */
+  async loadBalancers(): Promise<APILoadBalancers> {
+    const data = await this.client.api.request(Routes.apps.loadBalancers());
 
     return data.response;
   }
