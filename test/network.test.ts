@@ -27,20 +27,20 @@ describe("NetworkModule", { skip }, async () => {
     if (fetched.isWebsite()) website = fetched;
   });
 
-  await it("dns() should return a single { ownership, ssl } object", async (t) => {
+  await it("dns() should return an array of DNS records", async (t) => {
     if (!website) return t.skip("no website application available");
 
     try {
       const dns = await website.network.dns();
 
-      assert.ok(dns);
-      assert.ok(!Array.isArray(dns), "dns response is no longer an array");
-      assert.ok(dns.ownership);
-      assert.strictEqual(typeof dns.ownership.type, "string");
-      assert.strictEqual(typeof dns.ownership.name, "string");
-      assert.strictEqual(typeof dns.ownership.value, "string");
-      assert.ok(dns.ssl);
-      assert.strictEqual(typeof dns.ssl.status, "string");
+      assert.ok(Array.isArray(dns), "dns response should be an array");
+      assert.ok(dns.length > 0, "dns response should have at least one record");
+      for (const record of dns) {
+        assert.ok(["txt", "cname"].includes(record.type));
+        assert.strictEqual(typeof record.name, "string");
+        assert.strictEqual(typeof record.value, "string");
+        assert.strictEqual(typeof record.status, "string");
+      }
     } catch (err) {
       if (
         err instanceof SquareCloudAPIError &&
