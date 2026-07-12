@@ -77,9 +77,17 @@ describe("WorkspacesModule", { skip }, async () => {
     await it("should generate an invite code", async (t) => {
       if (!createdId) return t.skip("creation did not produce an id");
 
-      const code = await client.workspaces.generateInviteCode();
-      assert.ok(typeof code === "string");
-      assert.ok(code.length > 0);
+      try {
+        const code = await client.workspaces.generateInviteCode();
+        assert.ok(typeof code === "string");
+        assert.ok(code.length > 0);
+      } catch (err) {
+        const code = (err as { code?: string }).code;
+        if (code === "KEEP_CALM" || code === "RATE_LIMIT_EXCEEDED") {
+          return t.skip("invite code endpoint is rate limited right now");
+        }
+        throw err;
+      }
     });
 
     await it("should delete the workspace", async (t) => {

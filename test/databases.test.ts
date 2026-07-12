@@ -38,7 +38,7 @@ describe("DatabasesModule", { skip }, async () => {
           name: "sdk-test-db",
           memory: 256,
           type: "redis",
-          version: "7.4",
+          version: "7.4.5",
         });
 
         assert.ok(created.id);
@@ -111,7 +111,7 @@ describe("DatabasesModule", { skip }, async () => {
           // @ts-expect-error — invalid memory shape on purpose
           memory: "256",
           type: "redis",
-          version: "7.4",
+          version: "7.4.5",
         }),
       /Invalid Database Memory/,
     );
