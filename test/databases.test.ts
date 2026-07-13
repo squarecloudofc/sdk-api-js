@@ -2,7 +2,17 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { setTimeout } from "node:timers/promises";
 
-import { SquareCloudAPI } from "../lib/src.mjs";
+import { SquareCloudAPI, SquareCloudAPIError } from "../lib/src.mjs";
+
+const CREATE_SKIP_CODES = [
+  "UPGRADE_REQUIRED",
+  "SUBSCRIPTION_REQUIRED",
+  "INSUFFICIENT_MEMORY",
+  "FEW_MEMORY",
+  "INVALID_DATABASE_VERSION",
+  "DATABASE_VERSION_INVALID",
+  "CLUSTER_MAINTENANCE_TRY_LATER",
+];
 
 const skip = !process.env.SQUARE_API_KEY
   ? "SQUARE_API_KEY is not set"
@@ -49,11 +59,8 @@ describe("DatabasesModule", { skip }, async () => {
         createdId = created.id;
       } catch (err) {
         if (
-          err instanceof Error &&
-          (err.message.includes("Upgrade Required") ||
-            err.message.includes("Few Memory") ||
-            err.message.includes("Database Version Invalid") ||
-            err.message.includes("Cluster Maintenance"))
+          err instanceof SquareCloudAPIError &&
+          CREATE_SKIP_CODES.includes(err.code)
         ) {
           t.skip(`Skipped: ${err.message}`);
         } else {
