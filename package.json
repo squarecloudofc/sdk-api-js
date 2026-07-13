@@ -1,6 +1,6 @@
 {
   "name": "@squarecloud/api",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "description": "A NodeJS wrapper for Square Cloud API",
   "type": "module",
   "main": "./lib/src.cjs",
