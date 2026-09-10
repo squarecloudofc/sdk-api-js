@@ -39,7 +39,7 @@
     "@changesets/cli": "^2.31.0",
     "@squarecloud/api-types": "^3.0.1",
     "@types/node": "^26.1.1",
-    "tsdown": "^0.22.5",
+    "tsdown": "^0.23.0",
     "typescript": "^5.9.3"
   },
   "keywords": [
