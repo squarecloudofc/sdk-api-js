@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3",
-    "@changesets/cli": "^2.31.0",
+    "@changesets/cli": "^3.0.2",
     "@squarecloud/api-types": "^3.0.1",
     "@types/node": "^26.1.1",
     "tsdown": "^0.22.5",
