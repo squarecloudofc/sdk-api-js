@@ -1,73 +1,30 @@
-import { writeFile } from "node:fs/promises";
 import { SquareCloudAPI } from "@squarecloud/api";
 
-const api = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
+const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY ?? "");
 
-// ─── Create a database ─────────────────────────────────────────────────────
-// Available on Standard, Pro, and Enterprise plans.
-// `password` and `certificate` are shown only here — store them now.
-const created = await api.databases.create({
-  name: "my-mongo",
-  memory: 512,
-  type: "mongo",
-  version: "7.0",
+// The password is only shown here and by resetCredentials(): store it
+const db = await api.databases.create({
+	name: "main",
+	type: "postgres",
+	version: "17", // a major or major.minor prefix works
+	memory: 1024,
 });
+console.log(db.connection_url, db.password);
 
-console.log(`ID: ${created.id}`);
-console.log(`Connection URL: ${created.connection_url}`);
-console.log(`Password (save this!): ${created.password}`);
-
-// ─── List + fetch ──────────────────────────────────────────────────────────
-const { databases } = await api.user.get();
-console.log(`Owned databases: ${databases.size}`);
-
-const db = await api.databases.fetch(created.id);
-console.log(`${db.name} • ${db.type} • ${db.ram}MB • port ${db.port}`);
-
-// ─── Lifecycle + monitoring ────────────────────────────────────────────────
-const status = await db.getStatus();
+await api.databases.update(db.id, { ram: 2048 });
 console.log(
-  `${status.status} • CPU ${status.usage.cpu} • RAM ${status.usage.ram}`,
+	await api.databases.status(db.id),
+	await api.databases.metrics(db.id),
 );
 
-const metrics = await db.getMetrics();
-console.log(`${metrics.length} metric points`);
+// TLS certificate (base64 PEM) and credential rotation
+const pem = atob(await api.databases.certificate(db.id));
+const password = await api.databases.resetCredentials(db.id, "password");
+console.log(pem.length, password);
 
-await db.stop();
-await db.start();
+// Snapshots: same shape as apps
+const result = await api.databases.snapshots.create(db.id);
+if (!result.pending) console.log(result.url);
 
-// Compact status for all databases at once
-const all = await api.databases.statusAll();
-for (const s of all) {
-  console.log(`${s.databaseId} → ${s.running ? "running" : "stopped"}`);
-}
-
-// ─── Update name/memory ────────────────────────────────────────────────────
-await db.update({ name: "primary-db", ram: 1024 });
-
-// ─── Credentials ───────────────────────────────────────────────────────────
-// The database must be running for these endpoints to succeed.
-const cert = await db.credentials.certificate(); // base64-encoded PEM
-console.log(`Certificate (${cert.length} chars)`);
-
-// Rotate password — the new value is shown once
-const { password } = await db.credentials.reset("password");
-console.log(`New password: ${password}`);
-
-// Rotate certificate — fetch the new one via .certificate()
-await db.credentials.reset("certificate");
-
-// ─── Snapshots ─────────────────────────────────────────────────────────────
-const snapshots = await db.snapshots.list();
-console.log(`${snapshots.length} snapshots stored`);
-
-const fresh = await db.snapshots.create();
-console.log(`Snapshot URL: ${fresh.url}`);
-
-const buffer = await db.snapshots.download();
-await writeFile("./db-backup.tar.gz", buffer);
-
-await db.snapshots.restore("00000000-0000-4000-8000-000000000000_mongo", "v1");
-
-// ─── Delete ────────────────────────────────────────────────────────────────
-await db.delete();
+await api.databases.stop(db.id);
+await api.databases.delete(db.id);

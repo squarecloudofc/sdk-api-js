@@ -1,35 +1,31 @@
-import { writeFile } from "node:fs/promises";
+import { createWriteStream } from "node:fs";
+import { Writable } from "node:stream";
 import { SquareCloudAPI } from "@squarecloud/api";
 
-const api = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
-const app = await api.applications.fetch("abc123def456abc123def456");
+const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY ?? "");
+const appId = process.argv[2] ?? "";
 
-// ─── List existing snapshots ───────────────────────────────────────────────
-const snapshots = await app.snapshots.list();
-
-for (const snap of snapshots) {
-  console.log(snap.url);
-  console.log(
-    `size=${snap.size} bytes • modified=${snap.modifiedAt.toISOString()}`,
-  );
+// ─── Create: large apps answer "pending" (202) and finish in the background ───
+const snapshot = await api.apps.snapshots.create(appId);
+if (snapshot.pending) {
+	console.log(
+		"Still generating: it shows up in snapshots.list() in ~2 minutes",
+	);
+} else {
+	// Streamed to disk, never buffered in memory
+	const zip = await api.downloadSnapshot(snapshot.url);
+	await zip.pipeTo(Writable.toWeb(createWriteStream("backup.zip")));
 }
 
-// ─── Create + download a new snapshot ──────────────────────────────────────
-// `.create()` returns `{ url, key }` (signed, valid for 30 days)
-const fresh = await app.snapshots.create();
-console.log(`Download URL: ${fresh.url}`);
+// ─── List and restore ─────────────────────────────────────────────────────────
+const [latest] = await api.apps.snapshots.list(appId);
+if (latest) {
+	console.log(latest.name, latest.runtime, latest.origin, latest.version_id);
 
-// `.download()` does create+fetch+buffer in one step
-const buffer = await app.snapshots.download();
-await writeFile("./backup.zip", buffer);
+	// A listed snapshot carries everything restore needs
+	await api.apps.snapshots.restore(appId, latest.name, latest.version_id);
+}
 
-// ─── Restore from a snapshot ───────────────────────────────────────────────
-// Pass the snapshot id (UUID v4) + version id from the listing
-await app.snapshots.restore({
-  snapshotId: "00000000-0000-4000-8000-000000000000",
-  versionId: "abc123def4567890",
-});
-
-// ─── List all your snapshots (across apps or databases) ────────────────────
-const userSnapshots = await api.user.snapshots("applications"); // or "databases"
-console.log(`${userSnapshots.length} snapshots`);
+// Databases work the same way; account.snapshots() lists everything (paid plans)
+const all = await api.account.snapshots({ scope: "databases" });
+console.log(all.length);

@@ -1,45 +1,24 @@
 import { SquareCloudAPI } from "@squarecloud/api";
 
-const api = new SquareCloudAPI(process.env.SQUARE_API_KEY as string);
+const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY ?? "");
+const appId = process.argv[2] ?? "";
 
-// ─── Create a workspace ────────────────────────────────────────────────────
-// Available on Standard, Pro, and Enterprise plans.
-const { id: workspaceId } = await api.workspaces.create({ name: "Acme" });
+const { id: workspaceId } = await api.workspaces.create("My team");
+try {
+	// Share an app; it is addressed as `${appId}-${workspaceId}` through the workspace
+	await api.workspaces.apps.add(workspaceId, appId);
+	console.log((await api.apps.status(`${appId}-${workspaceId}`)).running);
 
-// ─── List workspaces you own or belong to ──────────────────────────────────
-const workspaces = await api.workspaces.list();
+	// To join someone else's workspace, give its owner your invite code (valid 5 min);
+	// they call `workspaces.members.add(workspaceId, code, "maintain")`
+	console.log(
+		"share this code with an owner:",
+		await api.workspaces.members.inviteCode(),
+	);
 
-for (const ws of workspaces) {
-  console.log(
-    `${ws.name} (${ws.memberList.length} members, ${ws.applicationList.length} apps)`,
-  );
+	const workspace = await api.workspaces.get(workspaceId);
+	for (const m of workspace.members) console.log(m.name, m.group);
+	await api.workspaces.apps.remove(workspaceId, appId);
+} finally {
+	await api.workspaces.delete(workspaceId);
 }
-
-// ─── Fetch a single workspace ──────────────────────────────────────────────
-const workspace = await api.workspaces.fetch(workspaceId);
-console.log(workspace.memberList);
-console.log(workspace.applicationList);
-
-// ─── Invite a member ───────────────────────────────────────────────────────
-// 1. The user being invited generates a short-lived code (their own client):
-//    const code = await otherApi.workspaces.generateInviteCode();
-// 2. The workspace owner consumes it:
-await workspace.members.add("abcdef0123456789abcdef0123456789", "maintain");
-
-// Roles: "view" | "manager" | "maintain" | "admin"
-// "owner" cannot be assigned — ownership transfer is not exposed.
-
-// ─── Change a member's role ────────────────────────────────────────────────
-await workspace.members.update("1234567890", "admin");
-
-// ─── Remove a member ───────────────────────────────────────────────────────
-// Owner only.
-await workspace.members.remove("1234567890");
-
-// ─── Share / unshare applications ──────────────────────────────────────────
-await workspace.applications.add("abc123def456abc123def456");
-await workspace.applications.remove("abc123def456abc123def456");
-
-// ─── Leave (as a member) or delete (as the owner) ──────────────────────────
-await workspace.leave();
-await workspace.delete();

@@ -5,65 +5,48 @@ on:
     branches:
       - main
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+# Not `${{ github.workflow }}-${{ github.ref }}`: the reused ci.yml evaluates its own group
+# with the caller's name, and the same group would deadlock
+concurrency: publish-${{ github.ref }}
 
 jobs:
-  ci:
-    name: CI
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-        with:
-          run_install: false
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Lint
-        run: pnpm lint:ci
-
-      - name: Type check
-        run: pnpm check-types
-
-      - name: Build
-        run: pnpm build
-
-      - name: Run tests
-        run: pnpm test
-        env:
-          SQUARE_API_KEY: ${{ secrets.SQUARE_API_KEY }}
+  # The same gates as pull requests, so nothing unverified is published
+  checks:
+    uses: ./.github/workflows/ci.yml
 
   release:
     name: Release
+    needs: checks
     runs-on: ubuntu-latest
-    needs: ci
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
-      - uses: actions/setup-node@v6
+
+      - name: Setup node
+        uses: actions/setup-node@v7
         with:
+          # npm 11 (Node 24) for trusted publishing/provenance; ci.yml tests the Node 22 floor
           node-version: 24
-          registry-url: https://registry.npmjs.org/
-          cache: pnpm
+          cache: 'pnpm'
+          # changesets/action v2 no longer writes .npmrc from NPM_TOKEN
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Create PR or publish to npm
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          publish: pnpm run release
+          publish-script: pnpm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 permissions:
   id-token: write

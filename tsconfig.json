@@ -1,16 +1,14 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "skipLibCheck": true,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "exclude": ["./test/", "./lib/", "./examples/", "tsdown.config.ts"]
+	// TS 7 defaults cover the rest (strict included); tsdown owns the build output
+	"compilerOptions": {
+		"lib": ["DOM", "ESNext"],
+		"types": ["node"],
+		"module": "nodenext",
+		"rewriteRelativeImportExtensions": true,
+		"erasableSyntaxOnly": true,
+		"skipLibCheck": true,
+		// Examples import the package name, like a user would
+		"paths": { "@squarecloud/api": ["./src/index.ts"] }
+	},
+	"include": ["src", "test", "examples"]
 }
