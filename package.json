@@ -38,10 +38,10 @@
 		"node": ">=22.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.14",
+		"@biomejs/biome": "^2.6.7",
 		"@changesets/cli": "^3.0.3",
-		"@types/node": "^26.6.3",
-		"tsdown": "^0.23.0",
+		"@types/node": "^26.6.6",
+		"tsdown": "^0.23.7",
 		"typescript": "^7.0.2"
 	},
 	"keywords": [
