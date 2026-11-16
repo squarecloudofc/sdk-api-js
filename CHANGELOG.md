@@ -1,5 +1,39 @@
 # @squarecloud/api
 
+## 6.1.0
+
+### Minor Changes
+
+- Adds restore progress and metrics ranges, and follows the latest Square Cloud API. The SDK now covers all 69 operations of the Square Cloud API.
+  
+  **Added**
+  
+  - `apps.snapshots.restoreState(appId)` and `databases.snapshots.restoreState(databaseId)` return a `SnapshotRestoreState`. Its `state` is `queued` or `running` while a restore runs, then `success` or `error` for 1 hour after it ends, and `none` when there was no recent restore. It also carries `step`, `code`, `started_at` and `finished_at`. You can call it up to 30 times a minute.
+  - `apps.metrics(appId, { range })` and `databases.metrics(databaseId, { range })` take `range: "24h" | "7d"`. `"7d"` returns hourly points with `cpu_max` and `ram_max` on Pro and Enterprise plans for 512 MB or more, and the 24-hour answer otherwise.
+  - New types `SnapshotRestored`, `SnapshotRestoreState`, `ServiceIncident` and `ServiceComponent`.
+  - New fields `ServiceStatus.incidents` and `components`, `MetricPoint.disk`, `storage`, `cpu_max` and `ram_max`, `RuntimeStats.restoring`, `DNSRecord.errors` and `fallback`, `bytes_in` on the analytics visits buckets, and `ChatRequest.max_completion_tokens`.
+  - `ServiceStatus.status` can be `"maintenance"`, which widens the union.
+  - `ErrorCode` gains `AI_WEEKLY_LIMIT_REACHED`, `ENV_BUSY`, `GIT_BRANCH_DELETED`, `GIT_REF_NOT_SUPPORTED`, `RESTORE_INTERRUPTED`, `SNAPSHOT_CORRUPT`, `SNAPSHOT_IN_PROGRESS`, `SNAPSHOT_RESTORE_PROCESSING`, `SNAPSHOTS_UNAVAILABLE`, `WRITE_FAILED` and `WRONG_HOST`.
+  
+  **Changed**
+  
+  - `snapshots.restore()` resolves to `{ pending }` instead of `void`. `pending` is `true` when the restore takes longer than about 90 seconds and keeps running. Follow it with `restoreState()`, and do not call `restore()` again.
+  - `RESTORE_IN_PROGRESS` is now 409 instead of 403 on application and database delete and on database start and stop. It is newly documented, as 409, on application start, stop and restart and on snapshot create. Code that matched 403 must match 409.
+  - Snapshot listings throw 503 `SNAPSHOTS_UNAVAILABLE`, which the SDK does not retry, instead of returning an empty list.
+  - Snapshot links are valid for 1 hour.
+  - `METRICS_NOT_SUPPORTED` is deprecated, because applications under 512 MB now have metrics. It stays in `ErrorCode`.
+  - The errors the SDK raises itself, `INVALID_ID`, `FILE_TOO_LARGE`, `TIMEOUT` and the `TypeError` for an empty API key, now say what happened and how to fix it. Match them by `code`, not by message text.
+  - The doc comments, the README, the migration guide and the examples were rewritten in full sentences, with parameters, results, actionable errors and limits on every method.
+  
+  **Fixed**
+  
+  - A restore still running after the 202 was reported as done.
+  - `snapshots.create()` returned `{ pending: true }` for an API key without the `snapshots:read` scope. It now returns `{ pending: false }` with `url` and `key` as `""`.
+  - The docs listed one restore failure, 404 `SNAPSHOT_RESTORE_FAILED`, and now list all of them.
+  - The snapshot link was documented as valid for 30 days.
+  - The README and the migration guide misdescribed 403 `GITHUB_NOT_CONNECTED` and a `null` `Plan.duration`.
+  - `examples/apps.ts` showed the old status format.
+
 ## 6.0.0
 
 ### Major Changes

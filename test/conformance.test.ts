@@ -27,9 +27,13 @@ import type {
 	NetworkLog,
 	NetworkPerformance,
 	RuntimeStats,
+	ServiceComponent,
+	ServiceIncident,
 	ServiceStatus,
 	Snapshot,
 	SnapshotCreated,
+	SnapshotRestored,
+	SnapshotRestoreState,
 	SquareCloudAPI,
 	StatusListItem,
 	Workspace,
@@ -66,6 +70,10 @@ const end = "2026-09-02T00:00:00Z";
 const none = () => undefined;
 const orNull = (body: Json) =>
 	Object.keys(body.response).length ? body.response : null;
+/** 202: the restore outlived the response deadline and keeps running. */
+const restored = (_: Json, status: number): SnapshotRestored => ({
+	pending: status === 202,
+});
 
 type Case = [
 	op: string,
@@ -91,6 +99,7 @@ const cases: Record<string, Case> = {
 			api.ai.chat({
 				model: "x",
 				messages: [{ role: "user", content: "hi" }],
+				max_completion_tokens: 5,
 				max_tokens: 5,
 			}),
 		(body) => body,
@@ -127,7 +136,7 @@ const cases: Record<string, Case> = {
 	],
 	"apps.metrics": [
 		"GET /v2/apps/{appId}/metrics",
-		(api) => api.apps.metrics(A),
+		(api) => api.apps.metrics(A, { range: "7d" }),
 	],
 	"apps.realtime": [
 		"GET /v2/apps/{appId}/realtime",
@@ -217,12 +226,18 @@ const cases: Record<string, Case> = {
 		"POST /v2/apps/{appId}/snapshots",
 		(api) => api.apps.snapshots.create(A),
 		(body, status) =>
-			status === 202 ? { pending: true } : { pending: false, ...body.response },
+			status === 202
+				? { pending: true }
+				: { pending: false, url: "", key: "", ...body.response },
 	],
 	"apps.snapshots.restore": [
 		"POST /v2/apps/{appId}/snapshots/restore",
 		(api) => api.apps.snapshots.restore(A, "uuid_js_manual", "v".repeat(32)),
-		none,
+		restored,
+	],
+	"apps.snapshots.restoreState": [
+		"GET /v2/apps/{appId}/snapshots/restore",
+		(api) => api.apps.snapshots.restoreState(A),
 	],
 	"apps.network.analytics": [
 		"GET /v2/apps/{appId}/network/analytics",
@@ -303,7 +318,7 @@ const cases: Record<string, Case> = {
 	],
 	"databases.metrics": [
 		"GET /v2/databases/{databaseId}/metrics",
-		(api) => api.databases.metrics(A),
+		(api) => api.databases.metrics(A, { range: "7d" }),
 	],
 	"databases.statusAll": [
 		"GET /v2/databases/status",
@@ -327,12 +342,18 @@ const cases: Record<string, Case> = {
 		"POST /v2/databases/{databaseId}/snapshots",
 		(api) => api.databases.snapshots.create(A),
 		(body, status) =>
-			status === 202 ? { pending: true } : { pending: false, ...body.response },
+			status === 202
+				? { pending: true }
+				: { pending: false, url: "", key: "", ...body.response },
 	],
 	"databases.snapshots.restore": [
 		"POST /v2/databases/{databaseId}/snapshots/restore",
 		(api) => api.databases.snapshots.restore(A, "uuid", "v".repeat(32)),
-		none,
+		restored,
+	],
+	"databases.snapshots.restoreState": [
+		"GET /v2/databases/{databaseId}/snapshots/restore",
+		(api) => api.databases.snapshots.restoreState(A),
 	],
 	"workspaces.create": [
 		"POST /v2/workspaces",
@@ -430,6 +451,7 @@ const bodies: Record<string, unknown> = {
 	"ai.chat": {
 		model: "x",
 		messages: [{ role: "user", content: "hi" }],
+		max_completion_tokens: 5,
 		max_tokens: 5,
 	},
 };
@@ -439,6 +461,7 @@ const queries: Record<string, Record<string, string>> = {
 	"account.snapshots": { scope: "databases" },
 	"apps.statusAll": { workspaceId: W },
 	"apps.status": { rawData: "true" },
+	"apps.metrics": { range: "7d" },
 	"apps.commit": { path: "/src" },
 	"apps.files.list": { path: "/" },
 	"apps.files.read": { path: "/index.js", encoding: "base64" },
@@ -457,6 +480,7 @@ const queries: Record<string, Record<string, string>> = {
 	"apps.network.logs": { start: "2026-09-01T00:00:00.000Z", end },
 	"apps.network.performance": { start: "2026-09-01T00:00:00.000Z", end },
 	"databases.status": { rawData: "true" },
+	"databases.metrics": { range: "7d" },
 };
 
 /** Whether `value` fits `schema`: type, enum, bounds, items, properties, oneOf (no patterns). */
@@ -623,8 +647,8 @@ test("every public operation matches the pinned spec and decodes its 2xx example
 	const relevant = operations
 		.map((o) => o.key)
 		.filter((key) => !NOT_FOR_SDKS.includes(key));
-	assert.equal(spec.info.version, "13.76.1");
-	assert.equal(relevant.length, 67);
+	assert.equal(spec.info.version, "14.54.0");
+	assert.equal(relevant.length, 69);
 	assert.deepEqual([...covered].sort(), relevant.sort());
 });
 
@@ -656,7 +680,19 @@ test("every documented 4xx/5xx example rejects with its (status, code)", async (
 			});
 		}
 	}
-	assert.equal(count, 686, "documented error examples");
+	assert.equal(count, 732, "documented error examples");
+});
+
+test("snapshot create: a 200 with an empty response is not pending", async () => {
+	// A key without `snapshots:read` gets no `url`: the snapshot is done, not pending
+	const done = { pending: false, url: "", key: "" };
+	for (const response of [{}, undefined]) {
+		const { api } = mock(
+			() => new Response(JSON.stringify({ status: "success", response })),
+		);
+		assert.deepEqual(await api.apps.snapshots.create(A), done);
+		assert.deepEqual(await api.databases.snapshots.create(A), done);
+	}
 });
 
 test("ErrorCode names every code of the spec's ErrorCode enum", () => {
@@ -765,6 +801,14 @@ matches<MetricPoint[], Full<Res<"/v2/apps/{appId}/metrics", "get">>>(true);
 matches<MetricPoint[], Full<Res<"/v2/databases/{databaseId}/metrics", "get">>>(
 	true,
 );
+matches<
+	ServiceIncident[],
+	NonNullable<Body<"/v2/service/status", "get">["incidents"]>
+>(true);
+matches<
+	ServiceComponent[],
+	NonNullable<Body<"/v2/service/status", "get">["components"]>
+>(true);
 matches<AppDomain[], Res<"/v2/apps/domains", "get">>(true);
 matches<LoadBalancers, Res<"/v2/apps/load-balancers", "get">>(true);
 matches<
@@ -792,7 +836,17 @@ matches<
 	Omit<Extract<SnapshotCreated, { pending: false }>, "pending">,
 	Full<Res<"/v2/apps/{appId}/snapshots", "post">>
 >(true);
+matches<SnapshotRestoreState, Res<"/v2/apps/{appId}/snapshots/restore", "get">>(
+	true,
+);
+matches<
+	SnapshotRestoreState,
+	Res<"/v2/databases/{databaseId}/snapshots/restore", "get">
+>(true);
 matches<NetworkAnalytics, S["NetworkAnalytics"]>(true);
+matches<NetworkAnalytics["visits"][number], S["NetworkAnalyticsTimeBucket"]>(
+	true,
+);
 matches<AnalyticsBucket, S["NetworkAnalyticsTotalBucket"]>(true);
 matches<NetworkErrors, S["NetworkErrors"]>(true);
 matches<NetworkLog[], Res<"/v2/apps/{appId}/network/logs", "get">>(true);
@@ -823,6 +877,11 @@ type NoTools<T> = Omit<T, "messages" | "tools">;
 fits<NoTools<Req<"/v2/ai/chat/completions", "post">>>(
 	spec_<NoTools<ChatRequest>>(),
 );
+// ...and drops no request key of the spec (streaming is not supported)
+matches<
+	NoTools<ChatRequest>,
+	Omit<NoTools<Req<"/v2/ai/chat/completions", "post">>, "stream">
+>(true);
 fits<Req<"/v2/ai/chat/completions", "post">["messages"][number]["role"]>(
 	spec_<ChatRequest["messages"][number]["role"]>(),
 );

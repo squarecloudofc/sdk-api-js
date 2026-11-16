@@ -1,4 +1,4 @@
-// Live suite (SDK-STANDARD 10.1): all 67 operations against the real API.
+// Live suite (SDK-STANDARD 10.1): all 69 operations against the real API.
 //
 //   SQUARECLOUD_API_KEY=... pnpm test:live
 //
@@ -19,6 +19,8 @@ import { crc32 } from "node:zlib";
 import {
 	type Snapshot,
 	type SnapshotCreated,
+	type SnapshotRestored,
+	type SnapshotRestoreState,
 	SquareCloudAPI,
 	SquareCloudAPIError,
 } from "../src/index.ts";
@@ -126,7 +128,7 @@ async function calm<T>(call: () => Promise<T>): Promise<T> {
 }
 
 /**
- * Deletes and cleanups: also waits out 403 RESTORE_IN_PROGRESS every 10 s for up
+ * Deletes and cleanups: also waits out 409 RESTORE_IN_PROGRESS every 10 s for up
  * to 130 s (the API refuses to delete within 120 s of a restore).
  */
 async function settled<T>(call: () => Promise<T>): Promise<T> {
@@ -135,11 +137,34 @@ async function settled<T>(call: () => Promise<T>): Promise<T> {
 		try {
 			return await calm(call);
 		} catch (error) {
-			if (!isError(error, 403, "RESTORE_IN_PROGRESS") || Date.now() >= deadline)
+			if (!isError(error, 409, "RESTORE_IN_PROGRESS") || Date.now() >= deadline)
 				throw error;
 			await wait(10_000);
 		}
 	}
+}
+
+const STATES = ["none", "queued", "running", "success", "error"];
+
+/**
+ * After a restore: a pending one is polled every 10 s (at most 10 minutes) until it
+ * ends; otherwise one call must report a known state.
+ */
+async function followed(
+	t: Log,
+	op: string,
+	restored: SnapshotRestored | undefined,
+	call: () => Promise<SnapshotRestoreState>,
+) {
+	const deadline = Date.now() + 600_000;
+	let { state, code } = await calm(call);
+	while (restored?.pending && !["success", "error"].includes(state)) {
+		assert.ok(Date.now() < deadline, `restore still ${state} after 10 minutes`);
+		await wait(10_000);
+		({ state, code } = await calm(call));
+	}
+	assert.ok(STATES.includes(state), `unknown restore state ${state}`);
+	t.diagnostic(`${op}: ${state}${code ? ` ${code}` : ""}`);
 }
 
 /** Success, or `undefined` after a documented plan/quota/scope error (`skip <op>: <code>`). */
@@ -236,7 +261,7 @@ function zip(files: Record<string, string>) {
 	return new Uint8Array(Buffer.concat([...local, directory, end]));
 }
 
-test("live: all 67 operations", {
+test("live: all 69 operations", {
 	skip: !KEY && "SQUARECLOUD_API_KEY is not set",
 }, async (t) => {
 	const api = new SquareCloudAPI(KEY as string, { fetch: paced });
@@ -391,6 +416,9 @@ test("live: all 67 operations", {
 			const logs = await okOr(() => api.apps.logs(appId), "LOGS_UNAVAILABLE");
 			if (logs !== undefined) assert.equal(typeof logs, "string");
 			assert.ok(Array.isArray(await calm(() => api.apps.metrics(appId))));
+			// Hourly on Pro and Enterprise; other plans silently get the last 24 h
+			const week = await calm(() => api.apps.metrics(appId, { range: "7d" }));
+			assert.ok(Array.isArray(week));
 
 			await calm(() => api.apps.stop(appId));
 			await calm(() => api.apps.start(appId));
@@ -635,10 +663,13 @@ test("live: all 67 operations", {
 			const created = await gated(t, "apps.snapshots.create", () =>
 				api.apps.snapshots.create(appId),
 			);
-			if (created?.pending === false) await downloaded(created.url);
+			// `url` is "" for a key without snapshots:read
+			if (created?.pending === false && created.url)
+				await downloaded(created.url);
 			const latest = await listed(created, () =>
 				api.apps.snapshots.list(appId),
 			);
+			let restored: SnapshotRestored | undefined;
 			if (latest) {
 				const all = await gated(t, "account.snapshots", () =>
 					api.account.snapshots({ scope: "applications" }),
@@ -648,14 +679,18 @@ test("live: all 67 operations", {
 						all.some((s) => s.version_id === latest.version_id),
 						"account.snapshots lists it",
 					);
-				await calm(() =>
+				restored = await calm(() =>
 					api.apps.snapshots.restore(appId, latest.name, latest.version_id),
 				);
+				t.diagnostic(`apps.snapshots.restore: pending ${restored.pending}`);
 			} else {
 				await rejects4xx(() =>
 					api.apps.snapshots.restore(appId, "sdk-live-missing", "0"),
 				);
 			}
+			await followed(t, "apps.snapshots.restoreState", restored, () =>
+				api.apps.snapshots.restoreState(appId),
+			);
 		});
 
 		let workspaceId = "";
@@ -751,6 +786,10 @@ test("live: all 67 operations", {
 				const raw = await calm(() => api.databases.status(id, { raw: true }));
 				assert.equal(typeof raw.cpu, "number");
 				assert.ok(Array.isArray(await calm(() => api.databases.metrics(id))));
+				const week = await calm(() =>
+					api.databases.metrics(id, { range: "7d" }),
+				);
+				assert.ok(Array.isArray(week));
 				await calm(() => api.databases.update(id, { name: `${NAME}-2` }));
 				assert.equal(
 					(await calm(() => api.databases.get(id))).name,
@@ -777,6 +816,7 @@ test("live: all 67 operations", {
 				await rejects4xx(() => api.databases.status(id));
 				await rejects4xx(() => api.databases.status(id, { raw: true }));
 				await rejects4xx(() => api.databases.metrics(id));
+				await rejects4xx(() => api.databases.metrics(id, { range: "7d" }));
 				await rejects4xx(() => api.databases.update(id, { name: `${NAME}-2` }));
 				await rejects4xx(() => api.databases.certificate(id));
 				await rejects4xx(() => api.databases.resetCredentials(id, "password"));
@@ -789,7 +829,11 @@ test("live: all 67 operations", {
 					await calm(() => api.databases.start(id));
 					t.diagnostic("databases.start again: ok");
 				} catch (error) {
-					const codes = ["CONTAINER_ALREADY_STARTED", "ACTION_FAILED"];
+					const codes = [
+						"CONTAINER_ALREADY_STARTED",
+						"ACTION_FAILED",
+						"RESTORE_IN_PROGRESS",
+					];
 					if (!codes.some((code) => isError(error, 409, code))) throw error;
 					t.diagnostic(
 						`databases.start again: 409 ${(error as SquareCloudAPIError).code}`,
@@ -802,21 +846,30 @@ test("live: all 67 operations", {
 				const snapshot = await gated(t, "databases.snapshots.create", () =>
 					api.databases.snapshots.create(id),
 				);
-				if (snapshot?.pending === false) await downloaded(snapshot.url);
+				if (snapshot?.pending === false && snapshot.url)
+					await downloaded(snapshot.url);
 				latest = await listed(snapshot, () => api.databases.snapshots.list(id));
 			} else {
 				await rejects4xx(() => api.databases.snapshots.create(id));
 				await rejects4xx(() => api.databases.snapshots.list(id));
 			}
+			let restored: SnapshotRestored | undefined;
 			if (latest) {
-				await calm(() =>
+				restored = await calm(() =>
 					api.databases.snapshots.restore(id, latest.name, latest.version_id),
+				);
+				t.diagnostic(
+					`databases.snapshots.restore: pending ${restored.pending}`,
 				);
 			} else {
 				await rejects4xx(() =>
 					api.databases.snapshots.restore(id, "sdk-live-missing", "0"),
 				);
 			}
+			const state = () => api.databases.snapshots.restoreState(id);
+			await (created
+				? followed(t, "databases.snapshots.restoreState", restored, state)
+				: rejects4xx(state));
 			// Right after a restore: settled() waits out RESTORE_IN_PROGRESS (up to 130 s)
 			const drop = () => api.databases.delete(id);
 			await (created ? settled(drop) : rejects4xx(drop));
@@ -859,7 +912,7 @@ test("live: all 67 operations", {
 		);
 	assert.deepEqual(leaks, [], "every resource was deleted");
 	// Every operation was reached, by success or by an asserted error
-	assert.equal(operations.length, 67);
+	assert.equal(operations.length, 69);
 	if (appId)
 		assert.deepEqual(
 			operations.filter(({ key }) => !touched.has(key)).map(({ key }) => key),

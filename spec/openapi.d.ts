@@ -17,7 +17,7 @@ export interface paths {
          * Create a chat completion
          * @description OpenAI-compatible chat completions endpoint. Point any OpenAI SDK at baseURL `https://api.squarecloud.app/v2/ai` using your account API key, and call `chat.completions.create`.
          *
-         *     Available on Standard, Pro and Enterprise plans. Each plan bounds requests per day, concurrency, pacing between requests and context/output size (Standard: 1,000 requests/day, 16k in / 4k out, 1 concurrent, 5s between requests. Pro: 5,000 requests/day, 24k / 6k, 1 concurrent, 2s. Enterprise: unlimited requests, 32k / 8k, 2 concurrent, no delay). Token usage is billed against your plan's daily AI budget, and each plan also has a daily fair-use allowance on the gateway sized for moderate use (Enterprise gets 5x the base allowance; both reset 00:00 UTC).
+         *     Available on Standard, Pro and Enterprise plans. Each plan bounds requests per day, concurrency, pacing between requests and context/output size (Standard: 2.5M tokens/day and 10M/week, 1,000 requests/day, 16k in / 4k out, 1 concurrent, 5s between requests. Pro: 5M tokens/day and 20M/week, 5,000 requests/day, 24k / 6k, 1 concurrent, 2s. Enterprise: 10M to 20M tokens/day by plan size and 4x that per week, unlimited requests, 32k / 8k, 2 concurrent, no delay). These gateway token limits are separate from the dashboard assistant. Each plan also has a daily fair-use allowance on the gateway sized for moderate use (Pro 2x and Enterprise 5x the base allowance). Daily limits reset at 00:00 UTC, weekly ones on Monday at 00:00 UTC.
          *
          *     The model has a built-in `web_search` it can trigger on its own for current or external information; searches run server-side and only the final answer is returned. You may also declare your own `tools` (OpenAI function-calling format): the model's calls to them come back as a standard `finish_reason: "tool_calls"` response, and you send the results back as `role: "tool"` messages.
          *
@@ -161,7 +161,7 @@ export interface paths {
          *
          *     File names that look like path traversal, control characters, or `.`/`..` are rejected. Content-Type is derived server-side from the extension.
          *
-         *     Requires the workspace Maintainer or Administrator role (or ownership) when called against a workspace-shared application. Rate limits: 1 commit per 2s per user (global) and 1 commit per 5s per (user, application).
+         *     Requires the workspace Maintainer or Administrator role (or ownership) when called against a workspace-shared application. A Maintainer cannot replace the application's restricted files (its `.env` files and the configuration file): sent on its own, such a file is refused with 403 `BLOCKED_PATH`; inside a zip, they are left out and the rest is applied. Rate limits: 1 commit per 2s per user (global) and 1 commit per 5s per (user, application).
          */
         post: operations["postAppCommitByAppId"];
         delete?: never;
@@ -251,6 +251,8 @@ export interface paths {
          * Get current Git deploy configuration
          * @description Returns the GitHub App repository linkage and the deploy webhook URL configured for the application. The response is cached for 5 minutes per (owner, application).
          *
+         *     The webhook URL is a deploy credential: it is returned whole only to a caller that may configure it: a session or a key with `apps:deploy` (or full access) and, on a workspace-shared application, the owner or a workspace Administrator. Anyone else gets it masked (`.../webhook/********`), which still tells that a webhook is configured.
+         *
          *     Requires the workspace Manager or Administrator role (or ownership) when called against a workspace-shared application.
          */
         get: operations["getAppDeploymentsCurrentByAppId"];
@@ -282,12 +284,16 @@ export interface paths {
          *
          *     Limits: up to 256 variables, each key max 1024 chars, each value max 4096 chars.
          *
+         *     Names are letters, digits, underscores, dots and hyphens, not starting with a digit. A value with spaces or special characters (such as `&` or `;`) is stored single-quoted, as the dashboard does, because Square Cloud injects the variables every time the application starts; a value already quoted is kept as sent. A reference to another variable (`$HOST`, `${HOST}`, alone or inside double quotes) keeps working; command substitution (`$(...)`, backticks) is stored as plain text. The 4096-character limit counts the value, not the quotes added around it.
+         *
          *     Requires the workspace Administrator role (or ownership) when called against a workspace-shared application.
          */
         put: operations["putAppEnvsByAppId"];
         /**
          * Merge new environment variables into the existing set
          * @description Adds or updates environment variables. Existing variables not present in the request body are preserved. Up to 256 variables per application; each key max 1024 chars; each value max 4096 chars.
+         *
+         *     Names are letters, digits, underscores, dots and hyphens, not starting with a digit. A value with spaces or special characters (such as `&` or `;`) is stored single-quoted, as the dashboard does, because Square Cloud injects the variables every time the application starts; a value already quoted is kept as sent. A reference to another variable (`$HOST`, `${HOST}`, alone or inside double quotes) keeps working; command substitution (`$(...)`, backticks) is stored as plain text. The 4096-character limit counts the value, not the quotes added around it.
          *
          *     Requires the workspace Administrator role (or ownership) when called against a workspace-shared application.
          */
@@ -400,10 +406,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get the last 24h of application metrics
-         * @description Returns up to 288 points (24h sampled every 5 minutes) of CPU, RAM and network usage, newest first. Cached for 2.5 minutes per (owner, application).
+         * Get the application metrics history
+         * @description Returns up to 288 points (24h sampled every 5 minutes) of CPU, RAM, network, disk I/O and storage usage, newest first; applications below 512 MB are sampled every 10 minutes (up to 144 points). On Pro and Enterprise plans, `range=7d` returns up to 168 hourly points (7 days) with the hour's average (`cpu`, `ram`) and peak (`cpu_max`, `ram_max`) for applications of 512 MB or more; other plans and smaller applications get the 24h answer instead. Cached for 2.5 minutes per (owner, application), 10 minutes for 7d.
          *
-         *     Available only for applications with at least 512 MB of RAM. Rate limited to 10 requests per 5s per user, with a 60s block on the cap.
+         *     Each point: `cpu` (% of the plan's CPU), `ram` (MB), `net` = [bytes received, bytes sent] and `disk` = [bytes read, bytes written], both cumulative since the container started (a value lower than the previous point means it restarted; `disk` is null on a point without a reading), and `storage` = bytes the container's disk holds (null without a reading).
+         *
+         *     Rate limited to 10 requests per 5s per user, with a 60s block on the cap.
          */
         get: operations["getAppMetricsByAppId"];
         put?: never;
@@ -473,7 +481,7 @@ export interface paths {
         };
         /**
          * Get the DNS records required to attach the custom domain
-         * @description Returns the DNS records that the user must configure on their domain registrar so the edge provider can validate ownership and issue SSL. Cached for 60s per (owner, application).
+         * @description Returns the DNS records that the user must configure on their domain registrar so the edge provider can validate ownership and issue SSL. Cached per (owner, application): 150s while a record is pending, 10 minutes once every record is active.
          *
          *     Requires a custom domain to be attached. Requires the workspace Maintainer or Administrator role (or ownership) when called against a workspace-shared application. Rate limited to 3 calls per 10s per user.
          */
@@ -597,7 +605,7 @@ export interface paths {
          *
          *     - `event: system` carries protocol-level signals; the `data:` line is a single uppercase code: `REALTIME_CONNECTING | <sseId>` on connect, then any of `REALTIME_TIMEOUT`, `REALTIME_DISCONNECTED`, `REALTIME_RECONNECT`, `REALTIME_ERROR`.
          *     - `event: logs` is a single log line whose FIRST character is a stream-id byte: `\u0001` (stdout) or `\u0002` (stderr). Read `data.charCodeAt(0)` (1 = stdout, 2 = stderr), then `data.slice(1)` for the line text. A line without that prefix byte is stdout.
-         *     - `event: status` carries live container metrics as a JSON string, about one frame per second. The FIRST frame of each (re)connection is COMPLETE: `{ cpu, cpuLimit, ram: [usedMB, limitMB], status, netIO: { i, o, new: { i, o } }, bIO: { i, o }, uptime }` (`cpuLimit` is the number of CPU cores allocated; `uptime` is StartedAt as epoch ms; `netIO.new` is bytes per second). Every later frame is LEAN, carrying only the live fields `{ cpu, ram, netIO, bIO }`: the run-constant fields (`cpuLimit`, `status`, `uptime`) are omitted, so MERGE each lean frame onto the last full frame and keep the previous values for the missing fields. While this stream is open, prefer it over polling `GET /v2/apps/:appId/status`, which can be up to about a minute stale for an application with an open realtime stream.
+         *     - `event: status` carries live container metrics as a JSON string, about one frame per second. The FIRST frame of each (re)connection is COMPLETE: `{ cpu, cpuLimit, ram: [usedMB, limitMB], status, netIO: { i, o, new: { i, o } }, bIO: { i, o }, uptime }` (`cpuLimit` is the number of CPU cores allocated; `uptime` is when the application started, as epoch ms; `netIO.new` is bytes per second). Every later frame is LEAN, carrying only the live fields `{ cpu, ram, netIO, bIO }`: the run-constant fields (`cpuLimit`, `status`, `uptime`) are omitted, so MERGE each lean frame onto the last full frame and keep the previous values for the missing fields. While this stream is open, prefer it over polling `GET /v2/apps/:appId/status`, which can be up to about a minute stale for an application with an open realtime stream.
          *     - `event: error` carries an error code such as `CONTAINER_NOT_FOUND`.
          *
          *     Shapes vary by event, so parse structured payloads (the `status` JSON and most `system`/app messages) defensively and merge successive `status` frames.
@@ -650,7 +658,7 @@ export interface paths {
         put?: never;
         /**
          * Create a new snapshot of an application
-         * @description Captures a snapshot of the application and returns a signed download URL valid for 30 days.
+         * @description Captures a snapshot of the application and returns a signed download URL valid for 1 hour (to a caller that can read snapshots: a key without `snapshots:read` gets an empty `response`).
          *
          *     The snapshot has a soft deadline: if it finishes within ~90s the response carries the signed URL. Otherwise the route answers `202 SNAPSHOT_PROCESSING` while it keeps generating in the background — expected for large apps, not a failure. Poll the snapshot listing (`GET /v2/apps/:appId/snapshots`) ~2min later instead of re-posting.
          *
@@ -672,13 +680,21 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get the state of an application snapshot restore
+         * @description Progress and outcome of the application's last snapshot restore, as reported by its node: `queued`/`running` (with the current `step`) while it runs, then `success` or `error` (with `code`) for an hour after it ends. `none` when there is no recent restore.
+         *
+         *     Rate limited to 30 requests per 60s per user.
+         *
+         *     Requires the workspace Administrator role (or ownership) when called against a workspace-shared application.
+         */
+        get: operations["getAppSnapshotsRestoreByAppId"];
         put?: never;
         /**
          * Restore an application snapshot
          * @description Restores the application to a previous snapshot identified by `snapshotId` (the `name` from the snapshot listing: the app id, optionally suffixed with `_<runtime>` and `_<origin>`) and `versionId` (snapshot version identifier from the snapshot listing).
          *
-         *     Rate limits: 1 restore per 60s per user (`snapshot:restore`) and 1 restore per 120s per application (`snapshot:restore:<appId>`).
+         *     Rate limits: 1 restore per 60s per user and 1 restore per 120s per application.
          *
          *     Requires the workspace Administrator role (or ownership) when called against a workspace-shared application.
          */
@@ -883,8 +899,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get the last 24h of database metrics
-         * @description Returns up to 288 points (24h sampled every 5 minutes) of CPU, RAM and network usage for the database, newest first. Cached for 2.5 minutes per (user, database).
+         * Get the database metrics history
+         * @description Returns up to 288 points (24h sampled every 5 minutes) of CPU, RAM, network, disk I/O and storage usage for the database, newest first. On Pro and Enterprise plans, `range=7d` returns up to 168 hourly points (7 days) with the hour's average (`cpu`, `ram`) and peak (`cpu_max`, `ram_max`); other plans get the 24h answer instead. Cached for 2.5 minutes per (user, database), 10 minutes for 7d.
+         *
+         *     Each point: `cpu` (% of the plan's CPU), `ram` (MB), `net` = [bytes received, bytes sent] and `disk` = [bytes read, bytes written], both cumulative since the container started (a value lower than the previous point means it restarted; `disk` is null on a point without a reading), and `storage` = bytes the container's disk holds (null without a reading).
          *
          *     Rate limited to 10 requests per 5s per user, with a 60s block on the cap.
          */
@@ -912,7 +930,7 @@ export interface paths {
         put?: never;
         /**
          * Create a new snapshot of a database
-         * @description Captures a snapshot of the database and returns a signed download URL valid for 30 days.
+         * @description Captures a snapshot of the database and returns a signed download URL valid for 1 hour (to a caller that can read snapshots: a key without `snapshots:read` gets an empty `response`).
          *
          *     The snapshot has a soft deadline: if it finishes within ~90s the response carries the signed URL. Otherwise the route answers `202 SNAPSHOT_PROCESSING` while it keeps generating in the background — expected for large databases, not a failure. Poll the snapshot listing (`GET /v2/databases/:databaseId/snapshots`) ~2min later instead of re-posting.
          *
@@ -932,13 +950,19 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get the state of a database snapshot restore
+         * @description Progress and outcome of the database's last snapshot restore, as reported by its node: `queued`/`running` (with the current `step`) while it runs, then `success` or `error` (with `code`) for an hour after it ends. `none` when there is no recent restore.
+         *
+         *     Rate limited to 30 requests per 60s per user.
+         */
+        get: operations["getDatabaseSnapshotsRestoreByDatabaseId"];
         put?: never;
         /**
          * Restore a database from a snapshot
          * @description Restores the database from a previous snapshot identified by `snapshotId` and `versionId`. The snapshot's database type must match the target database type.
          *
-         *     Rate limits: 1 restore per 60s per user (`snapshot:restore`) and 1 restore per 120s per database (`snapshot:restore:<databaseId>`).
+         *     Rate limits: 1 restore per 60s per user and 1 restore per 120s per database.
          */
         post: operations["postDatabaseSnapshotsRestoreByDatabaseId"];
         delete?: never;
@@ -1020,9 +1044,9 @@ export interface paths {
          * Receive a Git provider push webhook
          * @description Public endpoint that receives a `push` event from a Git provider (typically GitHub). The webhook token in the URL path (`:webhook`) authenticates the call; no Authorization header is sent.
          *
-         *     Accepts `application/json` only. The optional `branch` query parameter filters which branch triggers a deploy — if present and `body.ref` does not match `refs/heads/<branch>`, the request is accepted with 202 but no deploy is queued. The optional `restart` query parameter (`?restart=false`) skips the post-deploy application restart.
+         *     Accepts `application/json` only. The optional `branch` query parameter filters which branch triggers a deploy — if present and `body.ref` does not match `refs/heads/<branch>`, the request is accepted with 202 but no deploy is queued. Pushes of tags (or any ref outside `refs/heads/`) and branch deletions are also answered with 202 and never deployed, before the rate limit, so they cannot hold back a deploy that arrives right after them. The optional `restart` query parameter (`?restart=false`) skips the post-deploy application restart.
          *
-         *     Responses are `text/plain` and always say whether a deploy was queued; only the 429 of the rate limit is the JSON error body. A 200 is sent only after the deploy job is stored: on a temporary failure the answer is 503 and the push must be redelivered. Rate limited to 1 push per 15 seconds per webhook token.
+         *     Responses are `text/plain` and always say whether a deploy was queued; only the 429 of the 15-second deploy limit is the JSON error body. A 200 is sent only after the deploy job is stored: on a temporary failure the answer is 503 and the push must be redelivered. Rate limited to 1 deploy per 15 seconds per webhook token, and to 10 deliveries over 1 MB (or without Content-Length) a minute per webhook token whatever their outcome (a text 429 `RATE_LIMITED`, before the payload is read).
          */
         post: operations["postGitWebhookByWebhook"];
         delete?: never;
@@ -1040,7 +1064,7 @@ export interface paths {
         };
         /**
          * Get the OpenAPI 3.1 schema for this API
-         * @description Returns the auto-generated OpenAPI 3.1 schema describing every public endpoint, parameter, request body and response shape. The schema is frozen at boot time and served as a pre-encoded UTF-8 buffer.
+         * @description Returns the auto-generated OpenAPI 3.1 schema describing every public endpoint, parameter, request body and response shape.
          */
         get: operations["getOpenapi.json"];
         put?: never;
@@ -1062,11 +1086,13 @@ export interface paths {
          * Get the aggregate platform and dependency status
          * @description Square Cloud's overall status, the health of each Square Cloud service, and the current status of the external providers the platform depends on.
          *
-         *     `status` on each entry is one of `operational`, `degraded`, `outage`, `maintenance` or `unknown`. **`unknown` means the check could not be verified and is NOT evidence of an outage** (some providers publish no status API, so their health is read from a page marker; a page redesign reads as `unknown` rather than as a false alarm).
+         *     `status` on each entry is one of `operational`, `degraded`, `outage`, `maintenance` or `unknown`. **`unknown` means the check could not be verified and is NOT evidence of an outage** (some providers publish no status API, so their health cannot always be confirmed).
          *
          *     `summary` is present **only when an entry is not operational**, where it explains what is wrong and what it affects. A healthy entry carries no summary, because the status already says it.
          *
-         *     Only Square Cloud's own services influence the top-level `status`: a third-party incident is reported under `dependencies` without flipping the platform badge. Entries are ordered by blast radius.
+         *     Only Square Cloud's own services and its own status page influence the top-level `status`: a third-party incident is reported under `dependencies` without flipping the platform badge. Entries are ordered by blast radius.
+         *
+         *     The top-level `status` is `maintenance` when a maintenance is the only thing going on; any instability or outage makes it `degraded`. `incidents` lists what is open on the status page right now (maintenance windows and incidents, newest first, each with its latest update) and `components` lists every status page component that is not operational, such as a cluster. Both are empty arrays when there is nothing to report.
          *
          *     Served from a document refreshed every 5 minutes; `stale: true` means that document was unavailable and the payload was probed live instead.
          */
@@ -1108,7 +1134,7 @@ export interface paths {
         };
         /**
          * List the authenticated user's snapshots
-         * @description Lists application or database snapshots owned by the authenticated user. Rate limited to 3 calls per 60s (blocking 5 minutes) and requires a paid plan.
+         * @description Lists application or database snapshots owned by the authenticated user. Rate limited to 3 calls per 60s and requires an active plan.
          *
          *     Use the `scope` query parameter to switch between `applications` (default) and `databases`.
          */
@@ -1291,7 +1317,7 @@ export interface components {
          * @description Machine-readable error code. The list grows over time: treat a code you do not know as a generic failure of the HTTP status it came with.
          * @enum {string}
          */
-        ErrorCode: "ACCESS_DENIED" | "ACTION_FAILED" | "AI_DAILY_LIMIT_REACHED" | "AI_MAX_CONCURRENT_STREAMS" | "AI_NO_PLAN_LIMIT_REACHED" | "AI_UNAVAILABLE" | "ANALYTICS_BUSY" | "APPLICATIONS_LIMIT_REACHED" | "APP_ALREADY_IN_WORKSPACE" | "APP_NOT_FOUND" | "BLOCKED_PATH" | "BRANCH_NOT_FOUND" | "CANNOT_EDIT_OWNER" | "CANNOT_INVITE_OWNER" | "CANNOT_LEAVE_OWNER" | "CANNOT_SET_SUBDOMAIN" | "CLUSTER_MAINTENANCE_TRY_LATER" | "CLUSTER_SELECTION_FAILED" | "CLUSTER_TIMEOUT" | "CLUSTER_UNAVAILABLE" | "COMMIT_FAILED" | "CONFLICTING_RESOURCES" | "CONTAINER_ALREADY_STARTED" | "CONTAINER_ALREADY_STOPPED" | "CONTAINER_INSUFFICIENT_DISK_SPACE" | "CONTAINER_NETWORK_CONFLICT" | "CONTAINER_NOT_FOUND" | "CONTAINER_TEMPORARILY_SUSPENDED" | "DAILY_SNAPSHOTS_LIMIT_REACHED" | "DATABASE_CREATION_FAILED" | "DATABASE_NOT_FOUND" | "DATABASE_NOT_RUNNING" | "DATABASE_UNAVAILABLE" | "DELETE_FAILED" | "DEPLOY_FAILED" | "DNS_FAILED" | "DOMAIN_ALREADY_EXISTS" | "EMPTY_RESPONSE" | "ENV_CONTENT_TOO_LONG" | "ENV_NAME_TOO_LONG" | "FAILED_TO_FETCH" | "FILE_NOT_FOUND" | "FILE_TOO_LARGE" | "GIT_ALREADY_CONFIGURED" | "GIT_NOT_CONFIGURED" | "GITHUB_NOT_CONNECTED" | "INSUFFICIENT_MEMORY" | "INTERNAL_SERVER_ERROR" | "INVALID_ACCESS_TOKEN" | "INVALID_AUTORESTART" | "INVALID_BRANCH_LENGTH" | "INVALID_CODE" | "INVALID_CONTENT" | "INVALID_CONTENT_TYPE" | "INVALID_DATABASE_TYPE" | "INVALID_DATABASE_VERSION" | "INVALID_DESCRIPTION" | "INVALID_DISPLAY_NAME" | "INVALID_DOMAIN" | "INVALID_ENCODING" | "INVALID_ENV_CONTENT" | "INVALID_FILE" | "INVALID_FILENAME" | "INVALID_FILTER" | "INVALID_GROUP" | "INVALID_ID" | "INVALID_INPUT" | "INVALID_JSON_BODY" | "INVALID_MEMORY" | "INVALID_NAME" | "INVALID_PARAMETERS" | "INVALID_PATH" | "INVALID_RESET_TYPE" | "INVALID_SCOPE" | "INVALID_SNAPSHOT_ID" | "INVALID_SUBDOMAIN" | "INVALID_TIME_RANGE" | "INVALID_VERSION_ID" | "KEEP_CALM" | "LOAD_BALANCER_LIMIT_REACHED" | "LOGS_UNAVAILABLE" | "MEMBERS_LIMIT_REACHED" | "MEMBER_ALREADY_ADDED" | "MEMBER_NOT_FOUND" | "METRICS_NOT_SUPPORTED" | "MISSING_PARAMETERS" | "MISSING_REQUIRED_FIELDS" | "MISSING_SCOPE" | "NO_CUSTOM_DOMAIN" | "NO_UPDATE_DATA" | "PAYLOAD_TOO_LARGE" | "PERMISSION_DENIED" | "PURGE_CACHE_FAILED" | "RATE_LIMITED" | "READ_FAILED" | "REALTIME_MAX_CONNECTIONS" | "REALTIME_MAX_CONNECTIONS_APP" | "RENAME_FAILED" | "REPOSITORY_BRANCH_ALREADY_CONFIGURED" | "REPOSITORY_NOT_AVAILABLE" | "REPOSITORY_NOT_FOUND" | "REPOSITORY_PERMISSION_REQUIRED" | "REQUEST_ABORTED" | "RESERVED_DOMAIN" | "RESET_FAILED" | "RESOURCE_NOT_ALLOWED" | "RESTORE_IN_PROGRESS" | "ROUTE_NOT_FOUND" | "SAVE_FAILED" | "SCOPE_NOT_GRANTABLE" | "SNAPSHOT_DATABASE_MISMATCH" | "SNAPSHOT_FAILED" | "SNAPSHOT_NOT_FOUND" | "SNAPSHOT_PROCESSING" | "SNAPSHOT_RESTORE_FAILED" | "STATIC_APP_ENV_NOT_SUPPORTED" | "STORAGE_UPLOAD_FAILED" | "SUBDOMAIN_TAKEN" | "TOO_MANY_ENV_VARS" | "UNABLE_TO_FETCH_ANALYTICS" | "UNABLE_TO_FETCH_ERRORS" | "UNABLE_TO_FETCH_PERFORMANCE" | "UPGRADE_REQUIRED" | "UPLOAD_ABORTED" | "UPLOAD_BUSY" | "UPLOAD_FAILED" | "VALIDATION_FAILED" | "VALIDATION_TIMEOUT" | "WORKSPACE_CREATION_FAILED" | "WORKSPACE_LIMIT_REACHED" | "WORKSPACE_NOT_FOUND";
+        ErrorCode: "ACCESS_DENIED" | "ACTION_FAILED" | "AI_DAILY_LIMIT_REACHED" | "AI_MAX_CONCURRENT_STREAMS" | "AI_NO_PLAN_LIMIT_REACHED" | "AI_UNAVAILABLE" | "AI_WEEKLY_LIMIT_REACHED" | "ANALYTICS_BUSY" | "APPLICATIONS_LIMIT_REACHED" | "APP_ALREADY_IN_WORKSPACE" | "APP_NOT_FOUND" | "BLOCKED_PATH" | "BRANCH_NOT_FOUND" | "CANNOT_EDIT_OWNER" | "CANNOT_INVITE_OWNER" | "CANNOT_LEAVE_OWNER" | "CANNOT_SET_SUBDOMAIN" | "CLUSTER_MAINTENANCE_TRY_LATER" | "CLUSTER_SELECTION_FAILED" | "CLUSTER_TIMEOUT" | "CLUSTER_UNAVAILABLE" | "COMMIT_FAILED" | "CONFLICTING_RESOURCES" | "CONTAINER_ALREADY_STARTED" | "CONTAINER_ALREADY_STOPPED" | "CONTAINER_INSUFFICIENT_DISK_SPACE" | "CONTAINER_NETWORK_CONFLICT" | "CONTAINER_NOT_FOUND" | "CONTAINER_TEMPORARILY_SUSPENDED" | "DAILY_SNAPSHOTS_LIMIT_REACHED" | "DATABASE_CREATION_FAILED" | "DATABASE_NOT_FOUND" | "DATABASE_NOT_RUNNING" | "DATABASE_UNAVAILABLE" | "DELETE_FAILED" | "DEPLOY_FAILED" | "DNS_FAILED" | "DOMAIN_ALREADY_EXISTS" | "EMPTY_RESPONSE" | "ENV_BUSY" | "ENV_CONTENT_TOO_LONG" | "ENV_NAME_TOO_LONG" | "FAILED_TO_FETCH" | "FILE_NOT_FOUND" | "FILE_TOO_LARGE" | "GIT_ALREADY_CONFIGURED" | "GIT_BRANCH_DELETED" | "GIT_NOT_CONFIGURED" | "GIT_REF_NOT_SUPPORTED" | "GITHUB_NOT_CONNECTED" | "INSUFFICIENT_MEMORY" | "INTERNAL_SERVER_ERROR" | "INVALID_ACCESS_TOKEN" | "INVALID_AUTORESTART" | "INVALID_BRANCH_LENGTH" | "INVALID_CODE" | "INVALID_CONTENT" | "INVALID_CONTENT_TYPE" | "INVALID_DATABASE_TYPE" | "INVALID_DATABASE_VERSION" | "INVALID_DESCRIPTION" | "INVALID_DISPLAY_NAME" | "INVALID_DOMAIN" | "INVALID_ENCODING" | "INVALID_ENV_CONTENT" | "INVALID_FILE" | "INVALID_FILENAME" | "INVALID_FILTER" | "INVALID_GROUP" | "INVALID_ID" | "INVALID_INPUT" | "INVALID_JSON_BODY" | "INVALID_MEMORY" | "INVALID_NAME" | "INVALID_PARAMETERS" | "INVALID_PATH" | "INVALID_RESET_TYPE" | "INVALID_SCOPE" | "INVALID_SNAPSHOT_ID" | "INVALID_SUBDOMAIN" | "INVALID_TIME_RANGE" | "INVALID_VERSION_ID" | "KEEP_CALM" | "LOAD_BALANCER_LIMIT_REACHED" | "LOGS_UNAVAILABLE" | "MEMBERS_LIMIT_REACHED" | "MEMBER_ALREADY_ADDED" | "MEMBER_NOT_FOUND" | "MISSING_PARAMETERS" | "MISSING_REQUIRED_FIELDS" | "MISSING_SCOPE" | "NO_CUSTOM_DOMAIN" | "NO_UPDATE_DATA" | "PAYLOAD_TOO_LARGE" | "PERMISSION_DENIED" | "PURGE_CACHE_FAILED" | "RATE_LIMITED" | "READ_FAILED" | "REALTIME_MAX_CONNECTIONS" | "REALTIME_MAX_CONNECTIONS_APP" | "RENAME_FAILED" | "REPOSITORY_BRANCH_ALREADY_CONFIGURED" | "REPOSITORY_NOT_AVAILABLE" | "REPOSITORY_NOT_FOUND" | "REPOSITORY_PERMISSION_REQUIRED" | "REQUEST_ABORTED" | "RESERVED_DOMAIN" | "RESET_FAILED" | "RESOURCE_NOT_ALLOWED" | "RESTORE_IN_PROGRESS" | "RESTORE_INTERRUPTED" | "ROUTE_NOT_FOUND" | "SAVE_FAILED" | "SCOPE_NOT_GRANTABLE" | "SNAPSHOT_CORRUPT" | "SNAPSHOT_DATABASE_MISMATCH" | "SNAPSHOT_FAILED" | "SNAPSHOT_IN_PROGRESS" | "SNAPSHOT_NOT_FOUND" | "SNAPSHOT_PROCESSING" | "SNAPSHOT_RESTORE_FAILED" | "SNAPSHOT_RESTORE_PROCESSING" | "SNAPSHOTS_UNAVAILABLE" | "STATIC_APP_ENV_NOT_SUPPORTED" | "STORAGE_UPLOAD_FAILED" | "SUBDOMAIN_TAKEN" | "TOO_MANY_ENV_VARS" | "UNABLE_TO_FETCH_ANALYTICS" | "UNABLE_TO_FETCH_ERRORS" | "UNABLE_TO_FETCH_PERFORMANCE" | "UPGRADE_REQUIRED" | "UPLOAD_ABORTED" | "UPLOAD_BUSY" | "UPLOAD_FAILED" | "VALIDATION_FAILED" | "VALIDATION_TIMEOUT" | "WORKSPACE_CREATION_FAILED" | "WORKSPACE_LIMIT_REACHED" | "WORKSPACE_NOT_FOUND" | "WRITE_FAILED" | "WRONG_HOST";
         ErrorBody: {
             /** @constant */
             status: "error";
@@ -1304,13 +1330,35 @@ export interface components {
             /** @constant */
             code: "SNAPSHOT_PROCESSING";
         };
+        SnapshotRestoreProcessing: {
+            /** @constant */
+            status: "error";
+            /** @constant */
+            code: "SNAPSHOT_RESTORE_PROCESSING";
+        };
+        SnapshotRestoreStateResult: {
+            /** @constant */
+            status: "success";
+            response: {
+                /** @enum {string} */
+                state: "none" | "queued" | "running" | "success" | "error";
+                /** @description Current step of the restore while it runs; `done` once it ends. */
+                step?: string;
+                /** @description Why it failed, when `state` is `error`. */
+                code?: string;
+                /** @description Unix ms. */
+                started_at?: number;
+                /** @description Unix ms, once `success` or `error`. */
+                finished_at?: number;
+            };
+        };
         OpenAIError: {
             error: {
                 message: string;
                 type: string;
                 param?: string | null;
                 /** @description Machine-readable code. New codes may be added: handle an unknown one by its HTTP status. */
-                code?: ("concurrent_limit_reached" | "context_length_exceeded" | "daily_capacity_reached" | "daily_limit_reached" | "daily_request_limit_reached" | "daily_spend_limit_reached" | "invalid_max_tokens" | "invalid_messages" | "invalid_request" | "invalid_temperature" | "invalid_tools" | "multimodal_not_supported" | "rate_limit_exceeded" | "server_overloaded" | "stream_not_supported" | "upgrade_required") | string;
+                code?: ("concurrent_limit_reached" | "context_length_exceeded" | "daily_capacity_reached" | "daily_limit_reached" | "daily_request_limit_reached" | "daily_spend_limit_reached" | "invalid_max_tokens" | "invalid_messages" | "invalid_request" | "invalid_temperature" | "invalid_tools" | "multimodal_not_supported" | "rate_limit_exceeded" | "server_overloaded" | "stream_not_supported" | "upgrade_required" | "weekly_limit_reached") | string;
             };
         };
         RuntimeStats: {
@@ -1322,6 +1370,8 @@ export interface components {
             status: string;
             /** @description Convenience flag equivalent to `status === "running"`. */
             running: boolean;
+            /** @description A snapshot restore is queued or running. `status` stays the container's own (`exited` while the restore holds it stopped). */
+            restoring?: boolean;
             /** @description Storage usage. Formatted by default, or raw bytes with `?rawData=true`. */
             storage: string | number;
             /** @description Network counters. Strings by default (`"<incoming> ↑ <outgoing> ↓"`); two-element `[in, out]` integer arrays with `?rawData=true`. */
@@ -1360,7 +1410,7 @@ export interface components {
             version_id: string;
             /**
              * Format: uri
-             * @description Signed download URL, valid for 30 days.
+             * @description Signed download URL, valid for 1 hour.
              */
             url: string;
             /** @description What the archive holds: the database engine (`mongo`, `mysql`, `postgres`, `redis`) or the app language (`javascript`, `typescript`, `python`, ...). `null` on snapshots taken before this field existed. */
@@ -1458,12 +1508,12 @@ export interface components {
             password: string;
             /** @description Base64-encoded PEM (private key followed by the certificate) for TLS connections. `null` when it could not be produced at creation. */
             certificate?: string | null;
-            /** @description Ready-to-use connection string with the password embedded. */
+            /** @description Ready-to-use connection string with the password embedded. The scheme follows the engine: `mongodb://`, `postgresql://`, `mysql://`, and `rediss://` for Redis (TLS is required). */
             connection_url: string;
             cluster: string;
         };
         Plan: {
-            /** @description Plan slug (e.g. `free`, `hobby-2`, `standard-8`, `pro-16`, `enterprise-64`). */
+            /** @description Plan slug (e.g. `hobby-2`, `standard-8`, `pro-16`, `enterprise-64`). `free` means the account has no active plan. */
             name: string;
             /** @description Live memory accounting for the user across all applications and databases. All values are in MB. */
             memory: {
@@ -1474,7 +1524,7 @@ export interface components {
                 /** @description Memory currently allocated to applications and databases. */
                 used: number;
             };
-            /** @description Unix timestamp in milliseconds at which the current plan expires. `null` for plans that never expire (e.g. `free`). */
+            /** @description Unix timestamp in milliseconds at which the current plan expires. `null` when the account has no active plan. */
             duration: number | null;
         };
         User: {
@@ -1536,7 +1586,10 @@ export interface components {
         NetworkAnalyticsTimeBucket: {
             visits: number;
             requests: number;
+            /** @description Response bytes served. */
             bytes: number;
+            /** @description Request bytes received from visitors (uploads, request bodies). */
+            bytes_in?: number;
             /**
              * Format: date-time
              * @description Start of the 15-minute window.
@@ -1630,16 +1683,30 @@ export interface components {
         };
         DNSRecord: {
             /**
-             * @description Record type. `txt` covers both ownership and SSL validation; `cname` is the traffic record.
+             * @description Record type. `txt` covers both ownership and SSL validation; `cname` is the traffic record (or, with `fallback`, the SSL validation delegation).
              * @enum {string}
              */
             type: "txt" | "cname";
             /** @description Record name to set at the DNS provider. */
             name: string;
-            /** @description Record value. For `cname`, this is always `cname.squareweb.app`. */
+            /** @description Record value. The traffic `cname` always points at `cname.squareweb.app`. */
             value: string;
-            /** @description Upstream validation state (e.g. `pending`, `pending_validation`, `active`). Passed through from the edge provider. */
+            /** @description Upstream validation state (e.g. `pending`, `pending_validation`, `active`). The `cname` and the ownership `txt` carry the hostname status; an SSL `txt` (`_acme-challenge`) carries the certificate status. */
             status: string;
+            /** @description Present only on a record that is not `active` yet and only when the edge provider reported why: its validation messages, in English, as given (e.g. the CNAME points elsewhere, or the TXT value was not found). Hostname messages appear on the `cname` and the ownership `txt`; certificate messages on each SSL `txt`. */
+            errors?: [
+            ] | [
+                string
+            ] | [
+                string,
+                string
+            ] | [
+                string,
+                string,
+                string
+            ];
+            /** @description Present (`true`) only on the DCV delegation: ONE `_acme-challenge` `cname` that can be created INSTEAD of every SSL `txt` record (never together: a CNAME cannot share its name with other records). It never changes, so certificate renewals need no DNS edits. Not counted when deciding whether the domain is fully set up. */
+            fallback?: boolean;
         };
         DeployEvent: {
             /** @description Deploy identifier: the commit SHA (40 hex). */
@@ -1884,7 +1951,9 @@ export interface operations {
                             name: string;
                         };
                     };
-                    /** @description Completion token cap; silently clamped to your plan's output ceiling. */
+                    /** @description Completion token cap; silently clamped to your plan's output ceiling. Wins over `max_tokens` when both are sent. */
+                    max_completion_tokens?: number;
+                    /** @description Legacy name of `max_completion_tokens`, same rules. */
                     max_tokens?: number;
                     temperature?: number;
                     /** @description Must be false/omitted (streaming not supported yet). */
@@ -1943,7 +2012,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Malformed body (`invalid_json_body`, `invalid_messages`, `invalid_tools`, `invalid_tool_choice`), unsupported feature (`stream_not_supported`), or the prompt exceeds your plan's context ceiling. */
+            /** @description Malformed body (`invalid_json_body`, `invalid_messages`, `invalid_tools`, `invalid_tool_choice`, `invalid_temperature`, `invalid_max_tokens`), unsupported feature (`stream_not_supported`, `multimodal_not_supported`: plain-text content only), the prompt exceeds your plan's context ceiling or the model window (`context_length_exceeded`), or the model backend rejected the tool-calling protocol (`invalid_request`). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2015,7 +2084,11 @@ export interface operations {
                     "application/json": components["schemas"]["OpenAIError"];
                 };
             };
-            /** @description Plan pacing or fair use: a request is already in flight (concurrent_limit_reached), the per-request delay has not elapsed (rate_limit_exceeded), the plan's daily request ceiling is reached (daily_request_limit_reached, resets 00:00 UTC), the plan's daily fair-use allowance on the gateway is reached (daily_spend_limit_reached, resets 00:00 UTC), or the daily AI token budget is spent (daily_limit_reached, resets 00:00 UTC). `rate_limited` is the account's global API budget. */
+            /**
+             * @description Plan pacing or fair use: a request is already in flight (concurrent_limit_reached), the per-request delay has not elapsed (rate_limit_exceeded), the plan's daily request ceiling is reached (daily_request_limit_reached, resets 00:00 UTC), the plan's daily fair-use allowance on the gateway is reached (daily_spend_limit_reached, resets 00:00 UTC), or the gateway's own token budget is spent: daily (daily_limit_reached, resets 00:00 UTC) or weekly (weekly_limit_reached, resets Monday 00:00 UTC). `rate_limited` is the account's global API budget.
+             *
+             *     Retry hints: `rate_limit_exceeded` carries `Retry-After` (seconds, the plan's delay between requests). The daily and weekly ceilings (`daily_request_limit_reached`, `daily_spend_limit_reached`, `daily_limit_reached`, `weekly_limit_reached`) carry `Retry-After` with the seconds until the reset and `x-should-retry: false`, so OpenAI SDKs skip their automatic retries. `concurrent_limit_reached` has no `Retry-After`: retry once your in-flight request finishes.
+             */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -2051,7 +2124,7 @@ export interface operations {
                     "application/json": components["schemas"]["OpenAIError"];
                 };
             };
-            /** @description All model capacity is busy; retry shortly (`server_overloaded`). `daily_capacity_reached` means the gateway's shared daily capacity is used up; it resets at 00:00 UTC. `database_unavailable`: the platform database is briefly unavailable, retry in a few seconds. */
+            /** @description All model capacity is busy; retry shortly (`server_overloaded`, with `Retry-After: 2`). `daily_capacity_reached` means the AI Gateway's daily capacity is used up: try again later, it renews every day (`Retry-After` until it renews, `x-should-retry: false`). `database_unavailable`: the platform database is briefly unavailable, retry in a few seconds. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -2466,8 +2539,18 @@ export interface operations {
                 };
             };
             401: components["responses"]["AccessDenied"];
-            /** @description A snapshot restore is currently running for this application. An API key can also get `MISSING_SCOPE` (lacks this operation's scope) or `RESOURCE_NOT_ALLOWED` (restricted to other resources). */
-            403: {
+            403: components["responses"]["Forbidden"];
+            /** @description Application not found or the delete operation failed. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description A snapshot restore is running on the application. Nothing was deleted; retry once the restore finishes. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2482,15 +2565,6 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description Application not found or the delete operation failed. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorBody"];
-                };
-            };
             429: components["responses"]["RateLimitedSpecific"];
             500: components["responses"]["InternalServerError"];
             503: components["responses"]["DatabaseUnavailable"];
@@ -2499,7 +2573,7 @@ export interface operations {
     postAppCommitByAppId: {
         parameters: {
             query?: {
-                /** @description Destination directory inside the application (no traversal, no shell metacharacters). */
+                /** @description Destination directory inside the application (no traversal, no invalid characters). */
                 path?: string;
             };
             header?: never;
@@ -2545,7 +2619,22 @@ export interface operations {
                 };
             };
             401: components["responses"]["AccessDenied"];
-            403: components["responses"]["ForbiddenWorkspace"];
+            /** @description A workspace Maintainer sent a restricted file on its own, or a zip holding nothing but restricted files. A workspace member whose role does not allow this gets `PERMISSION_DENIED`. An API key can also get `MISSING_SCOPE` (lacks this operation's scope) or `RESOURCE_NOT_ALLOWED` (restricted to other resources). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "BLOCKED_PATH",
+                     *       "message": "This route is blocked based on your workspace settings permissions."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
             404: components["responses"]["AppNotFound"];
             /** @description Upload exceeded the 100 MB per-file limit. */
             413: {
@@ -2705,7 +2794,7 @@ export interface operations {
                 };
             };
             503: components["responses"]["DatabaseUnavailable"];
-            /** @description The repository validation service (auth) timed out. */
+            /** @description GitHub repository validation timed out. */
             504: {
                 headers: {
                     [name: string]: unknown;
@@ -2873,20 +2962,20 @@ export interface operations {
                      *       "response": [
                      *         [
                      *           {
-                     *             "id": "96b1c6931c20b1555e612d3c8cd0a7b36f0fd5c7",
+                     *             "id": "0123456789abcdef0123456789abcdef01234567",
                      *             "state": "pending",
                      *             "date": "2026-05-28T21:47:33.608Z",
                      *             "source": "git"
                      *           },
                      *           {
-                     *             "id": "96b1c6931c20b1555e612d3c8cd0a7b36f0fd5c7",
+                     *             "id": "0123456789abcdef0123456789abcdef01234567",
                      *             "state": "clone",
                      *             "date": "2026-05-28T21:47:34.019Z",
                      *             "branch": "main",
                      *             "source": "git"
                      *           },
                      *           {
-                     *             "id": "96b1c6931c20b1555e612d3c8cd0a7b36f0fd5c7",
+                     *             "id": "0123456789abcdef0123456789abcdef01234567",
                      *             "state": "commit",
                      *             "date": "2026-05-28T21:47:34.038Z",
                      *             "files": {
@@ -2899,13 +2988,13 @@ export interface operations {
                      *             "source": "git"
                      *           },
                      *           {
-                     *             "id": "96b1c6931c20b1555e612d3c8cd0a7b36f0fd5c7",
+                     *             "id": "0123456789abcdef0123456789abcdef01234567",
                      *             "state": "restarting",
                      *             "date": "2026-05-28T21:47:34.143Z",
                      *             "source": "git"
                      *           },
                      *           {
-                     *             "id": "96b1c6931c20b1555e612d3c8cd0a7b36f0fd5c7",
+                     *             "id": "0123456789abcdef0123456789abcdef01234567",
                      *             "state": "success",
                      *             "date": "2026-05-28T21:47:40.604Z",
                      *             "source": "git"
@@ -3093,6 +3182,22 @@ export interface operations {
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["ForbiddenWorkspace"];
             404: components["responses"]["AppNotFound"];
+            /** @description Another request is changing this application's environment variables right now. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "ENV_BUSY",
+                     *       "message": "The environment variables are being changed by another request. Try again in a moment."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
             413: components["responses"]["PayloadTooLarge"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalServerError"];
@@ -3120,7 +3225,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Updated environment variables. */
+            /** @description The whole updated set. A key without `envs:read` gets back only the variables it sent in this request. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3154,6 +3259,22 @@ export interface operations {
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["ForbiddenWorkspace"];
             404: components["responses"]["AppNotFound"];
+            /** @description Another request is changing this application's environment variables right now. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "ENV_BUSY",
+                     *       "message": "The environment variables are being changed by another request. Try again in a moment."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
             413: components["responses"]["PayloadTooLarge"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalServerError"];
@@ -3179,7 +3300,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Remaining environment variables after removal. */
+            /** @description Remaining environment variables after removal. A key without `envs:read` gets an empty object. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3212,6 +3333,22 @@ export interface operations {
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["ForbiddenWorkspace"];
             404: components["responses"]["AppNotFound"];
+            /** @description Another request is changing this application's environment variables right now. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "ENV_BUSY",
+                     *       "message": "The environment variables are being changed by another request. Try again in a moment."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
             413: components["responses"]["PayloadTooLarge"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalServerError"];
@@ -3625,7 +3762,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            429: components["responses"]["RateLimited"];
+            429: components["responses"]["RateLimitedSpecific"];
             500: components["responses"]["InternalServerError"];
             503: components["responses"]["DatabaseUnavailable"];
         };
@@ -3688,7 +3825,10 @@ export interface operations {
     };
     getAppMetricsByAppId: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `24h` (default): one point every 5 minutes (every 10 minutes for applications below 512 MB). `7d`: one point per hour with the hour's average and peak, on Pro and Enterprise plans; other plans and applications below 512 MB get the last 24 hours instead of an error. */
+                range?: "24h" | "7d";
+            };
             header?: never;
             path: {
                 /** @description Application identifier. Optionally suffixed with -<workspaceId> to act on a workspace-shared application. */
@@ -3713,9 +3853,14 @@ export interface operations {
                      *           "cpu": 0.5,
                      *           "ram": 120.4,
                      *           "net": [
-                     *             0,
-                     *             0
-                     *           ]
+                     *             14615610,
+                     *             7361954
+                     *           ],
+                     *           "disk": [
+                     *             7544832,
+                     *             1048576
+                     *           ],
+                     *           "storage": 11083776
                      *         }
                      *       ]
                      *     }
@@ -3729,11 +3874,13 @@ export interface operations {
                             cpu?: number;
                             ram?: number;
                             net?: number[];
+                            disk?: number[];
+                            storage?: number;
                         }[];
                     };
                 };
             };
-            /** @description The application has less than 512 MB of RAM and cannot collect metrics. */
+            /** @description `range` is not 24h or 7d. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3742,7 +3889,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "status": "error",
-                     *       "code": "METRICS_NOT_SUPPORTED"
+                     *       "code": "INVALID_PARAMETERS"
                      *     }
                      */
                     "application/json": components["schemas"]["ErrorBody"];
@@ -3795,7 +3942,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Aggregated edge analytics broken down by time, country, device, OS, browser, protocol, HTTP method, request path, referer, and client ASN — each as an array of buckets (`type` identifies the dimension; `visits` is unique visitors, `requests` is the request count, `bytes` is the response bytes served, `date` is the 15-minute window start). Plus four window-total breakdowns without `date` (top-N over the whole window): `ips` (top client IPs), `status_codes`, `bots` (verified bot categories; `Unverified` is regular traffic) and `content_types`. Returns an empty object (`{}`) when the requested window starts before the application's creation date. */
+            /** @description Aggregated edge analytics broken down by time, country, device, OS, browser, protocol, HTTP method, request path, referer, and client ASN — each as an array of buckets (`type` identifies the dimension; `visits` is unique visitors, `requests` is the request count, `bytes` is the response bytes served, `date` is the 15-minute window start; the time buckets in `visits` also carry `bytes_in`, the request bytes received from visitors). Plus four window-total breakdowns without `date` (top-N over the whole window): `ips` (top client IPs), `status_codes`, `bots` (verified bot categories; `Unverified` is regular traffic) and `content_types`. Returns an empty object (`{}`) when the requested window starts before the application's creation date. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3810,12 +3957,14 @@ export interface operations {
                      *             "visits": 1024,
                      *             "requests": 1247,
                      *             "bytes": 8421000,
+                     *             "bytes_in": 312000,
                      *             "date": "2026-05-21T10:00:00Z"
                      *           },
                      *           {
                      *             "visits": 980,
                      *             "requests": 1180,
                      *             "bytes": 7920000,
+                     *             "bytes_in": 298000,
                      *             "date": "2026-05-21T10:15:00Z"
                      *           }
                      *         ],
@@ -3984,7 +4133,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The edge analytics provider is temporarily rate-limited platform-wide and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            /** @description Edge analytics are temporarily unavailable and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -4058,7 +4207,7 @@ export interface operations {
                 };
             };
             404: components["responses"]["AppNotFound"];
-            /** @description The domain is already attached to an application owned by another account. */
+            /** @description The domain is already attached to an application of another account, or to one this credential cannot reach. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4106,7 +4255,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description DNS records the user must add at their registrar. Each entry has a `type` (`txt` or `cname`), a `name`, a `value`, and an edge-provider `status` (e.g. `pending`, `pending_validation`, `active`). Typically returns one or two ownership-validation `txt` records plus the routing `cname` pointing at `cname.squareweb.app`. Empty array when the custom hostname is not registered on the edge yet. */
+            /** @description DNS records the user must add at their registrar. Each entry has a `type` (`txt` or `cname`), a `name`, a `value`, and an edge-provider `status` (e.g. `pending`, `pending_validation`, `active`). Returns the routing `cname` pointing at `cname.squareweb.app` first, then the ownership `txt` while ownership is unverified, then one `txt` per SSL validation token (`_acme-challenge`; some certificate authorities issue two tokens under the same name, and both are required). The `cname` and ownership `txt` carry the hostname status, each SSL `txt` the certificate status; the domain is fully set up when every record without `fallback` is `active`. A record that is not `active` may carry `errors`: the edge provider's own reasons it is not validated yet. Last, flagged `fallback: true`, comes the DCV delegation: one `_acme-challenge` `cname` the owner may create INSTEAD of the SSL `txt` records (never both), which keeps working across certificate renewals. When the edge cannot be read, the last records read for the same domain (up to 6 hours old); an empty array when there are none or the custom hostname is not registered there yet. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4120,7 +4269,10 @@ export interface operations {
                      *           "type": "txt",
                      *           "name": "_cf-custom-hostname.example.com",
                      *           "value": "abc123-4567-89ab-cdef-0123456789ab",
-                     *           "status": "pending"
+                     *           "status": "pending",
+                     *           "errors": [
+                     *             "custom hostname does not CNAME to this zone."
+                     *           ]
                      *         },
                      *         {
                      *           "type": "txt",
@@ -4306,7 +4458,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The edge analytics provider is temporarily rate-limited platform-wide and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            /** @description Edge analytics are temporarily unavailable and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -4475,7 +4627,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The edge analytics provider is temporarily rate-limited platform-wide and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            /** @description Edge analytics are temporarily unavailable and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -4715,7 +4867,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The edge analytics provider is temporarily rate-limited platform-wide and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            /** @description Edge analytics are temporarily unavailable and no recent cached copy exists for this window; retry in about a minute. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -4876,7 +5028,7 @@ export interface operations {
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["ForbiddenWorkspace"];
             404: components["responses"]["AppNotFound"];
-            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, suspended, container missing, no disk space, port conflict), else `ACTION_FAILED`. */
+            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, suspended, container missing, no disk space, port conflict, a snapshot restore running), else `ACTION_FAILED`. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4917,7 +5069,7 @@ export interface operations {
                      *           "size": 12345678,
                      *           "modified": "2025-12-01T00:00:00.000Z",
                      *           "key": "<signed-query-string>",
-                     *           "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY",
+                     *           "version_id": "ExampleVersionId0123456789abcdef",
                      *           "url": "https://snapshots.squarecloud.app/<path>.zip?<signed-query-string>",
                      *           "runtime": "javascript",
                      *           "origin": "manual"
@@ -4937,7 +5089,21 @@ export interface operations {
             404: components["responses"]["AppNotFound"];
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalServerError"];
-            503: components["responses"]["DatabaseUnavailable"];
+            /** @description The snapshot listing could not be read from storage right now. The snapshots themselves are not affected: retry in about 30 seconds. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "SNAPSHOTS_UNAVAILABLE"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     postAppSnapshotsByAppId: {
@@ -4952,7 +5118,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Snapshot created. The `url` is a signed download URL valid for 30 days. */
+            /** @description Snapshot created. `url` is a signed download URL valid for 1 hour, returned only to a caller that can read snapshots (a session, or a key with `snapshots:read`): a key without it gets an empty `response`. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5004,6 +5170,21 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+            /** @description A snapshot restore is running on the application; try again once it finishes. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "RESTORE_IN_PROGRESS"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
             /** @description Rate limit hit. `code: KEEP_CALM` covers the short-term limits (1r/5s per user, 1r/3min per app) — clients should back off and retry. `code: DAILY_SNAPSHOTS_LIMIT_REACHED` means the owner consumed the plan's daily quota — clients should surface an upgrade prompt instead of retrying. */
             429: {
                 headers: {
@@ -5013,6 +5194,59 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
+            500: components["responses"]["InternalServerError"];
+            /** @description The node is under maintenance; try again in a few minutes. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "CLUSTER_MAINTENANCE_TRY_LATER"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getAppSnapshotsRestoreByAppId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Application identifier. Optionally suffixed with -<workspaceId> to act on a workspace-shared application. */
+                appId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Restore state. Timestamps are Unix milliseconds. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "success",
+                     *       "response": {
+                     *         "state": "running",
+                     *         "step": "unzip",
+                     *         "started_at": 1760900000000
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SnapshotRestoreStateResult"];
+                };
+            };
+            401: components["responses"]["AccessDenied"];
+            403: components["responses"]["ForbiddenWorkspace"];
+            404: components["responses"]["AppNotFound"];
+            429: components["responses"]["RateLimitedSpecific"];
             500: components["responses"]["InternalServerError"];
             503: components["responses"]["DatabaseUnavailable"];
         };
@@ -5037,7 +5271,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Restore dispatched. */
+            /** @description Restore finished. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5054,6 +5288,21 @@ export interface operations {
                     };
                 };
             };
+            /** @description The restore outlived the ~90s response deadline and keeps running in the background. Expected for large snapshots, not a failure: follow it with `GET /v2/apps/:appId/snapshots/restore` instead of re-posting. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "SNAPSHOT_RESTORE_PROCESSING"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SnapshotRestoreProcessing"];
+                };
+            };
             /** @description One of `snapshotId` or `versionId` is missing or malformed. */
             400: {
                 headers: {
@@ -5065,8 +5314,17 @@ export interface operations {
             };
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["ForbiddenWorkspace"];
-            /** @description The application or the snapshot was not found, or the restore failed. */
+            /** @description The application or the snapshot was not found (including another application's snapshot this credential cannot reach: a key restricted to other resources, or a workspace member), or the restore failed. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description A restore or a snapshot of this resource is already running. Wait for it to finish, then try again. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5077,7 +5335,21 @@ export interface operations {
             413: components["responses"]["PayloadTooLarge"];
             429: components["responses"]["RateLimitedSpecific"];
             500: components["responses"]["InternalServerError"];
-            503: components["responses"]["DatabaseUnavailable"];
+            /** @description The node is under maintenance; try again in a few minutes. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "CLUSTER_MAINTENANCE_TRY_LATER"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     postAppStartByAppId: {
@@ -5112,7 +5384,7 @@ export interface operations {
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["ForbiddenWorkspace"];
             404: components["responses"]["AppNotFound"];
-            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, suspended, container missing, no disk space, port conflict), else `ACTION_FAILED`. */
+            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, suspended, container missing, no disk space, port conflict, a snapshot restore running), else `ACTION_FAILED`. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5219,7 +5491,7 @@ export interface operations {
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["ForbiddenWorkspace"];
             404: components["responses"]["AppNotFound"];
-            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, suspended, container missing, no disk space, port conflict), else `ACTION_FAILED`. */
+            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, suspended, container missing, no disk space, port conflict, a snapshot restore running), else `ACTION_FAILED`. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5501,8 +5773,18 @@ export interface operations {
                 };
             };
             401: components["responses"]["AccessDenied"];
-            /** @description A snapshot restore is currently in progress for this database. An API key can also get `MISSING_SCOPE` (lacks this operation's scope) or `RESOURCE_NOT_ALLOWED` (restricted to other resources). */
-            403: {
+            403: components["responses"]["Forbidden"];
+            /** @description The database does not exist, is not owned by the caller, or the delete operation failed. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description A snapshot restore is running on the database. Nothing was deleted; retry once the restore finishes. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5514,15 +5796,6 @@ export interface operations {
                      *       "message": "A restore operation is currently in progress for this database."
                      *     }
                      */
-                    "application/json": components["schemas"]["ErrorBody"];
-                };
-            };
-            /** @description The database does not exist, is not owned by the caller, or the delete operation failed. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
@@ -5765,7 +6038,10 @@ export interface operations {
     };
     getDatabaseMetricsByDatabaseId: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `24h` (default): one point every 5 minutes (every 10 minutes for applications below 512 MB). `7d`: one point per hour with the hour's average and peak, on Pro and Enterprise plans; other plans and applications below 512 MB get the last 24 hours instead of an error. */
+                range?: "24h" | "7d";
+            };
             header?: never;
             path: {
                 /** @description Database identifier. */
@@ -5790,9 +6066,14 @@ export interface operations {
                      *           "cpu": 0.5,
                      *           "ram": 120.4,
                      *           "net": [
-                     *             0,
-                     *             0
-                     *           ]
+                     *             14615610,
+                     *             7361954
+                     *           ],
+                     *           "disk": [
+                     *             7544832,
+                     *             1048576
+                     *           ],
+                     *           "storage": 11083776
                      *         }
                      *       ]
                      *     }
@@ -5806,8 +6087,25 @@ export interface operations {
                             cpu?: number;
                             ram?: number;
                             net?: number[];
+                            disk?: number[];
+                            storage?: number;
                         }[];
                     };
+                };
+            };
+            /** @description `range` is not 24h or 7d. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "INVALID_PARAMETERS"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
             401: components["responses"]["AccessDenied"];
@@ -5859,7 +6157,7 @@ export interface operations {
                      *           "size": 12345678,
                      *           "modified": "2025-12-01T00:00:00.000Z",
                      *           "key": "<signed-query-string>",
-                     *           "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY",
+                     *           "version_id": "ExampleVersionId0123456789abcdef",
                      *           "url": "https://snapshots.squarecloud.app/<path>.zip?<signed-query-string>",
                      *           "runtime": "mongo",
                      *           "origin": "manual"
@@ -5893,7 +6191,21 @@ export interface operations {
             };
             429: components["responses"]["RateLimited"];
             500: components["responses"]["InternalServerError"];
-            503: components["responses"]["DatabaseUnavailable"];
+            /** @description The snapshot listing could not be read from storage right now. The snapshots themselves are not affected: retry in about 30 seconds. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "SNAPSHOTS_UNAVAILABLE"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     postDatabaseSnapshotsByDatabaseId: {
@@ -5908,7 +6220,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Snapshot created. The `url` is a signed download URL valid for 30 days. */
+            /** @description Snapshot created. `url` is a signed download URL valid for 1 hour, returned only to a caller that can read snapshots (a session, or a key with `snapshots:read`): a key without it gets an empty `response`. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5960,6 +6272,21 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
+            /** @description A snapshot restore is running on the database; try again once it finishes. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "RESTORE_IN_PROGRESS"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
             /** @description Rate limit hit. `code: KEEP_CALM` covers the short-term limits (1r/5s per user, 1r/3min per database) — clients should back off and retry. `code: DAILY_SNAPSHOTS_LIMIT_REACHED` means the owner consumed the plan's daily quota — clients should surface an upgrade prompt instead of retrying. */
             429: {
                 headers: {
@@ -5969,6 +6296,75 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
+            500: components["responses"]["InternalServerError"];
+            /** @description The node is under maintenance; try again in a few minutes. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "CLUSTER_MAINTENANCE_TRY_LATER"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getDatabaseSnapshotsRestoreByDatabaseId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Database identifier. */
+                databaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Restore state. Timestamps are Unix milliseconds. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "success",
+                     *       "response": {
+                     *         "state": "error",
+                     *         "step": "done",
+                     *         "code": "SNAPSHOT_CORRUPT",
+                     *         "started_at": 1760900000000,
+                     *         "finished_at": 1760900042000
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SnapshotRestoreStateResult"];
+                };
+            };
+            401: components["responses"]["AccessDenied"];
+            403: components["responses"]["Forbidden"];
+            /** @description The database does not exist or is not owned by the caller. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "DATABASE_NOT_FOUND"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            429: components["responses"]["RateLimitedSpecific"];
             500: components["responses"]["InternalServerError"];
             503: components["responses"]["DatabaseUnavailable"];
         };
@@ -5993,7 +6389,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Restore dispatched. */
+            /** @description Restore finished. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6010,6 +6406,21 @@ export interface operations {
                     };
                 };
             };
+            /** @description The restore outlived the ~90s response deadline and keeps running in the background. Expected for large snapshots, not a failure: follow it with `GET /v2/databases/:databaseId/snapshots/restore` instead of re-posting. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "SNAPSHOT_RESTORE_PROCESSING"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SnapshotRestoreProcessing"];
+                };
+            };
             /** @description Snapshot restore input validation failed or the snapshot type does not match the database. */
             400: {
                 headers: {
@@ -6021,8 +6432,17 @@ export interface operations {
             };
             401: components["responses"]["AccessDenied"];
             403: components["responses"]["Forbidden"];
-            /** @description The snapshot does not exist, the database is not owned by the caller, or the restore was rejected. */
+            /** @description The snapshot does not exist (or belongs to another database a key restricted to other resources cannot reach), the database is not owned by the caller, or the restore was rejected. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description A restore or a snapshot of this resource is already running. Wait for it to finish, then try again. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6033,7 +6453,21 @@ export interface operations {
             413: components["responses"]["PayloadTooLarge"];
             429: components["responses"]["RateLimitedSpecific"];
             500: components["responses"]["InternalServerError"];
-            503: components["responses"]["DatabaseUnavailable"];
+            /** @description The node is under maintenance; try again in a few minutes. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "CLUSTER_MAINTENANCE_TRY_LATER"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     postDatabaseStartByDatabaseId: {
@@ -6066,22 +6500,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AccessDenied"];
-            /** @description A snapshot restore is currently in progress for this database. An API key can also get `MISSING_SCOPE` (lacks this operation's scope) or `RESOURCE_NOT_ALLOWED` (restricted to other resources). */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "status": "error",
-                     *       "code": "RESTORE_IN_PROGRESS",
-                     *       "message": "A restore operation is currently in progress for this database."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorBody"];
-                };
-            };
+            403: components["responses"]["Forbidden"];
             /** @description The database does not exist or is not owned by the caller. */
             404: {
                 headers: {
@@ -6097,7 +6516,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, container missing, no disk space, port conflict), else `ACTION_FAILED`. */
+            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, container missing, no disk space, port conflict, a snapshot restore running), else `ACTION_FAILED`. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6208,22 +6627,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["AccessDenied"];
-            /** @description A snapshot restore is currently in progress for this database. An API key can also get `MISSING_SCOPE` (lacks this operation's scope) or `RESOURCE_NOT_ALLOWED` (restricted to other resources). */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "status": "error",
-                     *       "code": "RESTORE_IN_PROGRESS",
-                     *       "message": "A restore operation is currently in progress for this database."
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorBody"];
-                };
-            };
+            403: components["responses"]["Forbidden"];
             /** @description The database does not exist or is not owned by the caller. */
             404: {
                 headers: {
@@ -6239,7 +6643,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, container missing, no disk space, port conflict), else `ACTION_FAILED`. */
+            /** @description The action was rejected. `code` carries the reason when one is known (already started or stopped, container missing, no disk space, port conflict, a snapshot restore running), else `ACTION_FAILED`. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6273,14 +6677,20 @@ export interface operations {
                 "application/json": {
                     repository: {
                         clone_url: string;
+                        /** @description `https://github.com/<owner>/<repo>`: any other URL is refused (400). */
+                        html_url: string;
                         owner: {
                             id: number;
                             login?: string;
                             type?: string;
                         };
                     };
-                    /** @description `refs/heads/<branch>` for push events. */
+                    /** @description `refs/heads/<branch>` for push events. Any other ref (a tag) is not deployed. */
                     ref: string;
+                    /** @description Commit SHA after the push; all zeros when it deletes the branch. */
+                    after?: string;
+                    /** @description `true` when the push deletes the ref; nothing is deployed. */
+                    deleted?: boolean;
                 } & {
                     [key: string]: unknown;
                 };
@@ -6297,13 +6707,12 @@ export interface operations {
                     "text/plain": string;
                 };
             };
-            /** @description Received but not queued: the pushed branch does not match the webhook's `branch`. */
+            /** @description Received but not queued, and the 15-second rate limit is not spent: the pushed branch does not match the webhook's `branch`, the push is for a tag or another non-branch ref (`GIT_REF_NOT_SUPPORTED`), or it deletes a branch (`GIT_BRANCH_DELETED`). The code, when present, leads the text. */
             202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example Push received but not queued: it is for 'dev', and this webhook only deploys 'main'. Nothing was deployed. */
                     "text/plain": string;
                 };
             };
@@ -6469,7 +6878,9 @@ export interface operations {
                      *           "name": "Support & help center",
                      *           "status": "operational"
                      *         }
-                     *       }
+                     *       },
+                     *       "incidents": [],
+                     *       "components": []
                      *     }
                      */
                     "application/json": {
@@ -6477,7 +6888,7 @@ export interface operations {
                          * @description `unknown` means the check itself could not run; it is not evidence of an outage.
                          * @enum {string}
                          */
-                        status: "online" | "degraded" | "unknown";
+                        status: "online" | "maintenance" | "degraded" | "unknown";
                         message: string;
                         /** Format: date-time */
                         checked_at?: string;
@@ -6514,6 +6925,31 @@ export interface operations {
                                 };
                             };
                         };
+                        incidents?: {
+                            /** @enum {string} */
+                            type: "maintenance" | "incident";
+                            title: string;
+                            /** @enum {string} */
+                            status: "maintenance" | "degraded" | "outage" | "operational" | "unknown";
+                            /** Format: date-time */
+                            started_at: string;
+                            /**
+                             * Format: date-time
+                             * @description When a maintenance is expected to end. `null` when no end was announced.
+                             */
+                            ends_at?: string | null;
+                            /** @description Names of the affected components. */
+                            affected: string[];
+                            /** @description The latest update, as written on the status page (may use Markdown). */
+                            update?: string;
+                            /** Format: date-time */
+                            updated_at?: string | null;
+                        }[];
+                        components?: {
+                            name: string;
+                            /** @enum {string} */
+                            status: "maintenance" | "degraded" | "outage";
+                        }[];
                     };
                 };
             };
@@ -6626,7 +7062,7 @@ export interface operations {
                      *           "size": 12345678,
                      *           "modified": "2025-12-01T00:00:00.000Z",
                      *           "key": "<signed-query-string>",
-                     *           "version_id": "3HL4kqtJlcpXroDTDmJ.rmSpXd3dIbrHY",
+                     *           "version_id": "ExampleVersionId0123456789abcdef",
                      *           "url": "https://snapshots.squarecloud.app/<path>.zip?<signed-query-string>",
                      *           "runtime": "javascript",
                      *           "origin": "manual"
@@ -6689,7 +7125,21 @@ export interface operations {
                 };
             };
             500: components["responses"]["InternalServerError"];
-            503: components["responses"]["DatabaseUnavailable"];
+            /** @description The snapshot listing could not be read from storage right now. The snapshots themselves are not affected: retry in about 30 seconds. `DATABASE_UNAVAILABLE` is also possible while the platform database is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "status": "error",
+                     *       "code": "SNAPSHOTS_UNAVAILABLE"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
         };
     };
     getWorkspaces: {
@@ -7039,7 +7489,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The workspace does not exist. */
+            /** @description The workspace does not exist or is not owned by the caller. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7179,7 +7629,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The workspace does not exist. */
+            /** @description The workspace does not exist or is not owned by the caller. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7339,7 +7789,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorBody"];
                 };
             };
-            /** @description The workspace does not exist, or `memberId` is missing or not a member of it. */
+            /** @description The workspace does not exist or is not owned by the caller, or `memberId` is missing or not a member of it. */
             404: {
                 headers: {
                     [name: string]: unknown;

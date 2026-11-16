@@ -2,11 +2,11 @@ import { SquareCloudAPI } from "@squarecloud/api";
 
 const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY ?? "");
 
-// The password is only shown here and by resetCredentials(): store it
+// Store the password now, because only create() and resetCredentials() return it
 const db = await api.databases.create({
 	name: "main",
 	type: "postgres",
-	version: "17", // a major or major.minor prefix works
+	version: "17", // a major or major.minor version prefix also works
 	memory: 1024,
 });
 console.log(db.connection_url, db.password);
@@ -17,12 +17,12 @@ console.log(
 	await api.databases.metrics(db.id),
 );
 
-// TLS certificate (base64 PEM) and credential rotation
+// The TLS certificate, as a base64-encoded PEM, and a new password
 const pem = atob(await api.databases.certificate(db.id));
 const password = await api.databases.resetCredentials(db.id, "password");
 console.log(pem.length, password);
 
-// Snapshots: same shape as apps
+// Snapshots work the same way as for applications
 const result = await api.databases.snapshots.create(db.id);
 if (!result.pending) console.log(result.url);
 

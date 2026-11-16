@@ -1,3 +1,21 @@
+/**
+ * Official JavaScript SDK for the Square Cloud API.
+ *
+ * Create a client with your API key and call the API through its groups:
+ *
+ * ```ts
+ * import { SquareCloudAPI } from "@squarecloud/api";
+ *
+ * const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY!);
+ * const { user, applications } = await api.account.me();
+ * await api.apps.restart(applications[0].id);
+ * ```
+ *
+ * Every method returns plain data. When a call fails, it throws a
+ * {@link SquareCloudAPIError} that carries the HTTP status and the API's error code.
+ *
+ * @packageDocumentation
+ */
 import pkg from "../package.json" with { type: "json" };
 import { SquareCloudAPIError } from "./error.ts";
 import type {
@@ -33,6 +51,8 @@ import type {
 	ServiceStatus,
 	Snapshot,
 	SnapshotCreated,
+	SnapshotRestored,
+	SnapshotRestoreState,
 	SnapshotScope,
 	SquareCloudAPIOptions,
 	StatusListItem,
@@ -43,16 +63,17 @@ import type {
 
 // Inlined by the bundler: no runtime `process` access, however the build is run
 const USER_AGENT = `squarecloud-sdk-js/${pkg.version}`;
+/** The default base URL of the Square Cloud API, which the `baseUrl` option can replace. */
 export const BASE_URL = "https://api.squarecloud.app/v2";
-/** Upload cap of `POST /apps` and `commit` (per file). */
+/** The size limit of each file that `apps.create()` and `apps.commit()` upload. */
 const MAX_UPLOAD = 100 * 1024 * 1024;
 /** Decoded content cap of `files.write`. */
 const MAX_FILE = 10 * 1024 * 1024;
 /** `files.write` content above this many bytes is an upload: no timeout. */
 const LARGE_WRITE = 1024 * 1024;
 /**
- * Timeout floor for calls the server holds open: a snapshot answers 202 only at
- * ~90 s, database provisioning and lifecycle actions take up to 95 s.
+ * Timeout floor for calls the server holds open: a snapshot or restore answers 202
+ * only at ~90 s, database provisioning and lifecycle actions take up to 95 s.
  */
 const SLOW_MS = 120_000;
 /** AI chat: the gateway answers 503 `server_overloaded` past its 90 s deadline for the whole request. */
@@ -70,6 +91,8 @@ type RequestOptions = {
 	body?: FormData;
 	/** Return the whole body instead of `response` (routes without the envelope). */
 	raw?: boolean;
+	/** Snapshot create/restore: a 202 is `{ pending: true }`, any other 2xx `{ pending: false, ...response }`. */
+	pending?: boolean;
 	/** Return the `Response` unread; the timeout only covers the headers (SSE). */
 	stream?: boolean;
 	/** A call the server holds open: wait at least this many ms (`SLOW_MS`, `AI_MS`). */
@@ -120,30 +143,49 @@ const retryable = (method: string, { status, code }: SquareCloudAPIError) =>
 				(code === "DATABASE_UNAVAILABLE" && method === "GET"));
 
 /**
- * Client for the Square Cloud API (v2).
+ * Client for the Square Cloud API.
  *
- * Every `appId` may be `<appId>-<workspaceId>` to act on an application shared
- * with you through a workspace.
+ * The client groups the API by resource: {@link SquareCloudAPI.account},
+ * {@link SquareCloudAPI.service}, {@link SquareCloudAPI.ai},
+ * {@link SquareCloudAPI.apps}, {@link SquareCloudAPI.databases} and
+ * {@link SquareCloudAPI.workspaces}. Every method takes ids first and returns
+ * plain data.
  *
  * @example
- * ```js
- * const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY);
+ * ```ts
+ * const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY!);
  * await api.apps.restart(appId);
  * ```
  */
 export class SquareCloudAPI {
 	private readonly apiKey: string;
 	private readonly baseUrl: string;
-	/** `0` when disabled: no timeout at all, floors included. */
+	// 0 when timeouts are disabled, which disables the 120-second floors too.
 	private readonly timeoutMs: number;
 	private readonly maxRetries: number;
 	private readonly userAgent: string;
 	private readonly fetch?: typeof fetch;
 
-	/** @param apiKey - From https://squarecloud.app/account/security (a session JWT also works). */
+	/**
+	 * Creates a client that authenticates every call with your API key.
+	 *
+	 * @param apiKey - Your API key. Create one at https://squarecloud.app/account/security.
+	 * @param options - Optional settings for the base URL, timeouts, retries, the
+	 * `User-Agent` header and the `fetch` function. See {@link SquareCloudAPIOptions}.
+	 * @throws {TypeError} When `apiKey` is not a string, or is empty or only whitespace.
+	 *
+	 * @example
+	 * ```ts
+	 * const api = new SquareCloudAPI(process.env.SQUARECLOUD_API_KEY!, {
+	 *   timeoutMs: 60_000,
+	 * });
+	 * ```
+	 */
 	constructor(apiKey: string, options: SquareCloudAPIOptions = {}) {
 		if (typeof apiKey !== "string" || !apiKey.trim()) {
-			throw new TypeError("SquareCloudAPI: apiKey must be a non-empty string");
+			throw new TypeError(
+				"The API key is missing or empty. Create a key at https://squarecloud.app/account/security and pass it to new SquareCloudAPI().",
+			);
 		}
 		this.apiKey = apiKey;
 		this.baseUrl = `${(options.baseUrl ?? BASE_URL).replace(/\/+$/, "")}/`;
@@ -155,7 +197,8 @@ export class SquareCloudAPI {
 		this.fetch = options.fetch;
 	}
 
-	/** An error raised without a response (local check, dropped stream): status 0. */
+	// Builds the error of a failure without a response (a local check or a dropped
+	// stream), so its status is 0.
 	private local(
 		code: string,
 		message: string,
@@ -178,6 +221,7 @@ export class SquareCloudAPI {
 			json,
 			body,
 			raw,
+			pending,
 			stream,
 			floor = 0,
 			untimed,
@@ -188,7 +232,7 @@ export class SquareCloudAPI {
 		if (!presigned && BAD_SEGMENT.test(path)) {
 			throw this.local(
 				"INVALID_ID",
-				'Empty, "." and ".." are not valid ids',
+				'The id is empty, "." or "..", so the request was not sent. Pass the id of the resource you want to reach.',
 				method,
 				path,
 			);
@@ -236,7 +280,10 @@ export class SquareCloudAPI {
 				? setTimeout(
 						() =>
 							clock.abort(
-								new DOMException(`No response in ${ms} ms`, "TimeoutError"),
+								new DOMException(
+									`No response within ${ms} ms. Try again, or raise timeoutMs if the call needs more time.`,
+									"TimeoutError",
+								),
 							),
 						ms,
 					)
@@ -263,9 +310,18 @@ export class SquareCloudAPI {
 					!response.ok ||
 					invalid !== undefined ||
 					// Safety net: a relayed failure with HTTP 200 (older APIs did so on database start/stop);
-					// a 202 SNAPSHOT_PROCESSING is not one: callers read it as pending
+					// a 202 is not one, whatever its envelope says: the server is still working
 					(!raw && response.status !== 202 && data?.status === "error");
-				if (!failed) return (raw ? data : data?.response) as T;
+				if (!failed) {
+					if (pending) {
+						return (
+							response.status === 202
+								? { pending: true }
+								: { pending: false, ...data?.response }
+						) as T;
+					}
+					return (raw ? data : data?.response) as T;
+				}
 				// Square envelope {status, code, message} or, on the AI route, the OpenAI shape
 				// {error: {message, type, param, code}} with lowercase codes (`code` may be null)
 				// (`error: null` is not the AI dialect: typeof null is "object")
@@ -275,7 +331,7 @@ export class SquareCloudAPI {
 				error = new SquareCloudAPIError(
 					response.status,
 					code || "UNKNOWN_ERROR",
-					// No code at all (e.g. a proxy page, S3 XML): the status is the only clue
+					// With no code at all, such as a proxy page or S3 XML, the status is the only clue
 					err?.message ||
 						(code
 							? undefined
@@ -334,7 +390,7 @@ export class SquareCloudAPI {
 		if (blob.size > MAX_UPLOAD) {
 			throw this.local(
 				"FILE_TOO_LARGE",
-				"Uploads are limited to 100 MB",
+				"The file is larger than the 100 MB upload limit. Leave dependency folders and build output out of the zip, or upload a smaller file.",
 				"POST",
 				path,
 			);
@@ -404,7 +460,7 @@ export class SquareCloudAPI {
 						if (frame.data.startsWith("REALTIME_RECONNECT")) handoff = true;
 					}
 				}
-				if (!handoff) return; // clean EOF (e.g. the 10-minute TTL)
+				if (!handoff) return; // A clean EOF, such as the 10-minute limit, ends the stream.
 				cause = new Error("REALTIME_RECONNECT");
 			} catch (error) {
 				if (signal?.aborted) return;
@@ -428,33 +484,138 @@ export class SquareCloudAPI {
 		}
 	}
 
-	/** The snapshot routes, identical for apps and databases. */
+	// The snapshot methods, identical for applications and databases. The docs below
+	// are what callers see on both `apps.snapshots` and `databases.snapshots`.
 	private snapshots(base: "apps" | "databases") {
 		return {
-			/** Each item carries its `version_id` (for `restore()`) and a signed download `url`. */
+			/**
+			 * Lists the snapshots of the application or database.
+			 *
+			 * @param id - The application or database id (see {@link SquareCloudAPI.apps}
+			 * for workspace applications).
+			 * @returns The snapshots. Each one carries the `name` and `version_id` that
+			 * `restore()` takes, and a signed download `url` that is valid for 1 hour.
+			 * @throws {SquareCloudAPIError} 503 `SNAPSHOTS_UNAVAILABLE` when snapshot storage
+			 * cannot answer. Try again in about 30 seconds.
+			 */
 			list: async (id: string) =>
 				(await this.request<Snapshot[]>("GET", `${base}/${e(id)}/snapshots`)) ??
 				[],
-			/** `{ pending: true }` when it is still generating (large ones). */
-			create: async (id: string) =>
-				created(
-					await this.request("POST", `${base}/${e(id)}/snapshots`, {
-						floor: SLOW_MS,
-					}),
-				),
 			/**
-			 * `name` and `version_id` of a listed `Snapshot`. Any failure is 404
-			 * `SNAPSHOT_RESTORE_FAILED`.
+			 * Creates a snapshot of the application or database.
+			 *
+			 * @param id - The application or database id (see {@link SquareCloudAPI.apps}
+			 * for workspace applications).
+			 * @returns `{ pending: false, url, key }` when the snapshot is ready, with a
+			 * signed download `url` that is valid for 1 hour. An API key without the
+			 * `snapshots:read` scope gets `url` and `key` as `""`. A large snapshot returns
+			 * `{ pending: true }` while it is still being generated. It shows up in
+			 * `list()` within about 2 minutes, so poll `list()` and do not call `create()`
+			 * again.
+			 * @throws {SquareCloudAPIError} 429 `DAILY_SNAPSHOTS_LIMIT_REACHED` when you have
+			 * used your plan's daily snapshots, 409 `RESTORE_IN_PROGRESS` while a snapshot
+			 * is being restored (try again when it ends), and 503
+			 * `CLUSTER_MAINTENANCE_TRY_LATER` during maintenance (try again in a few
+			 * minutes).
+			 *
+			 * @remarks You can create one snapshot every 3 minutes, and each one counts
+			 * against your plan's daily snapshot quota. The call can take a while, so its
+			 * timeout is never shorter than 120 seconds.
+			 */
+			create: async (id: string): Promise<SnapshotCreated> => {
+				const created = await this.request<SnapshotCreated>(
+					"POST",
+					`${base}/${e(id)}/snapshots`,
+					{ floor: SLOW_MS, pending: true },
+				);
+				// The API omits both fields for a key without snapshots:read, and the type
+				// promises strings.
+				return created.pending
+					? created
+					: { ...created, url: created.url ?? "", key: created.key ?? "" };
+			},
+			/**
+			 * Restores the application or database from one of its snapshots.
+			 *
+			 * @param id - The application or database id (see {@link SquareCloudAPI.apps}
+			 * for workspace applications).
+			 * @param name - The `name` of a snapshot from `list()`.
+			 * @param versionId - The `version_id` of the same snapshot.
+			 * @returns `{ pending: false }` when the restore has finished. A restore that
+			 * takes longer than about 90 seconds returns `{ pending: true }` and keeps
+			 * running. Follow it with `restoreState()`, and do not call `restore()` again.
+			 * @throws {SquareCloudAPIError} 400 `MISSING_PARAMETERS`, `INVALID_SNAPSHOT_ID`
+			 * or `INVALID_VERSION_ID` when `name` or `versionId` is missing or invalid. A
+			 * database can also answer 400 `SNAPSHOT_DATABASE_MISMATCH` when the snapshot
+			 * is of another engine.
+			 * @throws {SquareCloudAPIError} 404 `APP_NOT_FOUND`, `DATABASE_NOT_FOUND` or
+			 * `SNAPSHOT_NOT_FOUND` when the resource or the snapshot does not exist. 404
+			 * `SNAPSHOT_RESTORE_FAILED`, `SNAPSHOT_CORRUPT`, `RESTORE_INTERRUPTED` or
+			 * `CONTAINER_NOT_FOUND` when the restore itself fails.
+			 * @throws {SquareCloudAPIError} 409 `RESTORE_IN_PROGRESS` or
+			 * `SNAPSHOT_IN_PROGRESS` while another restore or a snapshot is running (try
+			 * again when it ends), 413 `PAYLOAD_TOO_LARGE`, and 503
+			 * `CLUSTER_MAINTENANCE_TRY_LATER` during maintenance (try again in a few
+			 * minutes).
+			 *
+			 * @remarks The call can take a while, so its timeout is never shorter than
+			 * 120 seconds.
+			 *
+			 * @example
+			 * ```ts
+			 * const [latest] = await api.apps.snapshots.list(appId);
+			 * const { pending } = await api.apps.snapshots.restore(
+			 *   appId,
+			 *   latest.name,
+			 *   latest.version_id,
+			 * );
+			 * let { state } = await api.apps.snapshots.restoreState(appId);
+			 * while (pending && (state === "queued" || state === "running")) {
+			 *   await new Promise((resolve) => setTimeout(resolve, 10_000));
+			 *   ({ state } = await api.apps.snapshots.restoreState(appId));
+			 * }
+			 * ```
 			 */
 			restore: (id: string, name: string, versionId: string) =>
-				this.request<void>("POST", `${base}/${e(id)}/snapshots/restore`, {
-					json: { snapshotId: name, versionId },
-					floor: SLOW_MS,
-				}),
+				this.request<SnapshotRestored>(
+					"POST",
+					`${base}/${e(id)}/snapshots/restore`,
+					{
+						json: { snapshotId: name, versionId },
+						floor: SLOW_MS,
+						pending: true,
+					},
+				),
+			/**
+			 * Returns the progress of the latest snapshot restore.
+			 *
+			 * @param id - The application or database id (see {@link SquareCloudAPI.apps}
+			 * for workspace applications).
+			 * @returns The restore's `state`. It is `queued` or `running` while the restore
+			 * runs, with the current `step`. It is `success` or `error` for 1 hour after
+			 * the restore ends, with the failure `code` on `error`. It is `none` when there
+			 * was no recent restore.
+			 *
+			 * @remarks You can call this up to 30 times a minute.
+			 */
+			restoreState: (id: string) =>
+				this.request<SnapshotRestoreState>(
+					"GET",
+					`${base}/${e(id)}/snapshots/restore`,
+				),
 		};
 	}
 
-	/** Runtime stats: formatted strings by default; `{ raw: true }` for numbers. */
+	// The metrics, status and start/stop/restart methods are identical for applications
+	// and databases. Their public docs sit on the properties that use them. The server
+	// holds start, stop and restart open until the container acts, hence the floor.
+	private metrics(base: "apps" | "databases") {
+		return (id: string, { range }: { range?: "24h" | "7d" } = {}) =>
+			this.request<MetricPoint[]>("GET", `${base}/${e(id)}/metrics`, {
+				query: { range },
+			});
+	}
+
 	private stats(base: "apps" | "databases") {
 		return <Raw extends boolean = false>(
 			id: string,
@@ -465,12 +626,6 @@ export class SquareCloudAPI {
 			});
 	}
 
-	/**
-	 * start/stop/restart: the server holds these open until the container acts. A refusal
-	 * is 409 with a code only: `CONTAINER_ALREADY_STARTED`, `CONTAINER_ALREADY_STOPPED`,
-	 * `CONTAINER_TEMPORARILY_SUSPENDED`, `CONTAINER_NOT_FOUND`,
-	 * `CONTAINER_INSUFFICIENT_DISK_SPACE`, `CONTAINER_NETWORK_CONFLICT` or `ACTION_FAILED`.
-	 */
 	private action(base: "apps" | "databases", action: string) {
 		return (id: string) =>
 			this.request<void>("POST", `${base}/${e(id)}/${action}`, {
@@ -479,14 +634,27 @@ export class SquareCloudAPI {
 	}
 
 	/**
-	 * Streams a snapshot zip from its signed URL (from `snapshots.create()`).
-	 * Nothing is buffered: pipe it to a file.
+	 * Downloads a snapshot as a stream, so you can write it to a file without holding
+	 * it in memory.
+	 *
+	 * @param url - The signed `url` of a snapshot, from `snapshots.list()`,
+	 * `snapshots.create()` or `account.snapshots()`. It is valid for 1 hour.
+	 * @param options.signal - Cancels the download. Downloads have no timeout.
+	 * @returns A stream of the snapshot's zip file.
+	 * @throws {SquareCloudAPIError} `UNKNOWN_ERROR` with the HTTP status when the
+	 * download fails, for example after the link has expired. Get a fresh link from
+	 * `snapshots.list()`.
+	 *
+	 * @remarks The download never sends your API key, because the link carries its own
+	 * signature.
 	 *
 	 * @example
-	 * ```js
+	 * ```ts
+	 * import { createWriteStream } from "node:fs";
 	 * import { Writable } from "node:stream";
-	 * const stream = await api.downloadSnapshot(url);
-	 * await stream.pipeTo(Writable.toWeb(fs.createWriteStream("backup.zip")));
+	 *
+	 * const zip = await api.downloadSnapshot(snapshot.url);
+	 * await zip.pipeTo(Writable.toWeb(createWriteStream("backup.zip")));
 	 * ```
 	 */
 	async downloadSnapshot(
@@ -499,31 +667,64 @@ export class SquareCloudAPI {
 		).body ?? new Blob().stream()) as ReadableStream<Uint8Array>;
 	}
 
+	/** Reads your account: your user, your plan and the snapshots you own. */
 	readonly account = {
-		/** The user, plus the apps and databases this key can see. */
+		/**
+		 * Returns your user and plan, with the applications and databases your API key
+		 * can see.
+		 *
+		 * @remarks An API key limited to specific resources sees only those
+		 * applications and databases.
+		 */
 		me: () => this.request<Account>("GET", "users/me"),
-		/** Every snapshot of the account (paid plans only: 402 otherwise). */
+		/**
+		 * Lists the snapshots of all your applications, or of all your databases.
+		 *
+		 * @param options.scope - `"applications"` (the default) or `"databases"`.
+		 * @returns The snapshots. Each one carries the `name` and `version_id` that
+		 * `snapshots.restore()` takes, and a signed download `url` that is valid for
+		 * 1 hour.
+		 * @throws {SquareCloudAPIError} 402 `UPGRADE_REQUIRED` when the account has no
+		 * active paid plan, 429 `RATE_LIMITED` after 3 calls in a minute, and 503
+		 * `SNAPSHOTS_UNAVAILABLE` when snapshot storage cannot answer (try again in
+		 * about 30 seconds).
+		 */
 		snapshots: async ({ scope }: { scope?: SnapshotScope } = {}) =>
 			(await this.request<Snapshot[]>("GET", "users/snapshots", {
 				query: { scope },
 			})) ?? [],
 	};
 
+	/** Reads the public status of the Square Cloud platform. */
 	readonly service = {
-		/** Public platform status; needs no valid key. */
+		/**
+		 * Returns the platform's overall status, the health of each service, and any
+		 * open maintenance or incident.
+		 *
+		 * @remarks This call works without a valid API key.
+		 */
 		status: () =>
 			this.request<ServiceStatus>("GET", "service/status", { raw: true }),
 	};
 
+	/** Generates text with Square Cloud AI, which follows the OpenAI chat completions format. */
 	readonly ai = {
 		/**
-		 * OpenAI-compatible chat completion (Standard plan and up). Streaming is not
-		 * supported. Every error of this route (auth, scope, rate limit, 5xx included) is
-		 * OpenAI-shaped and surfaces as `SquareCloudAPIError` with its lowercase `code`
-		 * (`access_denied`, `rate_limit_exceeded`, `database_unavailable`, ...), or its
-		 * `type` when it has none.
-		 * The gateway gives the whole request 90 s, then answers 503 `server_overloaded`:
-		 * safe to retry, but the SDK does not (the POST is not idempotent).
+		 * Generates a chat completion.
+		 *
+		 * @param request - The model, messages and options, in the OpenAI format.
+		 * @returns The completion, in the OpenAI format.
+		 * @throws {SquareCloudAPIError} Errors from this call carry the lowercase OpenAI
+		 * code in `code`, or the error `type` when there is no code. For example, 401
+		 * `access_denied` for an unknown API key, 403 `upgrade_required` on a plan
+		 * without AI, 429 `rate_limit_exceeded` or `weekly_limit_reached` when you reach
+		 * your plan's limits, and 503 `server_overloaded` when the completion takes
+		 * longer than 90 seconds.
+		 *
+		 * @remarks Available on the Standard plan and above, with an API key that has the
+		 * `ai:chat` scope. Streaming responses are not supported. The timeout of this
+		 * call is never shorter than 120 seconds. You can retry `server_overloaded`
+		 * yourself, but the SDK does not, because the request is not idempotent.
 		 */
 		chat: (request: ChatRequest) =>
 			this.request<ChatCompletion>("POST", "ai/chat/completions", {
@@ -533,23 +734,138 @@ export class SquareCloudAPI {
 			}),
 	};
 
+	/**
+	 * Deploys, controls and inspects your applications.
+	 *
+	 * Every application id in this group, including those of its `deploys`, `envs`,
+	 * `files`, `snapshots` and `network` methods, can also be a composite id,
+	 * `<appId>-<workspaceId>`, to act on an application that someone shared with you
+	 * through a workspace. A call for an application that does not exist throws a
+	 * {@link SquareCloudAPIError} with 404 `APP_NOT_FOUND`.
+	 */
 	readonly apps = {
-		/** Deploys a `.zip` (max 100 MB) with a `squarecloud.app` config file. No timeout: pass a `signal` to cancel. */
+		/**
+		 * Deploys a new application from a zip file.
+		 *
+		 * The zip holds your code and a `squarecloud.app` or `squarecloud.config`
+		 * configuration file.
+		 *
+		 * @param file - The zip, as a file path (Node.js, Deno and Bun), a `Blob` or
+		 * `File`, or a `Uint8Array`. A path is streamed from disk.
+		 * @param options.signal - Cancels the upload. Uploads have no timeout.
+		 * @returns The new application's id, name, language and resources.
+		 * @throws {SquareCloudAPIError} `FILE_TOO_LARGE` with status 0 when the zip is
+		 * larger than 100 MB, before anything is sent. 400 `INSUFFICIENT_MEMORY` when
+		 * your plan does not have enough free memory for the application.
+		 *
+		 * @example
+		 * ```ts
+		 * const { id } = await api.apps.create("./my-bot.zip");
+		 * ```
+		 */
 		create: (file: FileInput, { signal }: { signal?: AbortSignal } = {}) =>
 			this.upload<AppCreated>("apps", file, "app.zip", { signal }),
+		/**
+		 * Returns the application's name, language, memory, owner and domains.
+		 *
+		 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 */
 		get: (appId: string) => this.request<App>("GET", `apps/${e(appId)}`),
+		/**
+		 * Deletes the application and releases its custom domain.
+		 *
+		 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @throws {SquareCloudAPIError} 409 `RESTORE_IN_PROGRESS` while a snapshot is
+		 * being restored. Try again when it ends.
+		 */
 		delete: (appId: string) => this.request<void>("DELETE", `apps/${e(appId)}`),
-		/** Running state of every app this key can see, optionally one workspace's. */
+		/**
+		 * Returns whether each application your API key can see is running, with its
+		 * CPU and memory usage.
+		 *
+		 * @param options.workspaceId - List only the applications shared in this
+		 * workspace.
+		 * @returns One item per application. `cpu` and `ram` are present only while
+		 * the application runs.
+		 * @throws {SquareCloudAPIError} 404 `WORKSPACE_NOT_FOUND` when no workspace has
+		 * the id in `workspaceId`.
+		 */
 		statusAll: ({ workspaceId }: { workspaceId?: string } = {}) =>
 			this.request<StatusListItem[]>("GET", "apps/status", {
 				query: { workspaceId },
 			}),
-		/** Formatted strings by default; `{ raw: true }` for numbers. */
+		/**
+		 * Returns the application's current CPU, memory, network and storage usage.
+		 *
+		 * @param id - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @param options.raw - Return numbers instead of formatted strings such as
+		 * `"120.4MB"`: CPU as a percentage, memory in MB, and storage and network in
+		 * bytes.
+		 * @returns The usage, whether the application is `running`, and
+		 * `restoring: true` while a snapshot restore is queued or running.
+		 * @throws {SquareCloudAPIError} 404 `WORKSPACE_NOT_FOUND` when the workspace of
+		 * a composite id does not exist.
+		 */
 		status: this.stats("apps"),
+		/**
+		 * Starts the application.
+		 *
+		 * @param id - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @throws {SquareCloudAPIError} 409 `CONTAINER_ALREADY_STARTED` when the
+		 * application is already running, and 409 `RESTORE_IN_PROGRESS` while a
+		 * snapshot is being restored (try again when it ends). Other refusals are also
+		 * 409 with only a code, such as `CONTAINER_TEMPORARILY_SUSPENDED`,
+		 * `CONTAINER_INSUFFICIENT_DISK_SPACE` or `ACTION_FAILED`, so check `code`
+		 * rather than `message`.
+		 *
+		 * @remarks The call waits for the application to start, so its timeout is
+		 * never shorter than 120 seconds.
+		 */
 		start: this.action("apps", "start"),
+		/**
+		 * Stops the application.
+		 *
+		 * @param id - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @throws {SquareCloudAPIError} 409 `CONTAINER_ALREADY_STOPPED` when the
+		 * application is already stopped, and 409 `RESTORE_IN_PROGRESS` while a
+		 * snapshot is being restored (try again when it ends). Other refusals are also
+		 * 409 with only a code, such as `ACTION_FAILED`, so check `code` rather than
+		 * `message`.
+		 *
+		 * @remarks The call waits for the application to stop, so its timeout is never
+		 * shorter than 120 seconds.
+		 */
 		stop: this.action("apps", "stop"),
+		/**
+		 * Restarts the application.
+		 *
+		 * @param id - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @throws {SquareCloudAPIError} 409 `RESTORE_IN_PROGRESS` while a snapshot is
+		 * being restored (try again when it ends). Other refusals are also 409 with
+		 * only a code, such as `CONTAINER_TEMPORARILY_SUSPENDED` or `ACTION_FAILED`, so
+		 * check `code` rather than `message`.
+		 *
+		 * @remarks The call waits for the application to restart, so its timeout is
+		 * never shorter than 120 seconds.
+		 */
 		restart: this.action("apps", "restart"),
-		/** `""` when the API sends none. */
+		/**
+		 * Returns the application's most recent log output.
+		 *
+		 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @returns The recent standard output and standard error, combined in order,
+		 * or `""` when there is none.
+		 *
+		 * @remarks This is a short snapshot of recent output, not a stream. Use
+		 * `realtime()` to follow the logs live.
+		 */
 		logs: async (appId: string) =>
 			(
 				await this.request<{ logs?: string } | undefined>(
@@ -557,33 +873,97 @@ export class SquareCloudAPI {
 					`apps/${e(appId)}/logs`,
 				)
 			)?.logs ?? "",
-		/** Last 24 h, one point per 5 min, newest first. */
-		metrics: (appId: string) =>
-			this.request<MetricPoint[]>("GET", `apps/${e(appId)}/metrics`),
 		/**
-		 * Live logs, status and system events over SSE, parsed. Status frames are
-		 * merged so `event.status` is always complete. Ends on a clean close (10-min
-		 * TTL) or `abort()`; reconnects (at most 3 times in a row) on dropped
-		 * connections and when the API sends `REALTIME_RECONNECT`.
-		 * Max 5 concurrent streams per account.
+		 * Returns the application's CPU, memory, network and disk usage over time,
+		 * newest point first.
+		 *
+		 * @param id - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @param options.range - `"24h"` (the default) returns the last 24 hours, one
+		 * point every 5 minutes, or every 10 minutes for applications under 512 MB.
+		 * `"7d"` returns the last 7 days, one point an hour with the hour's average and
+		 * its `cpu_max` and `ram_max` peaks.
+		 * @throws {SquareCloudAPIError} 400 `INVALID_PARAMETERS` when `range` is not
+		 * `"24h"` or `"7d"`.
+		 *
+		 * @remarks `"7d"` needs a Pro or Enterprise plan and at least 512 MB. Other
+		 * plans and smaller applications get the 24-hour answer without an error, so
+		 * check the points you got rather than the range you asked for.
+		 */
+		metrics: this.metrics("apps"),
+		/**
+		 * Streams the application's live logs, status and system events.
+		 *
+		 * Iterate the result with `for await`. A status event carries the full state in
+		 * `event.status`, even when the API sends only the fields that changed. When the
+		 * connection drops, or the API asks the client to reconnect, the stream reopens
+		 * on its own, up to 3 times in a row.
+		 *
+		 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @param options.signal - Ends the stream. Aborting ends the loop without
+		 * throwing.
+		 * @returns An async iterable of {@link RealtimeEvent}.
+		 * @throws {SquareCloudAPIError} 429 `REALTIME_MAX_CONNECTIONS` before the first
+		 * event when you already have 5 streams open, or 429
+		 * `REALTIME_MAX_CONNECTIONS_APP` when the application already has 30.
+		 * `NETWORK_ERROR` with status 0 when
+		 * the stream has to reopen more than 3 times in a row without a log or status
+		 * event in between.
+		 *
+		 * @remarks The loop ends when the server closes the stream after 10 minutes,
+		 * when the API sends `REALTIME_DISCONNECTED`, or when you `break` or abort. You
+		 * can have at most 5 streams open at once, and an application at most 30.
+		 * Opening the stream has the normal timeout, but reading it has none.
 		 *
 		 * @example
-		 * ```js
-		 * for await (const event of api.apps.realtime(appId, { signal })) {
+		 * ```ts
+		 * const controller = new AbortController();
+		 * for await (const event of api.apps.realtime(appId, {
+		 *   signal: controller.signal,
+		 * })) {
 		 *   if (event.event === "logs") console.log(event.stream, event.line);
 		 * }
 		 * ```
 		 */
 		realtime: (appId: string, options?: { signal?: AbortSignal }) =>
 			this.stream(appId, options),
-		/** Default and custom hostnames of every app. */
+		/**
+		 * Lists the default and custom domains of all your applications.
+		 *
+		 * @returns One item per hostname, with the application id and whether it is
+		 * the default `subdomain` or a `custom` domain. Applications without a domain
+		 * are left out.
+		 */
 		domains: () => this.request<AppDomain[]>("GET", "apps/domains"),
+		/**
+		 * Lists your custom domains with the applications that serve each one.
+		 *
+		 * @returns The domains, and `limit`, the number of applications that can share
+		 * one domain on your plan. A domain served by two or more applications
+		 * balances traffic across them.
+		 */
 		loadBalancers: () =>
 			this.request<LoadBalancers>("GET", "apps/load-balancers"),
 		/**
-		 * Uploads a file into the app: a `.zip` is unpacked at `path`, any other
-		 * file lands at `path/filename`. `filename` defaults to the file's own name.
-		 * No timeout: pass a `signal` to cancel.
+		 * Uploads a file into the application.
+		 *
+		 * A `.zip` is unpacked at `path`. Any other file is written to
+		 * `path/<filename>`.
+		 *
+		 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+		 * workspace applications).
+		 * @param file - The file, as a path (Node.js, Deno and Bun), a `Blob` or
+		 * `File`, or a `Uint8Array`. A path is streamed from disk.
+		 * @param options.path - The destination directory. The default is the
+		 * application root.
+		 * @param options.filename - The name to upload the file as. The default is the
+		 * file's own name, or `commit.zip` when it has none.
+		 * @param options.signal - Cancels the upload. Uploads have no timeout.
+		 * @throws {SquareCloudAPIError} `FILE_TOO_LARGE` with status 0 when the file is
+		 * larger than 100 MB, before anything is sent. 403 `BLOCKED_PATH` when a
+		 * workspace Maintainer sends one of the application's restricted files, such
+		 * as an `.env` file or the configuration file.
 		 */
 		commit: (
 			appId: string,
@@ -600,8 +980,22 @@ export class SquareCloudAPI {
 				signal,
 			}),
 
+		/**
+		 * Sets up deploys from Git, through a GitHub webhook or the Square Cloud GitHub
+		 * App, and lists past deploys.
+		 */
 		deploys: {
-			/** GitHub webhook deploys. Pass `"@"` to remove; returns the webhook URL (`""` on removal). */
+			/**
+			 * Sets up deploys on push through a GitHub webhook, or removes the webhook.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param accessToken - A GitHub personal access token, or `"@"` to remove the
+			 * webhook.
+			 * @returns The webhook URL, or `""` after a removal.
+			 * @throws {SquareCloudAPIError} 400 `INVALID_ACCESS_TOKEN` when the token is
+			 * not a valid GitHub personal access token.
+			 */
 			setWebhook: async (appId: string, accessToken: string) =>
 				(
 					await this.request<{ webhook?: string } | undefined>(
@@ -611,14 +1005,32 @@ export class SquareCloudAPI {
 					)
 				)?.webhook ?? "",
 			/**
-			 * Links a repository installed through the Square Cloud GitHub App (scope
-			 * `apps:deploy`, 3 calls per 60 s). Re-linking needs `unlinkGithubApp()` first.
-			 * Errors: 403 `GITHUB_NOT_CONNECTED` (no GitHub App installation), 403
-			 * `REPOSITORY_NOT_AVAILABLE` (not in your GitHub App installation),
-			 * 403 `REPOSITORY_PERMISSION_REQUIRED` (no write access), 502 `FAILED_TO_FETCH`
-			 * (GitHub did not confirm the branch; safe to retry), 409
-			 * `REPOSITORY_BRANCH_ALREADY_CONFIGURED` (another app of any account links the
-			 * pair; its id is only in `message`, and only when that app is yours).
+			 * Links a GitHub repository and branch to the application through the Square
+			 * Cloud GitHub App, so that a push to the branch deploys it.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param repository - The repository's full name, such as
+			 * `"octocat/hello-world"`.
+			 * @param branch - The branch to deploy, at most 256 characters.
+			 * @returns The linked repository's GitHub id, full name and branch.
+			 * @throws {SquareCloudAPIError} 403 `GITHUB_NOT_CONNECTED` when your Square
+			 * Cloud account has no connected GitHub account. 403
+			 * `REPOSITORY_NOT_AVAILABLE` when the repository is not in a GitHub App
+			 * installation of that GitHub account, and 403
+			 * `REPOSITORY_PERMISSION_REQUIRED` when that account has no write access to
+			 * the repository.
+			 * @throws {SquareCloudAPIError} 400 `GIT_ALREADY_CONFIGURED` when the
+			 * application is already linked, so unlink it first with
+			 * `unlinkGithubApp()`. 409 `REPOSITORY_BRANCH_ALREADY_CONFIGURED` when
+			 * another application, of any account, already links this repository and
+			 * branch. The other application's id appears in `message` only when that
+			 * application is yours.
+			 * @throws {SquareCloudAPIError} 502 `FAILED_TO_FETCH` when GitHub did not
+			 * confirm the branch. It is safe to try again.
+			 *
+			 * @remarks Needs an API key with the `apps:deploy` scope. Linking and
+			 * unlinking share a limit of 3 calls a minute.
 			 */
 			linkGithubApp: async (
 				appId: string,
@@ -634,16 +1046,38 @@ export class SquareCloudAPI {
 						},
 					)
 				)?.repository ?? ({} as LinkedRepository),
-			/** `400 GIT_NOT_CONFIGURED` when nothing is linked. */
+			/**
+			 * Removes the application's GitHub App link, so pushes no longer deploy it.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @throws {SquareCloudAPIError} 400 `GIT_NOT_CONFIGURED` when the application
+			 * has no GitHub App link.
+			 *
+			 * @remarks Needs an API key with the `apps:deploy` scope. Linking and
+			 * unlinking share a limit of 3 calls a minute.
+			 */
 			unlinkGithubApp: (appId: string) =>
 				this.request<void>("DELETE", `apps/${e(appId)}/deploy/github-app`),
 			/**
-			 * One timeline per deploy, oldest event first. A failed deploy ends in a
-			 * `state: "error"` event with `code` (and `message` when there are details).
+			 * Lists the application's recent Git deploys.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @returns One timeline per deploy, each ordered from the oldest event to the
+			 * newest. A failed deploy ends in an event with `state: "error"` and a
+			 * `code`, plus a `message` when there are details.
 			 */
 			list: (appId: string) =>
 				this.request<DeployEvent[][]>("GET", `apps/${e(appId)}/deployments`),
-			/** `{}` when nothing is configured. */
+			/**
+			 * Returns how Git deploys are set up for the application.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @returns `app` with the GitHub App link and `webhook` with the webhook URL,
+			 * each only when it is set up, or `{}` when neither is.
+			 */
 			current: async (appId: string) =>
 				(await this.request<DeployCurrent | undefined>(
 					"GET",
@@ -651,32 +1085,104 @@ export class SquareCloudAPI {
 				)) ?? {},
 		},
 
+		/**
+		 * Reads and changes the application's environment variables.
+		 *
+		 * Static applications have no environment variables, so every method of this
+		 * group throws 400 `STATIC_APP_ENV_NOT_SUPPORTED` for them.
+		 */
 		envs: {
+			/**
+			 * Returns the application's environment variables.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @returns An object that maps each variable name to its value.
+			 */
 			get: (appId: string) =>
 				this.request<EnvVars>("GET", `apps/${e(appId)}/envs`),
-			/** Adds or overwrites these keys; returns every variable. */
+			/**
+			 * Adds or updates the given environment variables and keeps the others.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param envs - The variables to add or update, as names mapped to values.
+			 * @returns Every variable of the application after the change. An API key
+			 * without the `envs:read` scope gets back only the variables it sent.
+			 * @throws {SquareCloudAPIError} 400 `TOO_MANY_ENV_VARS` when the application
+			 * would have more than 256 variables, and 409 `ENV_BUSY` when another request
+			 * is changing the variables (try again in a moment).
+			 */
 			set: (appId: string, envs: EnvVars) =>
 				this.request<EnvVars>("POST", `apps/${e(appId)}/envs`, {
 					json: { envs },
 				}),
-			/** Replaces ALL variables. */
+			/**
+			 * Replaces all the application's environment variables with the given ones.
+			 * Variables you leave out are deleted.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param envs - The complete new set of variables. Pass `{}` to delete them
+			 * all.
+			 * @returns The variables after the change.
+			 * @throws {SquareCloudAPIError} 400 `TOO_MANY_ENV_VARS` when `envs` has more
+			 * than 256 variables, and 409 `ENV_BUSY` when another request is changing the
+			 * variables (try again in a moment).
+			 */
 			replace: (appId: string, envs: EnvVars) =>
 				this.request<EnvVars>("PUT", `apps/${e(appId)}/envs`, {
 					json: { envs },
 				}),
+			/**
+			 * Deletes the given environment variables. Names that do not exist are
+			 * ignored.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param keys - The names of the variables to delete.
+			 * @returns The variables that remain. An API key without the `envs:read`
+			 * scope gets `{}`.
+			 * @throws {SquareCloudAPIError} 409 `ENV_BUSY` when another request is
+			 * changing the variables. Try again in a moment.
+			 */
 			delete: (appId: string, keys: string[]) =>
 				this.request<EnvVars>("DELETE", `apps/${e(appId)}/envs`, {
 					json: { envs: keys },
 				}),
 		},
 
+		/**
+		 * Lists, reads, writes, moves and deletes the application's files.
+		 *
+		 * Paths are absolute, such as `"/src/index.js"`, and at most 256 characters
+		 * long. Listing or writing a path you have no access to throws 403
+		 * `BLOCKED_PATH`.
+		 */
 		files: {
-			/** 404 `FILE_NOT_FOUND` when the directory does not exist; 403 `BLOCKED_PATH`. Paths: max 256 chars. */
+			/**
+			 * Lists the files and directories in a directory of the application.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param path - The directory to list. The default is the application root.
+			 * @throws {SquareCloudAPIError} 404 `FILE_NOT_FOUND` when the directory does
+			 * not exist.
+			 */
 			list: (appId: string, path?: string) =>
 				this.request<FileEntry[]>("GET", `apps/${e(appId)}/files`, {
 					query: { path },
 				}),
-			/** The file's bytes (max 10 MB: 413 `FILE_TOO_LARGE` above). */
+			/**
+			 * Reads a file of the application.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param path - The path of the file.
+			 * @returns The file's bytes. Decode text with `new TextDecoder().decode()`.
+			 * @throws {SquareCloudAPIError} 404 `FILE_NOT_FOUND` when the file does not
+			 * exist, and 413 `FILE_TOO_LARGE` when it is larger than 10 MB.
+			 */
 			read: async (appId: string, path: string) =>
 				fromBase64(
 					(
@@ -688,9 +1194,20 @@ export class SquareCloudAPI {
 					)?.data ?? "",
 				),
 			/**
-			 * Creates or overwrites (max 10 MB). A string goes as plain text, bytes as
-			 * base64. Empty content writes an empty file. Writes above 1 MiB (UTF-8 bytes)
-			 * have no timeout: pass a `signal` to cancel.
+			 * Creates or replaces a file of the application.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param path - The path of the file.
+			 * @param content - The new content. A string is written as text, and a
+			 * `Uint8Array` is written byte for byte. Empty content creates an empty file.
+			 * @param options.signal - Cancels the write.
+			 * @throws {SquareCloudAPIError} `FILE_TOO_LARGE` with status 0 when the content
+			 * is larger than 10 MB, before anything is sent. Upload larger files with
+			 * `apps.commit()`.
+			 *
+			 * @remarks Content larger than 1 MiB is sent like an upload, without a
+			 * timeout, so pass a `signal` if you need to cancel it.
 			 */
 			write: async (
 				appId: string,
@@ -709,7 +1226,7 @@ export class SquareCloudAPI {
 				if (size > MAX_FILE) {
 					throw this.local(
 						"FILE_TOO_LARGE",
-						"File content is limited to 10 MB",
+						"The content is larger than the 10 MB file write limit, so it was not sent. Upload larger files with apps.commit().",
 						"PUT",
 						`apps/${e(appId)}/files`,
 					);
@@ -724,20 +1241,59 @@ export class SquareCloudAPI {
 					signal,
 				});
 			},
+			/**
+			 * Moves or renames a file of the application.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param path - The current path of the file.
+			 * @param to - The new path.
+			 */
 			move: (appId: string, path: string, to: string) =>
 				this.request<void>("PATCH", `apps/${e(appId)}/files`, {
 					json: { path, to },
 				}),
+			/**
+			 * Deletes a file of the application.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param path - The path of the file.
+			 */
 			delete: (appId: string, path: string) =>
 				this.request<void>("DELETE", `apps/${e(appId)}/files`, {
 					json: { path },
 				}),
 		},
 
+		/** Creates, lists and restores the application's snapshots. */
 		snapshots: this.snapshots("apps"),
 
-		/** Web apps only. Windows (`start` to `end`) are at most 7 days. */
+		/**
+		 * Reads the traffic of the application's website and manages its custom domain.
+		 *
+		 * These methods work only for websites. A time window runs from `start` to
+		 * `end`, each an ISO 8601 string or a `Date`. The API keeps 7 days of traffic,
+		 * so a window reaches back at most 7 days. `analytics()`, `errors()`, `logs()`
+		 * and `performance()` share a limit of 20 calls a minute for data that is not
+		 * cached, and past it they throw 429 `RATE_LIMITED`.
+		 */
 		network: {
+			/**
+			 * Returns the website's traffic in a time window, broken down by country,
+			 * device, browser, path, status code and more.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param start - The start of the window.
+			 * @param end - The end of the window.
+			 * @param filters - Narrows every breakdown to the matching traffic. Each
+			 * filter takes the exact `type` value of an item in its breakdown, and
+			 * filters combine.
+			 * @returns The breakdowns, or `null` when the window has no traffic.
+			 * @throws {SquareCloudAPIError} 400 `INVALID_FILTER` when a filter value has
+			 * the wrong format.
+			 */
 			analytics: async (
 				appId: string,
 				start: DateInput,
@@ -751,7 +1307,18 @@ export class SquareCloudAPI {
 						{ query: { start, end, ...filters } },
 					),
 				),
-			/** 5xx only unless `include_4xx`. */
+			/**
+			 * Returns the HTTP errors the website served in a time window, by status,
+			 * path and method.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param start - The start of the window.
+			 * @param end - The end of the window.
+			 * @param options.include_4xx - Count 4xx responses too. By default only 5xx
+			 * responses are counted.
+			 * @returns The error breakdown, or `null` when the window has no traffic.
+			 */
 			errors: async (
 				appId: string,
 				start: DateInput,
@@ -765,10 +1332,35 @@ export class SquareCloudAPI {
 						{ query: { start, end, include_4xx } },
 					),
 				),
+			/**
+			 * Returns one log entry for each request the website received in a time
+			 * window.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param start - The start of the window.
+			 * @param end - The end of the window.
+			 * @throws {SquareCloudAPIError} 403 `UPGRADE_REQUIRED` on plans other than Pro
+			 * and Enterprise.
+			 */
 			logs: (appId: string, start: DateInput, end: DateInput) =>
 				this.request<NetworkLog[]>("GET", `apps/${e(appId)}/network/logs`, {
 					query: { start, end },
 				}),
+			/**
+			 * Returns the website's response times in a time window: the 50th, 95th and
+			 * 99th percentiles at the edge and at your application, by country, edge
+			 * location and path.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param start - The start of the window.
+			 * @param end - The end of the window.
+			 * @returns The percentiles in milliseconds, or `null` when the window has no
+			 * traffic.
+			 * @throws {SquareCloudAPIError} 403 `UPGRADE_REQUIRED` on plans other than Pro
+			 * and Enterprise.
+			 */
 			performance: async (appId: string, start: DateInput, end: DateInput) =>
 				orNull(
 					await this.request<NetworkPerformance | object>(
@@ -777,42 +1369,189 @@ export class SquareCloudAPI {
 						{ query: { start, end } },
 					),
 				),
+			/**
+			 * Returns the DNS records to create at your domain registrar, so the custom
+			 * domain can be verified and get its SSL certificate.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @returns The records, each with its `status`. A record that is not active
+			 * yet can carry up to 3 validation `errors`.
+			 * @throws {SquareCloudAPIError} 400 `NO_CUSTOM_DOMAIN` when the application
+			 * has no custom domain. Set one first with `setDomain()`.
+			 */
 			dns: (appId: string) =>
 				this.request<DNSRecord[]>("GET", `apps/${e(appId)}/network/dns`),
-			/** Pass `"@"` to remove the custom domain. */
+			/**
+			 * Sets the application's custom domain, or removes it.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 * @param domain - A fully qualified domain name, such as `"example.com"`, or
+			 * `"@"` to remove the custom domain.
+			 * @throws {SquareCloudAPIError} 403 `UPGRADE_REQUIRED` on plans other than
+			 * Standard, Pro and Enterprise. 400 `RESERVED_DOMAIN` for a Square Cloud
+			 * domain, and 409 `DOMAIN_ALREADY_EXISTS` when another account uses the
+			 * domain. 403 `LOAD_BALANCER_LIMIT_REACHED` when the domain is already on as
+			 * many of your applications as your plan allows.
+			 *
+			 * @remarks Setting the same domain on several of your applications balances
+			 * traffic across them. See `apps.loadBalancers()`.
+			 */
 			setDomain: (appId: string, domain: string) =>
 				this.request<void>("POST", `apps/${e(appId)}/network/custom`, {
 					json: { custom: domain },
 				}),
+			/**
+			 * Clears the edge cache of the website's domains, so the next requests reach
+			 * your application.
+			 *
+			 * @param appId - The application id (see {@link SquareCloudAPI.apps} for
+			 * workspace applications).
+			 */
 			purgeCache: (appId: string) =>
 				this.request<void>("POST", `apps/${e(appId)}/network/purge_cache`),
 		},
 	};
 
+	/**
+	 * Creates, controls and inspects your databases.
+	 *
+	 * A call for a database that does not exist throws a {@link SquareCloudAPIError}
+	 * with 404 `DATABASE_NOT_FOUND`.
+	 */
 	readonly databases = {
-		/** The password is only returned here and by `resetCredentials()`. */
+		/**
+		 * Creates a database.
+		 *
+		 * @param database - The name, engine (`type`), engine version and memory of the
+		 * new database.
+		 * @returns The new database with its connection URL and password. Store the
+		 * password now, because only this call and `resetCredentials()` return it.
+		 * @throws {SquareCloudAPIError} 403 `UPGRADE_REQUIRED` on plans other than
+		 * Standard, Pro and Enterprise. 400 `INVALID_MEMORY` when `memory` is not a
+		 * whole number of MB, and 400 `INSUFFICIENT_MEMORY` when your plan does not
+		 * have enough free memory.
+		 *
+		 * @remarks The call waits for the database to be created, so its timeout is
+		 * never shorter than 120 seconds.
+		 *
+		 * @example
+		 * ```ts
+		 * const db = await api.databases.create({
+		 *   name: "main",
+		 *   type: "postgres",
+		 *   version: "17",
+		 *   memory: 1024,
+		 * });
+		 * console.log(db.connection_url);
+		 * ```
+		 */
 		create: (database: DatabaseCreate) =>
 			this.request<DatabaseCreated>("POST", "databases", {
 				json: database,
 				floor: SLOW_MS,
 			}),
+		/**
+		 * Returns the database's name, engine, memory, port and owner.
+		 *
+		 * @param databaseId - The database id.
+		 */
 		get: (databaseId: string) =>
 			this.request<Database>("GET", `databases/${e(databaseId)}`),
+		/**
+		 * Renames the database or changes its memory.
+		 *
+		 * @param databaseId - The database id.
+		 * @param changes - The new `name`, the new `ram` in MB, or both.
+		 * @throws {SquareCloudAPIError} 400 `NO_UPDATE_DATA` when `changes` has neither
+		 * field.
+		 */
 		update: (databaseId: string, changes: DatabaseUpdate) =>
 			this.request<void>("PATCH", `databases/${e(databaseId)}`, {
 				json: changes,
 			}),
+		/**
+		 * Deletes the database.
+		 *
+		 * @param databaseId - The database id.
+		 * @throws {SquareCloudAPIError} 409 `RESTORE_IN_PROGRESS` while a snapshot is
+		 * being restored. Try again when it ends.
+		 */
 		delete: (databaseId: string) =>
 			this.request<void>("DELETE", `databases/${e(databaseId)}`),
+		/**
+		 * Starts the database.
+		 *
+		 * @param id - The database id.
+		 * @throws {SquareCloudAPIError} 409 `CONTAINER_ALREADY_STARTED` when the
+		 * database is already running, and 409 `RESTORE_IN_PROGRESS` while a snapshot
+		 * is being restored (try again when it ends). Other refusals are also 409 with
+		 * only a code, such as `ACTION_FAILED`, so check `code` rather than `message`.
+		 *
+		 * @remarks The call waits for the database to start, so its timeout is never
+		 * shorter than 120 seconds.
+		 */
 		start: this.action("databases", "start"),
+		/**
+		 * Stops the database.
+		 *
+		 * @param id - The database id.
+		 * @throws {SquareCloudAPIError} 409 `CONTAINER_ALREADY_STOPPED` when the
+		 * database is already stopped, and 409 `RESTORE_IN_PROGRESS` while a snapshot
+		 * is being restored (try again when it ends). Other refusals are also 409 with
+		 * only a code, such as `ACTION_FAILED`, so check `code` rather than `message`.
+		 *
+		 * @remarks The call waits for the database to stop, so its timeout is never
+		 * shorter than 120 seconds.
+		 */
 		stop: this.action("databases", "stop"),
-		/** Formatted strings by default; `{ raw: true }` for numbers. */
+		/**
+		 * Returns the database's current CPU, memory, network and storage usage.
+		 *
+		 * @param id - The database id.
+		 * @param options.raw - Return numbers instead of formatted strings such as
+		 * `"120.4MB"`: CPU as a percentage, memory in MB, and storage and network in
+		 * bytes.
+		 * @returns The usage, whether the database is `running`, and `restoring: true`
+		 * while a snapshot restore is queued or running.
+		 */
 		status: this.stats("databases"),
-		/** Last 24 h, one point per 5 min, newest first. */
-		metrics: (databaseId: string) =>
-			this.request<MetricPoint[]>("GET", `databases/${e(databaseId)}/metrics`),
+		/**
+		 * Returns the database's CPU, memory, network and disk usage over time, newest
+		 * point first.
+		 *
+		 * @param id - The database id.
+		 * @param options.range - `"24h"` (the default) returns the last 24 hours, one
+		 * point every 5 minutes. `"7d"` returns the
+		 * last 7 days, one point an hour with the hour's average and its `cpu_max` and
+		 * `ram_max` peaks.
+		 * @throws {SquareCloudAPIError} 400 `INVALID_PARAMETERS` when `range` is not
+		 * `"24h"` or `"7d"`.
+		 *
+		 * @remarks `"7d"` needs a Pro or Enterprise plan. Other plans get the
+		 * 24-hour answer without an error, so check the points you got rather than
+		 * the range you asked for.
+		 */
+		metrics: this.metrics("databases"),
+		/**
+		 * Returns whether each of your databases is running, with its CPU and memory
+		 * usage.
+		 *
+		 * @returns One item per database. `cpu` and `ram` are present only while the
+		 * database runs.
+		 */
 		statusAll: () => this.request<StatusListItem[]>("GET", "databases/status"),
-		/** The TLS certificate, base64-encoded PEM. */
+		/**
+		 * Returns the database's TLS certificate and private key, which clients need to
+		 * connect over TLS.
+		 *
+		 * @param databaseId - The database id.
+		 * @returns A base64-encoded PEM that holds the private key followed by the
+		 * certificate. Decode it with `atob()`.
+		 * @throws {SquareCloudAPIError} 400 `DATABASE_NOT_RUNNING` when the database is
+		 * stopped. Start it first.
+		 */
 		certificate: async (databaseId: string) =>
 			(
 				await this.request<{ certificate?: string } | undefined>(
@@ -820,7 +1559,16 @@ export class SquareCloudAPI {
 					`databases/${e(databaseId)}/credentials/certificate`,
 				)
 			)?.certificate ?? "",
-		/** Rotates the password (returns it) or the certificate (returns `""`). */
+		/**
+		 * Replaces the database's password or its TLS certificate with a new one.
+		 *
+		 * @param databaseId - The database id.
+		 * @param reset - `"password"` or `"certificate"`.
+		 * @returns The new password, or `""` for a certificate. Get the new certificate
+		 * with `certificate()`.
+		 * @throws {SquareCloudAPIError} 400 `DATABASE_NOT_RUNNING` when the database is
+		 * stopped. Start it first.
+		 */
 		resetCredentials: async (
 			databaseId: string,
 			reset: "password" | "certificate",
@@ -833,39 +1581,110 @@ export class SquareCloudAPI {
 				)
 			)?.password ?? "",
 
+		/** Creates, lists and restores the database's snapshots. */
 		snapshots: this.snapshots("databases"),
 	};
 
+	/**
+	 * Creates and manages workspaces, which share your applications with other Square
+	 * Cloud users.
+	 *
+	 * A call for a workspace that does not exist throws a {@link SquareCloudAPIError}
+	 * with 404 `WORKSPACE_NOT_FOUND`.
+	 */
 	readonly workspaces = {
+		/**
+		 * Creates a workspace that you own.
+		 *
+		 * @param name - The workspace name: 1 to 32 letters, numbers, spaces, hyphens
+		 * or underscores.
+		 * @returns The new workspace's id and name.
+		 * @throws {SquareCloudAPIError} 403 `UPGRADE_REQUIRED` on plans other than
+		 * Standard, Pro and Enterprise, and 400 `WORKSPACE_LIMIT_REACHED` when you
+		 * already own as many workspaces as your plan allows.
+		 */
 		create: (name: string) =>
 			this.request<WorkspaceCreated>("POST", "workspaces", {
 				json: { name },
 			}),
+		/** Lists the workspaces you own or belong to, with their members and applications. */
 		list: () => this.request<Workspace[]>("GET", "workspaces"),
+		/**
+		 * Returns a workspace you own or belong to, with its members and applications.
+		 *
+		 * @param workspaceId - The workspace id.
+		 */
 		get: (workspaceId: string) =>
 			this.request<Workspace>("GET", `workspaces/${e(workspaceId)}`),
+		/**
+		 * Deletes a workspace you own.
+		 *
+		 * @param workspaceId - The workspace id.
+		 */
 		delete: (workspaceId: string) =>
 			this.request<void>("DELETE", "workspaces", { json: { workspaceId } }),
+		/**
+		 * Removes you from a workspace you belong to.
+		 *
+		 * @param workspaceId - The workspace id.
+		 * @throws {SquareCloudAPIError} 400 `CANNOT_LEAVE_OWNER` when you own the
+		 * workspace. Delete it with `delete()` instead.
+		 */
 		leave: (workspaceId: string) =>
 			this.request<void>("DELETE", "workspaces/leave", {
 				json: { workspaceId },
 			}),
 
+		/** Adds, updates and removes the members of a workspace you own. */
 		members: {
-			/** Adds the user who generated `code` (their `inviteCode()`, valid 5 min) with this role. */
+			/**
+			 * Adds a user to the workspace with the invite code they generated.
+			 *
+			 * @param workspaceId - The workspace id.
+			 * @param code - The user's invite code, from their `inviteCode()`. It is
+			 * valid for 5 minutes.
+			 * @param group - The member's role.
+			 * @throws {SquareCloudAPIError} 400 `INVALID_CODE` when the code is wrong or
+			 * has expired, 400 `MEMBER_ALREADY_ADDED` when the user is already a member,
+			 * and 400 `MEMBERS_LIMIT_REACHED` when the workspace has as many members as
+			 * your plan allows.
+			 */
 			add: (workspaceId: string, code: string, group: WorkspaceGroup) =>
 				this.request<void>("POST", "workspaces/members", {
 					json: { workspaceId, code, group },
 				}),
+			/**
+			 * Changes a member's role.
+			 *
+			 * @param workspaceId - The workspace id.
+			 * @param memberId - The member's user id, from the workspace's `members`.
+			 * @param group - The new role.
+			 * @throws {SquareCloudAPIError} 404 `MEMBER_NOT_FOUND` when the user is not a
+			 * member, and 400 `CANNOT_EDIT_OWNER` for the workspace owner.
+			 */
 			update: (workspaceId: string, memberId: string, group: WorkspaceGroup) =>
 				this.request<void>("PATCH", "workspaces/members", {
 					json: { workspaceId, memberId, group },
 				}),
+			/**
+			 * Removes a member from the workspace.
+			 *
+			 * @param workspaceId - The workspace id.
+			 * @param memberId - The member's user id, from the workspace's `members`.
+			 * @throws {SquareCloudAPIError} 404 `MEMBER_NOT_FOUND` when the user is not a
+			 * member.
+			 */
 			remove: (workspaceId: string, memberId: string) =>
 				this.request<void>("DELETE", "workspaces/members", {
 					json: { workspaceId, memberId },
 				}),
-			/** Your invite code (valid 5 min): a workspace owner passes it to `members.add()`. */
+			/**
+			 * Generates an invite code that lets a workspace owner add you to their
+			 * workspace.
+			 *
+			 * @returns The code. Give it to the owner, who passes it to `members.add()`
+			 * within 5 minutes.
+			 */
 			inviteCode: async () =>
 				(
 					await this.request<{ code?: string } | undefined>(
@@ -875,11 +1694,30 @@ export class SquareCloudAPI {
 				)?.code ?? "",
 		},
 
+		/** Shares your applications in a workspace you own, or stops sharing them. */
 		apps: {
+			/**
+			 * Shares one of your applications in the workspace.
+			 *
+			 * @param workspaceId - The workspace id.
+			 * @param appId - The id of an application you own.
+			 * @throws {SquareCloudAPIError} 400 `APP_ALREADY_IN_WORKSPACE` when the
+			 * application is already shared there, and 400 `APPLICATIONS_LIMIT_REACHED`
+			 * when the workspace has reached its limit of applications.
+			 *
+			 * @remarks Members then reach the application through the composite id
+			 * `<appId>-<workspaceId>` (see {@link SquareCloudAPI.apps}).
+			 */
 			add: (workspaceId: string, appId: string) =>
 				this.request<void>("POST", "workspaces/applications", {
 					json: { workspaceId, appId },
 				}),
+			/**
+			 * Stops sharing an application in the workspace.
+			 *
+			 * @param workspaceId - The workspace id.
+			 * @param appId - The id of the shared application.
+			 */
 			remove: (workspaceId: string, appId: string) =>
 				this.request<void>("DELETE", "workspaces/applications", {
 					json: { workspaceId, appId },
@@ -904,11 +1742,6 @@ const toBase64 = (bytes: Uint8Array) => {
 	}
 	return btoa(binary);
 };
-
-const created = (response: unknown): SnapshotCreated =>
-	response
-		? { pending: false, ...(response as { url: string; key: string }) }
-		: { pending: true };
 
 /** Analytics answer `{}` when there is no traffic in the window. */
 const orNull = <T>(response: T | object | undefined) =>

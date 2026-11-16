@@ -5,12 +5,13 @@ const appId = process.argv[2] ?? "";
 
 const { id: workspaceId } = await api.workspaces.create("My team");
 try {
-	// Share an app; it is addressed as `${appId}-${workspaceId}` through the workspace
+	// Share an application. Members then reach it as `${appId}-${workspaceId}`.
 	await api.workspaces.apps.add(workspaceId, appId);
 	console.log((await api.apps.status(`${appId}-${workspaceId}`)).running);
 
-	// To join someone else's workspace, give its owner your invite code (valid 5 min);
-	// they call `workspaces.members.add(workspaceId, code, "maintain")`
+	// To join someone else's workspace, give its owner your invite code, which is
+	// valid for 5 minutes. The owner calls
+	// `workspaces.members.add(workspaceId, code, "maintain")`.
 	console.log(
 		"share this code with an owner:",
 		await api.workspaces.members.inviteCode(),

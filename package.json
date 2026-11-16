@@ -1,6 +1,6 @@
 {
 	"name": "@squarecloud/api",
-	"version": "6.0.0",
+	"version": "6.1.0",
 	"description": "Official Square Cloud API SDK for Node.js, Deno, Bun and edge runtimes",
 	"type": "module",
 	"main": "lib/index.cjs",
